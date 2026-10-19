@@ -1,9 +1,456 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>3D Designing Tools</title>
-<style>body{font-family:system-ui,sans-serif;max-width:640px;margin:48px auto;padding:0 16px;line-height:1.5}a{color:#0969da}</style>
-</head><body>
-<h1>3D Designing Tools</h1>
-<p>A collection of tools that make 3D design easier.</p>
-<ul><li><a href="tray-generator/">Tray Generator</a>: parametric stackable trays and boxes with lids, exported as STL/3MF.</li></ul>
-</body></html>
+<meta name="description" content="Free browser-based tools that make 3D design and 3D printing easier.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f7fb; --bg-2:#eef0f7; --panel:#ffffff; --line:#e2e5ee; --text:#151821; --muted:#5d6475;
+  --accent:#3b6ff5; --accent-2:#8b5cf6; --accent-3:#14b8a6; --accent-soft:#e6edff;
+  --shadow:0 1px 2px rgba(20,24,40,.05),0 8px 28px rgba(20,24,40,.08);
+  --hero-ink:#ffffff; --grid-line:rgba(59,111,245,.10);
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d0f15; --bg-2:#131622; --panel:#161a26; --line:#262b3b; --text:#e9ecf3; --muted:#9aa2b6;
+    --accent:#6b93ff; --accent-2:#a78bfa; --accent-3:#2dd4bf; --accent-soft:#1c2645;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35); --grid-line:rgba(107,147,255,.10);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d0f15; --bg-2:#131622; --panel:#161a26; --line:#262b3b; --text:#e9ecf3; --muted:#9aa2b6;
+  --accent:#6b93ff; --accent-2:#a78bfa; --accent-3:#2dd4bf; --accent-soft:#1c2645;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35); --grid-line:rgba(107,147,255,.10);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+/* Header */
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;gap:16px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.01em;color:var(--text)}
+.brand:hover{text-decoration:none}
+.brand svg{width:28px;height:28px}
+.top nav{margin-left:auto;display:flex;align-items:center;gap:6px}
+.top nav a{color:var(--muted);font-weight:500;font-size:14px;padding:6px 10px;border-radius:8px}
+.top nav a:hover{color:var(--text);background:var(--bg-2);text-decoration:none}
+.icon-btn{border:1px solid var(--line);background:var(--panel);color:var(--text);width:36px;height:36px;border-radius:10px;display:grid;place-items:center;cursor:pointer}
+.icon-btn svg{width:18px;height:18px}
+
+/* Hero */
+.hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line);background:
+  radial-gradient(900px 420px at 85% -10%,color-mix(in srgb,var(--accent-2) 22%,transparent),transparent 70%),
+  radial-gradient(700px 380px at 0% 110%,color-mix(in srgb,var(--accent-3) 18%,transparent),transparent 70%),
+  var(--bg)}
+.hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);background-size:40px 40px;mask-image:radial-gradient(ellipse at 60% 40%,#000 30%,transparent 75%);-webkit-mask-image:radial-gradient(ellipse at 60% 40%,#000 30%,transparent 75%)}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:center;padding-top:72px;padding-bottom:72px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:5px 12px;border-radius:999px}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--accent-3);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent-3) 25%,transparent)}
+h1{font-size:clamp(36px,5.4vw,60px);line-height:1.05;letter-spacing:-.035em;margin:18px 0 16px;font-weight:800}
+h1 .grad{background:linear-gradient(100deg,var(--accent),var(--accent-2) 55%,var(--accent-3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{font-size:18px;color:var(--muted);max-width:540px;margin:0 0 28px}
+.cta{display:flex;flex-wrap:wrap;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 20px;border-radius:12px;font-weight:600;font-size:15px;border:1px solid transparent;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.btn:hover{text-decoration:none;transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;box-shadow:0 6px 20px color-mix(in srgb,var(--accent) 35%,transparent)}
+.btn.ghost{background:var(--panel);color:var(--text);border-color:var(--line)}
+.btn svg{width:16px;height:16px}
+.stats{display:flex;gap:28px;margin-top:36px;flex-wrap:wrap}
+.stats div{font-size:13px;color:var(--muted)}
+.stats b{display:block;font-size:22px;color:var(--text);letter-spacing:-.02em}
+.stage{position:relative;aspect-ratio:1/1;max-width:440px;width:100%;justify-self:center}
+.stage canvas{width:100%;height:100%;display:block}
+.stage .tag{position:absolute;font:600 12px var(--mono);background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);padding:5px 10px;border-radius:8px;color:var(--text)}
+.stage .t1{top:14%;left:0}
+.stage .t2{bottom:16%;right:0}
+.stage .tag em{font-style:normal;color:var(--accent)}
+
+/* Tools section */
+section.tools{padding:64px 0 24px;scroll-margin-top:40px}
+section.how{scroll-margin-top:40px}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+h2{font-size:32px;letter-spacing:-.025em;margin:0;line-height:1.2}
+.section-head p{margin:6px 0 0;color:var(--muted)}
+.tabs{display:flex;gap:6px;padding:6px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;display:flex;align-items:center;gap:8px;border:0;background:transparent;color:var(--muted);font:600 14px Inter,system-ui,sans-serif;padding:9px 16px;border-radius:10px;cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab[aria-selected="true"]{background:var(--panel);color:var(--text);box-shadow:var(--shadow)}
+.tab .dot{width:8px;height:8px;border-radius:3px;background:var(--c,var(--accent))}
+.tab .soon{font-size:11px;font-weight:600;color:var(--muted);border:1px solid var(--line);padding:0 6px;border-radius:999px}
+.panel{margin-top:20px;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* Overview grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.card{position:relative;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow);transition:transform .2s,border-color .2s;cursor:pointer;color:inherit}
+.card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--c,var(--accent)) 50%,var(--line));text-decoration:none}
+.card .ico{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--c,var(--accent)) 14%,transparent);color:var(--c,var(--accent));margin-bottom:16px}
+.card .ico svg{width:24px;height:24px}
+.card h3{margin:0 0 6px;font-size:19px;letter-spacing:-.01em}
+.card p{margin:0 0 16px;color:var(--muted);font-size:15px}
+.card .chips{margin-top:auto}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;font-weight:600;color:var(--muted);background:var(--bg-2);border:1px solid var(--line);padding:2px 9px;border-radius:999px}
+.card.placeholder{border-style:dashed;background:transparent;box-shadow:none;cursor:default}
+.card.placeholder:hover{transform:none;border-color:var(--line)}
+.card.placeholder .ico{background:var(--bg-2);color:var(--muted)}
+
+/* Tool detail */
+.detail{display:grid;grid-template-columns:1.05fr .95fr;gap:0;background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow)}
+.detail .info{padding:34px}
+.detail .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--c,var(--accent))}
+.detail .badge svg{width:16px;height:16px}
+.detail h3{font-size:30px;letter-spacing:-.025em;margin:8px 0 10px;line-height:1.15}
+.detail .tagline{color:var(--muted);margin:0 0 22px;font-size:16.5px}
+.features{list-style:none;padding:0;margin:0 0 26px;display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}
+.features li{display:flex;gap:10px;font-size:14.5px;line-height:1.45}
+.features li svg{flex:0 0 18px;width:18px;height:18px;color:var(--c,var(--accent));margin-top:1px}
+.detail .actions{display:flex;flex-wrap:wrap;gap:10px}
+.detail .media{position:relative;background:linear-gradient(160deg,color-mix(in srgb,var(--c,var(--accent)) 16%,var(--bg-2)),var(--bg-2));display:flex;flex-direction:column;justify-content:center;gap:14px;padding:26px;border-left:1px solid var(--line)}
+.detail .media img{width:100%;border-radius:12px;border:1px solid var(--line);background:#fff;box-shadow:var(--shadow)}
+.detail .media figcaption{font-size:13px;color:var(--muted);text-align:center}
+.detail .meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:22px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.detail .meta b{color:var(--text);font-weight:600}
+
+/* How it works */
+section.how{padding:56px 0}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:22px}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}
+.step .n{font:700 13px var(--mono);color:var(--accent);background:var(--accent-soft);width:30px;height:30px;border-radius:9px;display:grid;place-items:center;margin-bottom:12px}
+.step h4{margin:0 0 6px;font-size:17px}
+.step p{margin:0;color:var(--muted);font-size:14.5px}
+
+footer{border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+@media (max-width:860px){
+  .hero .wrap{grid-template-columns:1fr;padding-top:48px;padding-bottom:48px}
+  .stage{max-width:320px}
+  .detail{grid-template-columns:1fr}
+  .detail .media{border-left:0;border-top:1px solid var(--line)}
+  .steps{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .wrap{padding:0 16px}
+  .top nav a.hide-sm{display:none}
+  .features{grid-template-columns:1fr}
+  .detail .info{padding:24px}
+  h2{font-size:26px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="3D Designing Tools home">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b6ff5"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+        <path d="M16 2 29 9.5v13L16 30 3 22.5v-13Z" fill="url(#lg)"/>
+        <path d="M16 2 29 9.5 16 17 3 9.5Z" fill="#fff" fill-opacity=".35"/>
+        <path d="M16 17v13" stroke="#fff" stroke-opacity=".5" stroke-width="1.2"/>
+      </svg>
+      3D Designing Tools
+    </a>
+    <nav>
+      <a href="#tools">Tools</a>
+      <a href="#how" class="hide-sm">How it works</a>
+      <a href="https://github.com/rahul576/3d-designing-tools" class="hide-sm">GitHub</a>
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow"><i></i>Free, offline, runs in your browser</span>
+      <h1>Design printable 3D parts <span class="grad">in minutes, not hours.</span></h1>
+      <p class="lede">A growing set of parametric tools for makers. Pick a tool, tweak a few numbers, and download a model that is ready for your slicer. No CAD, no installs, nothing uploaded.</p>
+      <div class="cta">
+        <a class="btn primary" href="#tools">Explore the tools
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn ghost" href="https://github.com/rahul576/3d-designing-tools">View source</a>
+      </div>
+      <div class="stats">
+        <div><b id="toolCount">1</b>tool available</div>
+        <div><b>STL · 3MF</b>export formats</div>
+        <div><b>0 KB</b>uploaded</div>
+      </div>
+    </div>
+    <div class="stage" aria-hidden="true">
+      <canvas id="hero3d" width="880" height="880"></canvas>
+      <span class="tag t1">W <em>120</em> × D <em>80</em> mm</span>
+      <span class="tag t2">stack ×3 · <em>0.8 mm</em> walls</span>
+    </div>
+  </div>
+</section>
+
+<section class="tools" id="tools">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2>The toolbox</h2>
+        <p>Each tool lives in its own folder and opens right here in your browser.</p>
+      </div>
+    </div>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div id="panel" class="panel" role="tabpanel"></div>
+  </div>
+</section>
+
+<section class="how" id="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step"><div class="n">01</div><h4>Pick a tool</h4><p>Choose the generator that matches what you want to make, from the tabs above.</p></div>
+      <div class="step"><div class="n">02</div><h4>Set your numbers</h4><p>Drag, type or click. The 3D preview updates live, with weight, cost and print-time estimates.</p></div>
+      <div class="step"><div class="n">03</div><h4>Download and print</h4><p>Export STL or 3MF, drop it into your slicer and hit print. Settings are remembered for next time.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="yr"></span> 3D Designing Tools</span>
+    <a href="https://github.com/rahul576/3d-designing-tools">github.com/rahul576/3d-designing-tools</a>
+  </div>
+</footer>
+
+<script>
+/*
+  TOOLS: one entry per tool folder. To add a new tool, put it in its own
+  folder at the repo root (with an index.html) and add an entry here.
+  A tab and an overview card are created for it automatically.
+*/
+const TOOLS = [
+  {
+    id: "tray-generator",
+    name: "Tray Generator",
+    folder: "tray-generator/",
+    color: "#3b6ff5",
+    icon: "tray",
+    version: "v7",
+    tagline: "Parametric, stackable, lightweight trays and boxes for 3D printing, with lids, compartments and wall patterns.",
+    tags: ["Stackable", "Lids", "STL / 3MF"],
+    features: [
+      "Drag or type width, depth and height on the live 3D view",
+      "Split, merge and resize compartments by clicking the model",
+      "Stackable trays with a flush rim and 45° self-centring chamfer",
+      "Inset, cap or stacking lids with adjustable clearance",
+      "Hex, circle, diamond or line wall patterns that save filament",
+      "Weight, cost and print-time estimates, calibrated to your slicer"
+    ],
+    image: "tray-generator/stacking-before-after.png",
+    imageCaption: "Flush-rim stacking in v7: the groove between stacked trays is gone.",
+    links: [{ label: "Read the guide", href: "tray-generator/README.txt" }],
+    meta: { "Runs": "Offline in the browser", "Export": "STL, 3MF", "Undo": "Ctrl+Z" }
+  }
+  // Next tool goes here, e.g. { id: "my-tool", name: "My Tool", folder: "my-tool/", ... }
+];
+
+const ICONS = {
+  tray: '<path d="M3 8.5 12 4l9 4.5v7L12 20l-9-4.5Z"/><path d="M3 8.5 12 13l9-4.5M12 13v7M7.5 6.2l9 4.6"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  cube: '<path d="M12 3 20 7.5v9L12 21l-8-4.5v-9Z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>'
+};
+const svg = (name, sw = 2) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ICONS.cube}</svg>`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+const tabsEl = document.getElementById("tabs");
+const panelEl = document.getElementById("panel");
+document.getElementById("toolCount").textContent = TOOLS.length;
+document.getElementById("toolCount").nextSibling.textContent = TOOLS.length === 1 ? "tool available" : "tools available";
+document.getElementById("yr").textContent = new Date().getFullYear();
+
+function renderTabs(active) {
+  const items = [{ id: "all", name: "All tools" }, ...TOOLS];
+  tabsEl.innerHTML = items.map(t => `
+    <button class="tab" role="tab" type="button" data-id="${esc(t.id)}" aria-selected="${t.id === active}" style="--c:${esc(t.color || "var(--muted)")}">
+      ${t.id === "all" ? svg("grid") .replace("<svg", '<svg width="16" height="16"') : '<span class="dot"></span>'}${esc(t.name)}
+    </button>`).join("");
+}
+
+function renderOverview() {
+  return `<div class="grid">${TOOLS.map(t => `
+    <a class="card" href="#${esc(t.id)}" style="--c:${esc(t.color)}">
+      <div class="ico">${svg(t.icon)}</div>
+      <h3>${esc(t.name)} ${t.version ? `<span class="chip">${esc(t.version)}</span>` : ""}</h3>
+      <p>${esc(t.tagline)}</p>
+      <div class="chips">${(t.tags || []).map(x => `<span class="chip">${esc(x)}</span>`).join("")}</div>
+    </a>`).join("")}
+    <div class="card placeholder">
+      <div class="ico">${svg("plus")}</div>
+      <h3>More tools coming</h3>
+      <p>New generators are added to this collection over time. Each one gets its own tab here.</p>
+    </div>
+  </div>`;
+}
+
+function renderTool(t) {
+  const meta = Object.entries(t.meta || {}).map(([k, v]) => `<span>${esc(k)}: <b>${esc(v)}</b></span>`).join("");
+  return `<article class="detail" style="--c:${esc(t.color)}">
+    <div class="info">
+      <span class="badge">${svg(t.icon)} ${esc(t.name)}${t.version ? " · " + esc(t.version) : ""}</span>
+      <h3>${esc(t.name)}</h3>
+      <p class="tagline">${esc(t.tagline)}</p>
+      <ul class="features">${(t.features || []).map(f => `<li>${svg("check", 2.4)}<span>${esc(f)}</span></li>`).join("")}</ul>
+      <div class="actions">
+        <a class="btn primary" href="${esc(t.folder)}" style="background:linear-gradient(135deg,${esc(t.color)},var(--accent-2))">Open ${esc(t.name)} ${svg("arrow", 2.2)}</a>
+        ${(t.links || []).map(l => `<a class="btn ghost" href="${esc(l.href)}">${esc(l.label)}</a>`).join("")}
+      </div>
+      ${meta ? `<div class="meta">${meta}</div>` : ""}
+    </div>
+    <figure class="media" style="margin:0">
+      ${t.image ? `<img src="${esc(t.image)}" alt="${esc(t.imageCaption || t.name)}" loading="lazy">` : `<div class="ico">${svg(t.icon)}</div>`}
+      ${t.imageCaption ? `<figcaption>${esc(t.imageCaption)}</figcaption>` : ""}
+    </figure>
+  </article>`;
+}
+
+function show(id, fromHash) {
+  const tool = TOOLS.find(t => t.id === id);
+  const active = tool ? tool.id : "all";
+  renderTabs(active);
+  panelEl.innerHTML = tool ? renderTool(tool) : renderOverview();
+  panelEl.style.animation = "none"; panelEl.offsetHeight; panelEl.style.animation = "";
+  const want = tool ? "#" + tool.id : "#tools";
+  if (!fromHash && location.hash !== want) history.replaceState(null, "", want);
+}
+
+tabsEl.addEventListener("click", e => {
+  const b = e.target.closest(".tab"); if (b) show(b.dataset.id);
+});
+tabsEl.addEventListener("keydown", e => {
+  if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+  const tabs = [...tabsEl.querySelectorAll(".tab")];
+  const i = tabs.findIndex(t => t.getAttribute("aria-selected") === "true");
+  const n = tabs[(i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
+  show(n.dataset.id); tabsEl.querySelector(`[data-id="${n.dataset.id}"]`).focus();
+});
+function fromHash() {
+  const h = location.hash.slice(1);
+  if (TOOLS.some(t => t.id === h)) {
+    show(h, true);
+    document.getElementById("tools").scrollIntoView();
+  } else if (h === "" || h === "tools") show("all", true);
+}
+window.addEventListener("hashchange", fromHash);
+fromHash();
+
+/* Theme toggle */
+const themeBtn = document.getElementById("themeBtn");
+try { const saved = localStorage.getItem("theme"); if (saved) document.documentElement.dataset.theme = saved; } catch (e) {}
+themeBtn.addEventListener("click", () => {
+  const dark = document.documentElement.dataset.theme
+    ? document.documentElement.dataset.theme === "dark"
+    : matchMedia("(prefers-color-scheme: dark)").matches;
+  const next = dark ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("theme", next); } catch (e) {}
+});
+
+/* Hero: a slowly rotating stack of compartment trays, drawn with plain canvas */
+(function () {
+  const cv = document.getElementById("hero3d"), ctx = cv.getContext("2d");
+  const W = cv.width, H = cv.height;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+  // Build line segments for one tray: outer box + compartment dividers
+  function tray(y0, h, w, d, cols, rows) {
+    const s = [], x = w / 2, z = d / 2, y1 = y0 + h;
+    const c = [[-x, -z], [x, -z], [x, z], [-x, z]];
+    for (let i = 0; i < 4; i++) {
+      const [a, b] = [c[i], c[(i + 1) % 4]];
+      s.push([[a[0], y0, a[1]], [b[0], y0, b[1]], 1]);
+      s.push([[a[0], y1, a[1]], [b[0], y1, b[1]], 1]);
+      s.push([[a[0], y0, a[1]], [a[0], y1, a[1]], 1]);
+    }
+    const ph = y0 + h * 0.8;
+    for (let i = 1; i < cols; i++) {
+      const px = -x + (w * i) / cols;
+      s.push([[px, ph, -z], [px, ph, z], 0]);
+      s.push([[px, y0, -z], [px, ph, -z], 0]);
+      s.push([[px, y0, z], [px, ph, z], 0]);
+    }
+    for (let j = 1; j < rows; j++) {
+      const pz = -z + (d * j) / rows;
+      s.push([[-x, ph, pz], [x, ph, pz], 0]);
+      s.push([[-x, y0, pz], [-x, ph, pz], 0]);
+      s.push([[x, y0, pz], [x, ph, pz], 0]);
+    }
+    return s;
+  }
+  const layers = [
+    { y: -1.05, cols: 3, rows: 2 },
+    { y: -0.3, cols: 2, rows: 2 },
+    { y: 0.45, cols: 4, rows: 1 }
+  ];
+
+  function project(p, a, lift) {
+    const [x, y0, z] = p, y = y0 + lift;
+    const ca = Math.cos(a), sa = Math.sin(a);
+    let X = x * ca - z * sa, Z = x * sa + z * ca;
+    const tilt = 0.52, ct = Math.cos(tilt), st = Math.sin(tilt);
+    const Y = y * ct - Z * st; Z = y * st + Z * ct;
+    const f = 4.2 / (4.2 + Z);
+    return [W / 2 + X * f * W * 0.27, H / 2 - Y * f * W * 0.27, Z];
+  }
+
+  let t0 = performance.now();
+  function frame(now) {
+    const t = (now - t0) / 1000;
+    const a = reduce ? 0.7 : 0.7 + t * 0.25;
+    ctx.clearRect(0, 0, W, H);
+    const accent = css("--accent"), a2 = css("--accent-2"), a3 = css("--accent-3");
+    const cols = [accent, a2, a3];
+
+    // floor shadow
+    const sh = ctx.createRadialGradient(W / 2, H * 0.8, 10, W / 2, H * 0.8, W * 0.38);
+    sh.addColorStop(0, "rgba(40,50,90,.18)"); sh.addColorStop(1, "rgba(40,50,90,0)");
+    ctx.fillStyle = sh; ctx.beginPath(); ctx.ellipse(W / 2, H * 0.8, W * 0.38, H * 0.09, 0, 0, Math.PI * 2); ctx.fill();
+
+    layers.forEach((L, i) => {
+      const lift = reduce ? i * 0.12 : (Math.sin(t * 1.1 + i * 0.9) * 0.5 + 0.5) * 0.16 * (i + 1);
+      const segs = tray(L.y, 0.62, 1.9, 1.3, L.cols, L.rows);
+      // translucent top/bottom faces
+      const x = 0.95, z = 0.65;
+      [L.y, L.y + 0.62].forEach((yy, k) => {
+        const pts = [[-x, yy, -z], [x, yy, -z], [x, yy, z], [-x, yy, z]].map(p => project(p, a, lift));
+        ctx.beginPath(); pts.forEach((p, n) => n ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath();
+        ctx.fillStyle = cols[i] + (k ? "22" : "40"); ctx.fill();
+      });
+      segs.forEach(([p, q, outer]) => {
+        const A = project(p, a, lift), B = project(q, a, lift);
+        ctx.strokeStyle = cols[i]; ctx.globalAlpha = outer ? 0.95 : 0.55;
+        ctx.lineWidth = outer ? 3.2 : 2; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.stroke();
+      });
+      ctx.globalAlpha = 1;
+    });
+    if (!reduce) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  if (reduce) new MutationObserver(() => requestAnimationFrame(frame)).observe(document.documentElement, { attributes: true });
+})();
+</script>
+</body>
+</html>
