@@ -4,4 +4,4 @@ Parametric, stackable, lightweight trays and boxes for 3D printing, with lids, c
 
 **Live site:** https://rahul576.github.io/3d-designing-tools/tray-generator/
 
-The app is a single offline HTML file (`tray-generator-v7.html`, also served as `index.html`). Nothing is uploaded; it runs entirely in the browser. See [README.txt](README.txt) for the full feature guide and folder layout.
+The app is a single offline HTML file. `index.html` is always the latest version; every version is kept under `versions/vN/index.html` (v2 to v7). Nothing is uploaded; it runs entirely in the browser. See [README.txt](README.txt) for the full feature guide and folder layout.
