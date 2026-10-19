@@ -1,0 +1,1243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tray Generator</title>
+<style>
+:root{
+  --bg-canvas:#cfd1d4; --grid:#b9bcc0; --grid-major:#a9adb2;
+  --panel:#ffffff; --panel-2:#f3f4f6; --line:#e3e5e8; --text:#1d2127; --muted:#6b7280;
+  --accent:#2b78c5; --accent-soft:#d6e7f8; --pill:#16181b; --pill-ink:#f5f5f5;
+  --warn-bg:#fff4d6; --warn-ink:#7a5200; --track:#e6e8eb; --thumb:#ffffff;
+  --model:#2b78c5; --model-2:#4d93d6; --model-inner:#17426d; --edge:#9cc6ef; --lid:#e8a33d; --sel:#f2b544;
+  --cell:#f7f8fa; --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg-canvas:#2a2d31; --grid:#363a3f; --grid-major:#41464c;
+    --panel:#17191c; --panel-2:#202327; --line:#2c3035; --text:#e8eaed; --muted:#9aa1ab; --accent-soft:#1d3a57;
+    --pill:#f1f2f4; --pill-ink:#16181b; --warn-bg:#3a2f12; --warn-ink:#f3cf7a; --track:#2c3035; --thumb:#e8eaed;
+    --edge:#7fb5ea; --model-inner:#0f2c4a; --cell:#24282d;
+  }
+}
+:root[data-theme="dark"]{
+  --bg-canvas:#2a2d31; --grid:#363a3f; --grid-major:#41464c;
+  --panel:#17191c; --panel-2:#202327; --line:#2c3035; --text:#e8eaed; --muted:#9aa1ab; --accent-soft:#1d3a57;
+  --pill:#f1f2f4; --pill-ink:#16181b; --warn-bg:#3a2f12; --warn-ink:#f3cf7a; --track:#2c3035; --thumb:#e8eaed;
+  --edge:#7fb5ea; --model-inner:#0f2c4a; --cell:#24282d;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:var(--bg-canvas);color:var(--text);font:13px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+.app{display:flex;height:100%}
+aside{width:272px;flex:none;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:16px 14px 12px}
+.brand h1{font:600 14px var(--mono);letter-spacing:.06em;margin:0;flex:1}
+.icon-btn{border:0;background:transparent;color:var(--text);width:28px;height:28px;border-radius:7px;cursor:pointer;display:grid;place-items:center}
+.icon-btn:hover{background:var(--panel-2)} .icon-btn:disabled{opacity:.3;cursor:default;background:transparent}
+.sec{padding:12px 14px;border-top:1px solid var(--line)}
+.sec h2{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:2px 0 10px;display:flex;justify-content:space-between;align-items:baseline}
+.sec h2 span{font-weight:400;text-transform:none;letter-spacing:0}
+.field{margin-bottom:14px} .field:last-child{margin-bottom:0}
+.field > label{display:flex;align-items:center;gap:4px;margin-bottom:6px}
+.field label small{color:var(--muted);font-size:10px}
+.help{display:inline-grid;place-items:center;width:14px;height:14px;border:1px solid var(--muted);border-radius:50%;font-size:9px;color:var(--muted);cursor:help}
+.slider{display:flex;align-items:center;height:24px;border-radius:12px;background:var(--track)}
+.slider input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:0;height:24px;background:transparent;margin:0;padding:0 2px;cursor:pointer}
+.slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--thumb);border:1px solid #c9ccd1;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.slider input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--thumb);border:1px solid #c9ccd1}
+.slider input[type=number]{width:52px;border:0;background:transparent;color:var(--text);font:12px var(--mono);text-align:right;padding-right:10px;-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel-2)}
+.seg.four{grid-template-columns:repeat(4,1fr)}
+.seg button{border:0;background:transparent;color:var(--muted);padding:8px 2px 7px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px}
+.seg button[aria-pressed=true]{background:var(--panel);color:var(--text);box-shadow:0 0 0 1px var(--line)}
+.seg button:disabled{opacity:.35;cursor:not-allowed}
+.hint{color:var(--muted);font-size:11px;margin-top:6px}
+.stepper{display:flex;align-items:center;justify-content:space-between;background:var(--track);border-radius:12px;height:28px;padding:0 3px}
+.stepper button{width:24px;height:22px;border:0;border-radius:8px;background:var(--panel);color:var(--text);cursor:pointer;font-size:14px;line-height:1}
+.stepper output{font:12px var(--mono)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btnrow{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:6px;margin-top:10px}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:8px;height:30px;cursor:pointer;font:inherit;font-size:12px}
+.btn:hover:not(:disabled){background:var(--panel-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover:not(:disabled){filter:brightness(1.07);background:var(--accent)}
+.btn:disabled{opacity:.4;cursor:default}
+select{width:100%;height:28px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);padding:0 6px;font:inherit}
+.stats{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:12px;margin:0}
+.stats dt{color:var(--muted)} .stats dd{margin:0;text-align:right;font-family:var(--mono)}
+.weight{font:600 22px var(--mono);margin:2px 0 8px} .weight small{font-size:12px;color:var(--muted);font-weight:400}
+/* layout editor */
+.lay-wrap{display:flex;justify-content:center;background:var(--panel-2);border-radius:8px;padding:8px;touch-action:none}
+#laySvg{display:block;max-width:100%;user-select:none}
+#laySvg .leaf{fill:var(--cell);cursor:pointer;transition:fill .12s}
+#laySvg .leaf:hover{fill:var(--accent-soft)}
+#laySvg .leaf.sel{fill:var(--sel)}
+#laySvg .div-hit{fill:transparent}
+#laySvg .div-hit.x{cursor:col-resize} #laySvg .div-hit.y{cursor:row-resize}
+#laySvg .div-hit:hover,#laySvg .div-hit.drag{fill:rgba(242,181,68,.55)}
+#laySvg text{font-family:var(--mono);fill:var(--muted);pointer-events:none}
+.selinfo{font-size:12px;margin:8px 0 8px;min-height:16px}
+.selinfo b{font-weight:600}
+main{flex:1;position:relative;min-width:0}
+canvas#view{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+canvas#view.pick{cursor:pointer}
+.tabs{position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;gap:2px;padding:3px;border-radius:9px;background:rgba(43,120,197,.14);backdrop-filter:blur(6px)}
+.tabs button{border:0;background:transparent;color:var(--text);font:12px var(--mono);letter-spacing:.04em;padding:7px 12px;border-radius:7px;cursor:pointer;display:flex;align-items:center;gap:7px}
+.tabs button[aria-selected=true]{background:var(--panel);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.chip{position:absolute;top:66px;left:50%;transform:translateX(-50%);background:var(--panel);border-radius:8px;padding:7px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.12);white-space:nowrap}
+.dl{position:absolute;top:18px;right:18px}
+.btn-dark{border:0;background:#16181b;color:#fff;font:500 14px system-ui,sans-serif;padding:10px 16px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.btn-dark:hover{background:#000}
+.menu{position:absolute;right:0;top:46px;background:var(--panel);border-radius:8px;box-shadow:0 4px 18px rgba(0,0,0,.2);padding:5px;min-width:220px;z-index:5}
+.menu button{display:flex;justify-content:space-between;width:100%;border:0;background:transparent;color:var(--text);padding:9px 10px;border-radius:6px;cursor:pointer;font:inherit;text-align:left}
+.menu button:hover{background:var(--panel-2)} .menu button small{color:var(--muted);font-family:var(--mono)}
+.btn-ghost{border:0;background:var(--panel);color:var(--text);padding:10px;border-radius:6px;cursor:pointer;display:grid;place-items:center;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.pill{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;background:var(--pill);color:var(--pill-ink);border-radius:26px;padding:6px 8px;user-select:none;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.pill .chev{border:0;background:transparent;color:inherit;opacity:.7;cursor:pointer;width:22px;height:30px;font-size:16px;border-radius:6px}
+.pill .chev:hover{opacity:1;background:rgba(127,127,127,.2)}
+.pill .mid{display:flex;flex-direction:column;align-items:center;padding:0 4px}
+.pill .lab{font:11px var(--mono);letter-spacing:.06em;opacity:.8}
+.pill .val{display:flex;align-items:baseline;gap:4px;font:600 19px var(--mono)}
+.pill .val input{width:58px;border:0;background:transparent;color:inherit;font:inherit;text-align:center;padding:0;-moz-appearance:textfield}
+.pill .val input:focus{outline:1px dashed currentColor;border-radius:4px}
+.pill .unit{font-size:10px;opacity:.7;font-weight:400}
+.toolbar{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:4px;background:var(--panel);padding:5px;border-radius:9px;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.toolbar label{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;white-space:nowrap}
+.toolbar label:hover{background:var(--panel-2)}
+.toolbar label.off{opacity:.4;pointer-events:none}
+.section{position:absolute;right:18px;top:84px;width:280px;background:var(--panel);border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.16);padding:10px 12px 8px}
+.section h3{margin:0 0 6px;font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.section svg{display:block;width:100%;height:auto;border-radius:6px;background:var(--panel-2)}
+.section .legend{display:flex;gap:12px;font-size:11px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.section .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.warns{position:absolute;left:18px;bottom:18px;display:flex;flex-direction:column;gap:6px;max-width:min(420px,40%)}
+.warn{background:var(--warn-bg);color:var(--warn-ink);font-size:12px;padding:7px 10px;border-radius:7px}
+.reset{position:absolute;right:18px;bottom:18px}
+.offline{color:var(--muted);font-size:11px;padding:10px 14px 16px;margin-top:auto}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+@media (max-width:720px){
+  .app{flex-direction:column-reverse}
+  aside{width:100%;height:48%;border-right:0;border-top:1px solid var(--line)}
+  main{height:52%;flex:none}
+  .tabs{top:10px} .dl{top:auto;bottom:14px;right:12px} .btn-dark span{display:none} .menu{top:auto;bottom:46px}
+  .warns{bottom:64px;left:12px;max-width:70%} .reset{display:none}
+  .toolbar{bottom:62px;flex-wrap:wrap;justify-content:center;width:calc(100% - 24px)}
+  .pill{padding:3px 4px;gap:0} .pill .val{font-size:15px} .pill .val input{width:44px} .pill .chev{width:18px;height:24px}
+  .section{top:auto;bottom:118px;right:10px;width:200px} .chip{top:54px;white-space:normal;width:calc(100% - 24px);text-align:center}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand">
+    <svg width="34" height="24" viewBox="0 0 34 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M2 9 17 2l15 7-15 7z"/><path d="M2 9v5l15 7 15-7V9"/><path d="M9.5 5.5 24.5 12.5"/></svg>
+    <h1>Tray</h1>
+    <button class="icon-btn" id="undo" title="Undo (Ctrl+Z)" aria-label="Undo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
+    <button class="icon-btn" id="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button>
+  </div>
+
+  <div class="sec" style="border-top:0">
+    <div class="field" data-f="t"><label>Thickness <small>(mm)</small> <span class="help" title="Wall, floor, partition and lid thickness. 0.8 mm = two lines with a 0.4 mm nozzle.">?</span></label>
+      <div class="slider"><input type="range" min="0.4" max="3" step="0.1" aria-label="Thickness"><input type="number" min="0.4" max="5" step="0.1" aria-label="Thickness value"></div></div>
+    <div class="field" data-f="f"><label>Fillet <small>(mm)</small> <span class="help" title="Rounds the inside corners and the bottom edges of each compartment.">?</span></label>
+      <div class="slider"><input type="range" min="0.2" max="10" step="0.1" aria-label="Fillet"><input type="number" min="0.2" max="20" step="0.1" aria-label="Fillet value"></div></div>
+    <div class="field" data-f="hp"><label>Partition Height <small>(mm)</small> <span class="help" title="Height of the dividers, measured from the bottom of the tray.">?</span></label>
+      <div class="slider"><input type="range" min="1" max="20" step="0.5" aria-label="Partition height"><input type="number" min="1" max="300" step="0.5" aria-label="Partition height value"></div></div>
+    <div class="field"><label>Stack <span class="help" title="Stackable trays get a 45° chamfer on the bottom edge so they drop into the tray below.">?</span></label>
+      <div class="seg" role="group" aria-label="Stack">
+        <button id="unstack" aria-pressed="true"><svg width="26" height="20" viewBox="0 0 26 20" fill="currentColor" opacity=".75"><path d="M13 2 24 7 13 12 2 7z"/><path d="M2 8.5 13 13.5l11-5V11l-11 5L2 11z" opacity=".7"/></svg>unstackable</button>
+        <button id="stackbtn" aria-pressed="false"><svg width="26" height="20" viewBox="0 0 26 20" fill="currentColor" opacity=".75"><path d="M13 1 24 5.5 13 10 2 5.5z"/><path d="M2 7 13 11.5 24 7v2L13 13.5 2 9z" opacity=".7"/><path d="M4 11.5 13 15.5l9-4v2L13 17.5 4 13.5z" opacity=".55"/></svg>stackable</button>
+      </div>
+    </div>
+    <div class="field" data-f="s" id="chamferField" hidden><label>Stack chamfer <small>(mm)</small> <span class="help" title="Size of the 45° bottom chamfer. Bigger = deeper, more secure nesting.">?</span></label>
+      <div class="slider"><input type="range" min="1.2" max="6" step="0.1" aria-label="Stack chamfer"><input type="number" min="1" max="10" step="0.1" aria-label="Stack chamfer value"></div>
+      <div class="hint" id="nestHint"></div></div>
+  </div>
+
+  <div class="sec" id="layoutSec">
+    <h2>Layout <span>click · shift-click · drag dividers</span></h2>
+    <div class="lay-wrap"><svg id="laySvg" aria-label="Top view of the compartments. Click to select."></svg></div>
+    <div class="selinfo" id="selInfo"></div>
+    <div class="row2">
+      <div><div class="hint" style="margin:0 0 5px">Columns ↔</div><div class="stepper" data-g="sc"><button aria-label="Fewer columns">−</button><output>2</output><button aria-label="More columns">+</button></div></div>
+      <div><div class="hint" style="margin:0 0 5px">Rows ↕</div><div class="stepper" data-g="sr"><button aria-label="Fewer rows">−</button><output>1</output><button aria-label="More rows">+</button></div></div>
+    </div>
+    <div class="btnrow">
+      <button class="btn primary" id="splitBtn">Split</button>
+      <button class="btn" id="mergeBtn" title="Remove the partitions between the selected compartments">Merge</button>
+      <button class="btn" id="equalBtn" title="Make neighbouring compartments the same size">Equal</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Lid</h2>
+    <div class="seg four" role="group" aria-label="Lid style">
+      <button data-lid="none" aria-pressed="true"><svg width="22" height="18" viewBox="0 0 22 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6v9h16V6"/></svg>none</button>
+      <button data-lid="inset" aria-pressed="false"><svg width="22" height="18" viewBox="0 0 22 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6v9h16V6"/><path d="M2 4h18M5 4v4M17 4v4" stroke-width="2"/></svg>inset</button>
+      <button data-lid="cap" aria-pressed="false"><svg width="22" height="18" viewBox="0 0 22 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6v9h14V6"/><path d="M1 8V3h20v5" stroke-width="2"/></svg>cap</button>
+      <button data-lid="stack" aria-pressed="false"><svg width="22" height="18" viewBox="0 0 22 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8v8h16V8"/><path d="M5 2v4h12V2" stroke-width="2"/></svg>stacking</button>
+    </div>
+    <div class="hint" id="lidHint"></div>
+    <div id="lidFields">
+      <div class="field" data-f="lc" style="margin-top:12px"><label>Clearance <small>(mm)</small> <span class="help" title="Gap per side between lid and tray. 0.2 is a snug push fit; use 0.3 if it is too tight on your printer.">?</span></label>
+        <div class="slider"><input type="range" min="0.05" max="0.6" step="0.05" aria-label="Lid clearance"><input type="number" min="0.05" max="1" step="0.05" aria-label="Lid clearance value"></div></div>
+      <div class="field" data-f="lL"><label>Skirt depth <small>(mm)</small> <span class="help" title="How far the lid's rim reaches down into (inset) or around (cap) the tray.">?</span></label>
+        <div class="slider"><input type="range" min="1" max="15" step="0.5" aria-label="Skirt depth"><input type="number" min="1" max="40" step="0.5" aria-label="Skirt depth value"></div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Estimate</h2>
+    <div class="weight" id="weight">–</div>
+    <dl class="stats" id="stats"></dl>
+    <div class="field" style="margin:12px 0 0"><label>Material</label>
+      <select id="material">
+        <option value="1.24">PLA · 1.24 g/cm³</option><option value="1.27">PETG · 1.27 g/cm³</option>
+        <option value="1.04">ABS · 1.04 g/cm³</option><option value="1.07">ASA · 1.07 g/cm³</option><option value="1.21">TPU · 1.21 g/cm³</option>
+      </select></div>
+  </div>
+  <div class="offline">Works offline. Weight assumes solid walls (2 perimeters at 0.8 mm, no infill needed). Lids print top-face down.</div>
+</aside>
+
+<main>
+  <canvas id="view" aria-label="3D preview of the tray"></canvas>
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="size" aria-selected="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h13v13H3z"/><path d="M3 8l5-5h13v13l-5 5M16 8l5-5"/></svg>Size</button>
+    <button role="tab" data-tab="grid" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18M3 12h18"/></svg>Grid</button>
+    <button role="tab" data-tab="preview" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 9l10-5 10 5-10 5z"/><path d="M2 13l10 5 10-5M2 17l10 5 10-5"/></svg>Preview</button>
+  </div>
+  <div class="chip" id="gridChip" hidden>Click compartments to select them (Shift = several), then Split / Merge in the Layout panel</div>
+  <div class="dl">
+    <button class="btn-dark" id="download" title="Download STL" aria-haspopup="menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg><span>Download</span></button>
+    <div class="menu" id="dlMenu" role="menu" hidden>
+      <button role="menuitem" data-dl="tray">Tray <small>.stl</small></button>
+      <button role="menuitem" data-dl="lid">Lid <small>.stl</small></button>
+      <button role="menuitem" data-dl="both">Tray + lid, one file <small>.stl</small></button>
+    </div>
+  </div>
+
+  <div class="pill" id="pW" data-k="W"><button class="chev" data-d="-1" aria-label="Decrease width">‹</button><div class="mid"><span class="lab">Width</span><span class="val"><input type="number" step="1" aria-label="Width"><span class="unit">mm</span></span></div><button class="chev" data-d="1" aria-label="Increase width">›</button></div>
+  <div class="pill" id="pD" data-k="D"><button class="chev" data-d="-1" aria-label="Decrease depth">‹</button><div class="mid"><span class="lab">Depth</span><span class="val"><input type="number" step="1" aria-label="Depth"><span class="unit">mm</span></span></div><button class="chev" data-d="1" aria-label="Increase depth">›</button></div>
+  <div class="pill" id="pH" data-k="H"><button class="chev" data-d="-1" aria-label="Decrease height">‹</button><div class="mid"><span class="lab">Height</span><span class="val"><input type="number" step="1" aria-label="Height"><span class="unit">mm</span></span></div><button class="chev" data-d="1" aria-label="Increase height">›</button></div>
+
+  <div class="toolbar" id="toolbar" hidden>
+    <label id="optStackL"><input type="checkbox" id="optStack"> 2 stacked</label>
+    <label id="optLidL"><input type="checkbox" id="optLid" checked> Lid on</label>
+    <label><input type="checkbox" id="optCut"> Section cut</label>
+    <label><input type="checkbox" id="optEdges" checked> Edges</label>
+  </div>
+  <div class="section" id="section" hidden>
+    <h3 id="secTitle">Section</h3>
+    <svg id="secSvg" viewBox="0 0 10 10" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Cross-section of the tray wall"></svg>
+    <div class="legend" id="secLegend"></div>
+  </div>
+  <div class="warns" id="warns" aria-live="polite"></div>
+  <button class="btn-ghost reset" id="resetView" title="Reset view (double-click canvas)" aria-label="Reset view"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+</main>
+</div>
+
+<script>
+/* Tray geometry engine — exact, watertight, z-monotone tray + lid meshes.
+ * Units: mm. X = width, Y = depth, Z = up.  Works in browser and Node.
+ *
+ * Every surface is a loft between rounded-rectangle contours that share the
+ * same vertex layout, so results are closed and manifold without any CSG.
+ *
+ * Compartment layout is a tree of splits (any region can be split on its own):
+ *   leaf  = {}                                   (one compartment)
+ *   split = { d: 'x'|'y', w: [weights], c: [child nodes] }
+ */
+(function (root) {
+  'use strict';
+  const SQ2 = Math.SQRT2, PI = Math.PI, EPS = 1e-6, MIN_LEAF = 3;
+
+  const DEFAULTS = {
+    W: 80, D: 160, H: 20, t: 0.8, f: 1, hp: 18,
+    layout: null, nx: 1, ny: 2,
+    stack: false, s: 2.4, seg: 0,
+    lid: null            // { style: 'inset'|'cap'|'stack', c: 0.2, L: 4 }
+  };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const r2 = v => Math.round(v * 100) / 100;
+
+  /* ---------------- layout tree ---------------- */
+  function gridTree(nx, ny) {
+    nx = Math.max(1, Math.round(nx || 1)); ny = Math.max(1, Math.round(ny || 1));
+    const leaves = n => Array.from({ length: n }, () => ({}));
+    if (nx > 1 && ny > 1) return { d: 'x', w: Array(nx).fill(1), c: Array.from({ length: nx }, () => ({ d: 'y', w: Array(ny).fill(1), c: leaves(ny) })) };
+    if (nx > 1) return { d: 'x', w: Array(nx).fill(1), c: leaves(nx) };
+    if (ny > 1) return { d: 'y', w: Array(ny).fill(1), c: leaves(ny) };
+    return {};
+  }
+  const isSplit = n => !!(n && (n.d === 'x' || n.d === 'y') && Array.isArray(n.c) && n.c.length >= 2);
+
+  // returns { leaves:[{r:[x0,x1,y0,y1], path}], dividers:[...], hidden:bool }
+  function layoutTree(tree, rect, t) {
+    const leaves = [], dividers = []; let hidden = false;
+    (function rec(node, r, path) {
+      if (!isSplit(node)) { leaves.push({ r, path }); return; }
+      const n = node.c.length, ax = node.d === 'x' ? 0 : 1;
+      const lo = r[ax * 2], hi = r[ax * 2 + 1], avail = hi - lo - (n - 1) * t;
+      const w = (Array.isArray(node.w) && node.w.length === n ? node.w : Array(n).fill(1)).map(v => Math.max(1e-6, Number(v) || 1));
+      const sum = w.reduce((a, b) => a + b, 0), sizes = w.map(v => avail * v / sum);
+      const other = ax === 0 ? [r[2], r[3]] : [r[0], r[1]];
+      if (avail <= 0 || Math.min(...sizes) < MIN_LEAF || other[1] - other[0] < MIN_LEAF) { hidden = true; leaves.push({ r, path }); return; }
+      let pos = lo;
+      for (let i = 0; i < n; i++) {
+        const cr = r.slice(); cr[ax * 2] = pos; cr[ax * 2 + 1] = i === n - 1 ? hi : pos + sizes[i];
+        rec(node.c[i], cr, path === '' ? String(i) : path + '.' + i);
+        if (i < n - 1) dividers.push({ path, i, ax, center: cr[ax * 2 + 1] + t / 2, from: other[0], to: other[1], lo, hi, sizes, t });
+        pos = cr[ax * 2 + 1] + t;
+      }
+    })(tree, rect, '');
+    return { leaves, dividers, hidden };
+  }
+
+  /* ---------------- parameter resolution ---------------- */
+  function resolve(p) {
+    const q = Object.assign({}, DEFAULTS, p || {});
+    const warn = [];
+    const num = (k, lo, hi) => {
+      let v = Number(q[k]); if (!isFinite(v)) v = DEFAULTS[k];
+      const c = clamp(v, lo, hi);
+      if (Math.abs(c - v) > 1e-9) warn.push(`${k} limited to ${r2(c)}`);
+      q[k] = c;
+    };
+    num('t', 0.4, 5); num('W', 10, 600); num('D', 10, 600); num('H', 0.1, 300);
+    q.stack = !!q.stack;
+    const t = q.t;
+    q.tree = q.layout ? q.layout : gridTree(q.nx, q.ny);
+    const lay = layoutTree(q.tree, [t, q.W - t, t, q.D - t], t);
+    if (lay.hidden) warn.push('some partitions skipped – their compartments would be smaller than 3 mm');
+    q.leaves = lay.leaves; q.dividers = lay.dividers;
+    q.single = q.leaves.length === 1;
+    let minW = 1e9, minD = 1e9;
+    for (const L of q.leaves) { minW = Math.min(minW, L.r[1] - L.r[0]); minD = Math.min(minD, L.r[3] - L.r[2]); }
+    q.minLeaf = Math.min(minW, minD);
+
+    const fmax = Math.max(0.2, q.minLeaf / 2 - 0.3);
+    num('f', 0.2, fmax);
+
+    if (q.stack) {
+      num('s', t + 0.4, Math.max(t + 0.4, q._quietH ? 8 : Math.min(8, Math.max(q.H, 6) / 3)));
+      q.nest = q.s - t; q.cin = q.s + (SQ2 - 2) * t;
+    } else { q.nest = 0; q.cin = 0; }
+
+    // stacking chamfer must fit inside the smallest wall-touching compartment
+    if (q.stack) {
+      let need = 1e9;
+      for (const L of q.leaves) {
+        const o = outerFlags(L.r, q);
+        const w = L.r[1] - L.r[0], h = L.r[3] - L.r[2];
+        const nx = (o[1] ? 1 : 0) + (o[3] ? 1 : 0), ny = (o[0] ? 1 : 0) + (o[2] ? 1 : 0);
+        if (nx) need = Math.min(need, (w - 1.2) / nx);
+        if (ny) need = Math.min(need, (h - 1.2) / ny);
+      }
+      if (q.cin > need) {
+        q.cin = Math.max(0.2, need); q.s = q.cin - (SQ2 - 2) * t;
+        if (q.s < t + 0.2) { q.stack = false; q.s = 0; q.cin = 0; q.nest = 0; warn.push('stacking disabled – compartments too small'); }
+        else { q.nest = q.s - t; warn.push(`stack chamfer reduced to ${r2(q.s)} to fit small compartments`); }
+      }
+    }
+    q.fb = q.f;
+
+    const depth = Math.max(q.fb, q.stack ? q.cin : 0);
+    const Hmin = t + depth + 1.5 + (q.stack ? q.nest : 0);
+    if (q.H < Hmin) { if (!q._quietH) warn.push(`height raised to ${r2(Hmin)}`); q.H = Hmin; }
+    if (q.single) q.hp = q.H;
+    else {
+      const hpMax = q.stack ? q.H - q.nest - 0.2 : q.H, hpMin = t + depth + 0.5;
+      let hp = Number(q.hp); if (!isFinite(hp)) hp = q.H;
+      const c = clamp(hp, hpMin, Math.max(hpMin, hpMax));
+      if (Math.abs(c - hp) > 1e-9) warn.push(q.stack && hp > hpMax ? `partition height limited to ${r2(c)} so trays can stack` : `partition height limited to ${r2(c)}`);
+      q.hp = c;
+    }
+    q.N = q.seg > 0 ? Math.round(q.seg) : (q.f + t < 1.5 ? 6 : q.f + t < 4 ? 8 : 12);
+    q.Nf = q.fb < 1 ? 3 : q.fb < 3 ? 6 : 8;
+    q.warnings = warn;
+    return q;
+  }
+  function outerFlags(r, q) {   // B, R, T, L sides on the outer wall?
+    return [r[2] <= q.t + EPS, r[1] >= q.W - q.t - EPS, r[3] >= q.D - q.t - EPS, r[0] <= q.t + EPS];
+  }
+
+  /* ---------------- contour helpers ---------------- */
+  // b = [x0,x1,y0,y1]; corners 0=BL 1=BR 2=TR 3=TL; sides 0=B 1=R 2=T 3=L; CCW seen from +Z
+  const snap = v => (Math.abs(v) < 1e-12 ? 0 : v);
+  function arcPt(b, k, r, a) {
+    const cx = (k === 0 || k === 3) ? b[0] + r : b[1] - r, cy = (k === 0 || k === 1) ? b[2] + r : b[3] - r;
+    return [cx + r * snap(Math.cos(a)), cy + r * snap(Math.sin(a))];
+  }
+  function sidePt(b, s, u) { return s === 0 ? [u, b[2]] : s === 1 ? [b[1], u] : s === 2 ? [u, b[3]] : [b[0], u]; }
+  function arcDesc(k, N) { const out = [], a0 = PI + k * PI / 2; for (let j = 0; j <= N; j++) out.push({ k, a: a0 + (j / N) * PI / 2 }); return out; }
+  function contour(desc, b, r, z) {
+    return desc.map(d => {
+      let p;
+      if (d.k !== undefined) p = arcPt(b, d.k, Array.isArray(r) ? r[d.k] : r, d.a);
+      else {
+        const rr = Array.isArray(r) ? Math.max(...r) : r, h = d.s === 0 || d.s === 2;
+        p = sidePt(b, d.s, clamp(d.u, h ? b[0] + rr : b[2] + rr, h ? b[1] - rr : b[3] - rr));
+      }
+      return [p[0], p[1], z];
+    });
+  }
+
+  /* ---------------- mesh assembly helpers ---------------- */
+  function MeshBuilder() {
+    const tris = [];
+    const tri = (a, b, c) => {
+      const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+      const x = uy * vz - uz * vy, y = uz * vx - ux * vz, z = ux * vy - uy * vx;
+      if (x * x + y * y + z * z < 1e-16) return; tris.push(a, b, c);
+    };
+    return {
+      tri,
+      loftOut(L, U) { const n = L.length; for (let i = 0; i < n; i++) { const j = (i + 1) % n; tri(L[i], L[j], U[j]); tri(L[i], U[j], U[i]); } },
+      loftIn(L, U) { const n = L.length; for (let i = 0; i < n; i++) { const j = (i + 1) % n; tri(L[i], U[j], L[j]); tri(L[i], U[i], U[j]); } },
+      zipUp(E, C) { const n = E.length; for (let i = 0; i < n; i++) { const j = (i + 1) % n; tri(E[i], E[j], C[j]); tri(E[i], C[j], C[i]); } },
+      fan(P, up) {
+        let cx = 0, cy = 0; for (const p of P) { cx += p[0]; cy += p[1]; }
+        const c = [cx / P.length, cy / P.length, P[0][2]], n = P.length;
+        for (let i = 0; i < n; i++) { const j = (i + 1) % n; up ? tri(c, P[i], P[j]) : tri(c, P[j], P[i]); }
+      },
+      finish() {
+        const map = new Map(), pos = [], idx = [];
+        const vid = p => {
+          const k = Math.round(p[0] * 1e5) + ',' + Math.round(p[1] * 1e5) + ',' + Math.round(p[2] * 1e5);
+          let i = map.get(k); if (i === undefined) { i = pos.length / 3; map.set(k, i); pos.push(p[0], p[1], p[2]); } return i;
+        };
+        for (let i = 0; i < tris.length; i += 3) { const a = vid(tris[i]), b = vid(tris[i + 1]), c = vid(tris[i + 2]); if (a !== b && b !== c && a !== c) idx.push(a, b, c); }
+        let vol = 0;
+        for (let i = 0; i < idx.length; i += 3) {
+          const a = idx[i] * 3, b = idx[i + 1] * 3, c = idx[i + 2] * 3;
+          vol += (pos[a] * (pos[b + 1] * pos[c + 2] - pos[b + 2] * pos[c + 1]) - pos[a + 1] * (pos[b] * pos[c + 2] - pos[b + 2] * pos[c]) + pos[a + 2] * (pos[b] * pos[c + 1] - pos[b + 1] * pos[c])) / 6;
+        }
+        return { positions: new Float32Array(pos), indices: new Uint32Array(idx), volume: vol };
+      }
+    };
+  }
+
+  /* ---------------- compartment profiles ---------------- */
+  function cupLevels(q) {
+    const { t, fb, Nf, stack, cin } = q, ztop = q.single ? q.H : q.hp, s = [ztop, t];
+    for (let k = 0; k < Nf; k++) s.push(t + fb * (1 - Math.sin((k / Nf) * PI / 2)));
+    if (stack) s.push(t + cin);
+    return s.filter(z => z <= ztop + 1e-9 && z >= t - 1e-9).sort((a, b) => b - a).filter((z, i, a) => i === 0 || a[i - 1] - z > 1e-6);
+  }
+  function cupProfile(q, outer) {
+    const { t, fb, f, stack, cin } = q;
+    const roundIn = R => z => { if (R <= 0 || z >= t + R) return 0; const dz = t + R - z; return R - Math.sqrt(Math.max(R * R - dz * dz, 0)); };
+    const chamIn = C => z => (z >= t + C ? 0 : C - (z - t));
+    const prof = outer.map(o => (stack && o ? chamIn(cin) : roundIn(fb)));
+    return z => {
+      const i = prof.map(fn => fn(z));
+      const rad = [Math.max(i[3], i[0]), Math.max(i[0], i[1]), Math.max(i[1], i[2]), Math.max(i[2], i[3])].map(m => Math.max(f - m, 0.05));
+      return { i, rad };
+    };
+  }
+  function cupsFit(q) {
+    const lv = cupLevels(q);
+    for (const L of q.leaves) {
+      const pf = cupProfile(q, outerFlags(L.r, q)), cw = L.r[1] - L.r[0], ch = L.r[3] - L.r[2];
+      for (const z of lv) {
+        const { i, rad } = pf(z), w = cw - i[1] - i[3], h = ch - i[0] - i[2];
+        if (w - rad[0] - rad[1] < 0.02 || w - rad[3] - rad[2] < 0.02 || h - rad[0] - rad[3] < 0.02 || h - rad[1] - rad[2] < 0.02) return false;
+      }
+    }
+    return true;
+  }
+
+  /* ---------------- tray ---------------- */
+  function build(params) {
+    const q = resolve(params);
+    {
+      let guard = 0, changed = false;
+      while (!cupsFit(q) && guard++ < 60) {
+        changed = true;
+        if (q.f > 0.2 + 1e-9) q.f = Math.max(0.2, q.f * 0.85); else q.fb *= 0.7;
+        q.fb = Math.min(q.fb, q.f); q.Nf = q.fb < 1 ? 3 : q.fb < 3 ? 6 : 8;
+      }
+      if (changed) q.warnings.push(`fillet reduced to ${r2(q.f)} to fit the small compartments`);
+    }
+    const { W, D, H, t, f, stack, s, hp, N } = q;
+    const M = MeshBuilder();
+    const ztop = q.single ? H : hp;
+
+    // per-leaf cell (compartment grown to partition centre lines) + corners
+    const cells = q.leaves.map(L => {
+      const r = L.r, o = outerFlags(r, q);
+      const c = [o[3] ? r[0] : r[0] - t / 2, o[1] ? r[1] : r[1] + t / 2, o[0] ? r[2] : r[2] - t / 2, o[2] ? r[3] : r[3] + t / 2];
+      return { r, o, c, corners: [[c[0], c[2]], [c[1], c[2]], [c[1], c[3]], [c[0], c[3]]], tray: [o[0] && o[3], o[0] && o[1], o[1] && o[2], o[2] && o[3]] };
+    });
+    // all junction points (cell corners), deduped
+    const J = []; const jk = new Set();
+    for (const C of cells) for (const p of C.corners) { const k = Math.round(p[0] * 1e5) + ',' + Math.round(p[1] * 1e5); if (!jk.has(k)) { jk.add(k); J.push(p); } }
+
+    // inner-wall contour (Rin) descriptors: corner arcs + points along the walls
+    const sideU = [[], [], [], []];
+    for (const C of cells) {
+      const r = C.r, o = C.o;
+      if (o[0]) { if (!o[3]) sideU[0].push(r[0] + f, C.c[0]); if (!o[1]) sideU[0].push(r[1] - f, C.c[1]); }
+      if (o[1]) { if (!o[0]) sideU[1].push(r[2] + f, C.c[2]); if (!o[2]) sideU[1].push(r[3] - f, C.c[3]); }
+      if (o[2]) { if (!o[1]) sideU[2].push(r[1] - f, C.c[1]); if (!o[3]) sideU[2].push(r[0] + f, C.c[0]); }
+      if (o[3]) { if (!o[2]) sideU[3].push(r[3] - f, C.c[3]); if (!o[0]) sideU[3].push(r[2] + f, C.c[2]); }
+    }
+    const R = [];
+    for (let k = 0; k < 4; k++) {
+      R.push(...arcDesc(k, N));
+      const us = sideU[k].sort((a, b) => (k < 2 ? a - b : b - a)).filter((u, i, a) => i === 0 || Math.abs(u - a[i - 1]) > 1e-7);
+      for (const u of us) R.push({ s: k, u });
+    }
+
+    const rinB = [t, W - t, t, D - t], rbMin = 0.2;
+    const outerAt = z => {
+      if (stack && z < s - 1e-12) { const d = s - z; return contour(R, [d, W - d, d, D - d], Math.max(f + t - d, rbMin), z); }
+      return contour(R, [0, W, 0, D], f + t, z);
+    };
+    const zl = [0];
+    if (stack) { const zs = s - (f + t - rbMin); if (zs > 1e-6 && zs < s - 1e-6) zl.push(zs); zl.push(s); }
+    zl.push(H);
+    const rings = zl.map(outerAt);
+    M.fan(rings[0], false);
+    for (let i = 0; i + 1 < rings.length; i++) M.loftOut(rings[i], rings[i + 1]);
+    const rinTop = contour(R, rinB, f, H);
+    M.zipUp(rings[rings.length - 1], rinTop);
+    if (!q.single && hp < H - 1e-9) M.loftIn(contour(R, rinB, f, hp), rinTop);
+
+    // compartments
+    const levels = cupLevels(q);
+    for (const C of cells) {
+      // cup descriptors: corner arcs + T-junction points on interior sides
+      const desc = [], Emap = [];
+      const cc = C.c;
+      for (let k = 0; k < 4; k++) {
+        for (const d of arcDesc(k, N)) { desc.push(d); Emap.push(C.tray[k] ? null : C.corners[k]); }
+        if (C.o[k]) continue;
+        const pts = J.filter(p => {
+          if (k === 0) return Math.abs(p[1] - cc[2]) < 1e-6 && p[0] > cc[0] + 1e-6 && p[0] < cc[1] - 1e-6;
+          if (k === 1) return Math.abs(p[0] - cc[1]) < 1e-6 && p[1] > cc[2] + 1e-6 && p[1] < cc[3] - 1e-6;
+          if (k === 2) return Math.abs(p[1] - cc[3]) < 1e-6 && p[0] > cc[0] + 1e-6 && p[0] < cc[1] - 1e-6;
+          return Math.abs(p[0] - cc[0]) < 1e-6 && p[1] > cc[2] + 1e-6 && p[1] < cc[3] - 1e-6;
+        });
+        pts.sort((a, b) => k === 0 ? a[0] - b[0] : k === 1 ? a[1] - b[1] : k === 2 ? b[0] - a[0] : b[1] - a[1]);
+        for (const p of pts) { desc.push({ s: k, u: (k === 0 || k === 2) ? p[0] : p[1] }); Emap.push(p); }
+      }
+      const pf = cupProfile(q, C.o), r = C.r;
+      const rs = levels.map(z => { const { i, rad } = pf(z); return contour(desc, [r[0] + i[3], r[1] - i[1], r[2] + i[0], r[3] - i[2]], rad, z); });
+      for (let k = 0; k + 1 < rs.length; k++) M.loftIn(rs[k + 1], rs[k]);
+      M.fan(rs[rs.length - 1], true);
+      if (!q.single) {
+        const top = rs[0];
+        M.zipUp(Emap.map((e, i) => (e ? [e[0], e[1], ztop] : top[i])), top);
+      }
+    }
+    const m = M.finish();
+    return Object.assign(m, { params: q, warnings: q.warnings, stackOffset: q.stack ? q.H - q.nest : q.H, kind: 'tray' });
+  }
+
+  /* ---------------- lid ---------------- */
+  // Returns lid mesh in print orientation + how to place it on the tray:
+  //   place = { flip:true, z0 }  -> world = (x, D - y, z0 - z)   (inset / cap: plate printed face-down)
+  //   place = { flip:false, z0 } -> world = (x, y, z + z0)        (stacking lid)
+  function buildLid(params, trayMesh) {
+    const tray = trayMesh || build(params);
+    const q = tray.params, warn = [];
+    const lp = Object.assign({ style: 'inset', c: 0.2, L: 4 }, (params && params.lid) || {});
+    let style = lp.style;
+    const c = clamp(Number(lp.c) || 0.2, 0.05, 1), t = q.t, f = q.f, W = q.W, D = q.D, H = q.H, N = q.N;
+    if (style === 'stack' && !q.stack) { style = 'inset'; warn.push('stacking lid needs a stackable tray – using inset lid'); }
+    if (style === 'inset') {
+      const room = q.single ? H - t - 1 : H - q.hp - 0.3;
+      if (room < 1) { style = 'cap'; warn.push('partitions reach the rim – using a cap lid instead of an inset lid'); }
+    }
+    let L = Number(lp.L) || 4;
+    if (style === 'inset') {
+      const Lmax = q.single ? H - t - 1 : H - q.hp - 0.3;
+      if (L > Lmax) { warn.push(`lid skirt shortened to ${r2(Lmax)} mm to clear the partitions`); L = Lmax; }
+      L = Math.max(1, L);
+    } else if (style === 'cap') {
+      const Lmax = H - (q.stack ? q.s : 0) - 0.5;
+      if (L > Lmax) { warn.push(`lid skirt shortened to ${r2(Lmax)} mm`); L = Lmax; }
+      L = Math.max(1, L);
+    }
+    const D4 = [...arcDesc(0, N), ...arcDesc(1, N), ...arcDesc(2, N), ...arcDesc(3, N)];
+    const M = MeshBuilder(), tl = t;
+    let place, footprint;
+    if (style === 'inset') {
+      const O = z => contour(D4, [0, W, 0, D], f + t, z);
+      const So = z => contour(D4, [t + c, W - t - c, t + c, D - t - c], Math.max(f - c, 0.2), z);
+      const Si = z => contour(D4, [2 * t + c, W - 2 * t - c, 2 * t + c, D - 2 * t - c], Math.max(f - c - t, 0.2), z);
+      M.fan(O(0), false); M.loftOut(O(0), O(tl)); M.zipUp(O(tl), So(tl));
+      M.loftOut(So(tl), So(tl + L)); M.zipUp(So(tl + L), Si(tl + L));
+      M.loftIn(Si(tl), Si(tl + L)); M.fan(Si(tl), true);
+      place = { flip: true, z0: H + tl }; footprint = [0, W, 0, D];
+    } else if (style === 'cap') {
+      const Ci = z => contour(D4, [-c, W + c, -c, D + c], f + t + c, z);
+      const Co = z => contour(D4, [-c - t, W + c + t, -c - t, D + c + t], f + 2 * t + c, z);
+      M.fan(Co(0), false); M.loftOut(Co(0), Co(tl + L)); M.zipUp(Co(tl + L), Ci(tl + L));
+      M.loftIn(Ci(tl), Ci(tl + L)); M.fan(Ci(tl), true);
+      place = { flip: true, z0: H + tl }; footprint = [-c - t, W + c + t, -c - t, D + c + t];
+    } else {
+      const lidTray = build({ W, D, t, f: q.f, H: 0.1, _quietH: true, layout: {}, stack: true, s: q.s, seg: q.seg });
+      const m = lidTray;
+      return Object.assign({}, m, { kind: 'lid', style, warnings: warn, place: { flip: false, z0: tray.stackOffset },
+        footprint: [0, W, 0, D], height: m.params.H, L: 0, c: 0, stackOffset: m.params.H - m.params.nest });
+    }
+    const m = M.finish();
+    return Object.assign(m, { kind: 'lid', style, warnings: warn, place, footprint, height: tl + L, L, c });
+  }
+
+  // apply a placement (flip / offset) to a mesh, returning a new mesh
+  function transformMesh(mesh, { flip = false, z0 = 0, D = 0, dx = 0, dy = 0, dz = 0 } = {}) {
+    const P = mesh.positions, out = new Float32Array(P.length);
+    for (let i = 0; i < P.length; i += 3) {
+      out[i] = P[i] + dx;
+      out[i + 1] = (flip ? D - P[i + 1] : P[i + 1]) + dy;
+      out[i + 2] = (flip ? z0 - P[i + 2] : P[i + 2] + z0) + dz;
+    }
+    return { positions: out, indices: mesh.indices, volume: mesh.volume };
+  }
+  function mergeMeshes(list) {
+    let nv = 0, ni = 0; for (const m of list) { nv += m.positions.length; ni += m.indices.length; }
+    const P = new Float32Array(nv), I = new Uint32Array(ni); let po = 0, io = 0, vo = 0;
+    for (const m of list) { P.set(m.positions, po); for (let i = 0; i < m.indices.length; i++) I[io + i] = m.indices[i] + vo; po += m.positions.length; io += m.indices.length; vo += m.positions.length / 3; }
+    return { positions: P, indices: I, volume: list.reduce((a, m) => a + m.volume, 0) };
+  }
+
+  /* ---------------- binary STL ---------------- */
+  function toSTL(mesh, name) {
+    const P = mesh.positions, I = mesh.indices, n = I.length / 3;
+    let minx = Infinity, miny = Infinity, minz = Infinity;
+    for (let i = 0; i < P.length; i += 3) { minx = Math.min(minx, P[i]); miny = Math.min(miny, P[i + 1]); minz = Math.min(minz, P[i + 2]); }
+    const buf = new ArrayBuffer(84 + n * 50), dv = new DataView(buf), hdr = (name || 'tray').slice(0, 79);
+    for (let i = 0; i < hdr.length; i++) dv.setUint8(i, hdr.charCodeAt(i) & 127);
+    dv.setUint32(80, n, true);
+    let o = 84;
+    for (let i = 0; i < n; i++) {
+      const a = I[3 * i] * 3, b = I[3 * i + 1] * 3, c = I[3 * i + 2] * 3;
+      const ux = P[b] - P[a], uy = P[b + 1] - P[a + 1], uz = P[b + 2] - P[a + 2], vx = P[c] - P[a], vy = P[c + 1] - P[a + 1], vz = P[c + 2] - P[a + 2];
+      let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; const l = Math.hypot(nx, ny, nz) || 1;
+      dv.setFloat32(o, nx / l, true); dv.setFloat32(o + 4, ny / l, true); dv.setFloat32(o + 8, nz / l, true); o += 12;
+      for (const v of [a, b, c]) { dv.setFloat32(o, P[v] - minx, true); dv.setFloat32(o + 4, P[v + 1] - miny, true); dv.setFloat32(o + 8, P[v + 2] - minz, true); o += 12; }
+      o += 2;
+    }
+    return buf;
+  }
+
+  const api = { build, buildLid, resolve, toSTL, transformMesh, mergeMeshes, gridTree, layoutTree, isSplit, DEFAULTS, MIN_LEAF };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.TrayGeom = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(() => {
+'use strict';
+const G = window.TrayGeom;
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const fmt = v => String(Math.round(v * 100) / 100);
+const clone = o => JSON.parse(JSON.stringify(o));
+
+/* ---------------- state + history ---------------- */
+const DEF = { W: 80, D: 160, H: 20, t: 0.8, f: 1, hp: 18, stack: false, s: 2.4, layout: G.gridTree(1, 2), lid: { style: 'none', c: 0.2, L: 4 } };
+let state = clone(DEF);
+try {
+  const v2 = JSON.parse(localStorage.getItem('tray-gen-v2') || 'null');
+  const v1 = JSON.parse(localStorage.getItem('tray-gen-v1') || 'null');
+  if (v2) state = Object.assign(clone(DEF), v2);
+  else if (v1) { state = Object.assign(clone(DEF), v1); state.layout = G.gridTree(v1.nx, v1.ny); delete state.nx; delete state.ny; }
+} catch (e) {}
+let density = 1.24;
+try { density = Number(localStorage.getItem('tray-gen-mat')) || 1.24; } catch (e) {}
+const ui = { sc: 2, sr: 1 };
+let selection = new Set();
+const undoStack = [], redoStack = [];
+let lastCommitted = JSON.stringify(state);
+function save(json) { try { localStorage.setItem('tray-gen-v2', json); } catch (e) {} }
+function commit() {
+  const now = JSON.stringify(state); if (now === lastCommitted) return;
+  undoStack.push(lastCommitted); if (undoStack.length > 200) undoStack.shift();
+  redoStack.length = 0; lastCommitted = now; save(now); updateHistoryButtons();
+}
+function restore(json) { state = JSON.parse(json); lastCommitted = json; save(json); selection.clear(); syncUI(); rebuild(); updateHistoryButtons(); }
+function undo() { if (undoStack.length) { redoStack.push(lastCommitted); restore(undoStack.pop()); } }
+function redo() { if (redoStack.length) { undoStack.push(lastCommitted); restore(redoStack.pop()); } }
+function updateHistoryButtons() { $('#undo').disabled = !undoStack.length; $('#redo').disabled = !redoStack.length; }
+$('#undo').onclick = undo; $('#redo').onclick = redo;
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+  if (e.key === 'Escape') { selection.clear(); $('#dlMenu').hidden = true; renderLayout(); requestDraw(); }
+});
+
+/* ---------------- sidebar bindings ---------------- */
+const getF = k => k === 'lc' ? state.lid.c : k === 'lL' ? state.lid.L : state[k];
+const setF = (k, v) => { if (k === 'lc') state.lid.c = v; else if (k === 'lL') state.lid.L = v; else state[k] = v; };
+$$('.field[data-f]').forEach(el => {
+  const k = el.dataset.f, [range, num] = el.querySelectorAll('input');
+  range.addEventListener('input', () => { setF(k, Number(range.value)); num.value = fmt(getF(k)); rebuild(); });
+  range.addEventListener('change', commit);
+  num.addEventListener('change', () => { const v = Number(num.value); if (num.value !== '' && isFinite(v)) setF(k, v); syncUI(); rebuild(); commit(); });
+});
+$$('.stepper').forEach(el => {
+  const k = el.dataset.g, [dn, up] = el.querySelectorAll('button');
+  dn.onclick = () => { ui[k] = Math.max(1, ui[k] - 1); syncUI(); };
+  up.onclick = () => { ui[k] = Math.min(12, ui[k] + 1); syncUI(); };
+});
+$('#unstack').onclick = () => { state.stack = false; if (state.lid.style === 'stack') state.lid.style = 'inset'; syncUI(); rebuild(); commit(); };
+$('#stackbtn').onclick = () => { state.stack = true; syncUI(); rebuild(); commit(); };
+$$('[data-lid]').forEach(b => b.onclick = () => { state.lid.style = b.dataset.lid; syncUI(); rebuild(); commit(); });
+$('#material').value = String(density);
+$('#material').onchange = e => { density = Number(e.target.value); try { localStorage.setItem('tray-gen-mat', density); } catch (er) {} updateStats(); };
+
+const LID_HINT = {
+  none: 'No lid.',
+  inset: 'Flat lid with a rim that plugs inside the walls (needs space above the partitions).',
+  cap: 'Flat lid with a skirt that slips over the outside of the walls. Always fits.',
+  stack: 'Shallow tray that nests like another tray, so you can keep stacking on top.'
+};
+function syncUI() {
+  $$('.field[data-f]').forEach(el => {
+    const k = el.dataset.f, [range, num] = el.querySelectorAll('input');
+    if (k === 'hp') range.max = String(state.H);
+    if (k === 'f') range.max = String(Math.max(2, Math.min(10, Math.floor(Math.min(state.W, state.D) / 4))));
+    range.value = getF(k); if (document.activeElement !== num) num.value = fmt(getF(k));
+  });
+  $$('.stepper').forEach(el => { el.querySelector('output').textContent = ui[el.dataset.g]; });
+  $('#unstack').setAttribute('aria-pressed', String(!state.stack));
+  $('#stackbtn').setAttribute('aria-pressed', String(state.stack));
+  $('#chamferField').hidden = !state.stack;
+  $$('[data-lid]').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.lid === state.lid.style)); if (b.dataset.lid === 'stack') { b.disabled = !state.stack; b.title = state.stack ? '' : 'Make the tray stackable first'; } });
+  $('#lidHint').textContent = LID_HINT[state.lid.style] || '';
+  $('#lidFields').hidden = state.lid.style === 'none' || state.lid.style === 'stack';
+  $('#optLidL').classList.toggle('off', state.lid.style === 'none');
+  $('#optStackL').classList.toggle('off', !state.stack);
+  for (const p of $$('.pill')) { const inp = p.querySelector('input'); if (document.activeElement !== inp) inp.value = fmt(state[p.dataset.k]); }
+  renderLayout();
+}
+
+/* ---------------- pills ---------------- */
+const LIMIT = { W: [10, 600], D: [10, 600], H: [4, 300] };
+$$('.pill').forEach(p => {
+  const k = p.dataset.k, inp = p.querySelector('input');
+  const set = v => { const [lo, hi] = LIMIT[k]; state[k] = Math.min(hi, Math.max(lo, v)); syncUI(); rebuild(); };
+  p.querySelectorAll('.chev').forEach(b => b.addEventListener('click', e => { set(state[k] + Number(b.dataset.d) * (e.shiftKey ? 10 : 1)); commit(); }));
+  inp.addEventListener('change', () => { if (inp.value !== '' && isFinite(+inp.value)) set(+inp.value); else syncUI(); commit(); });
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); });
+});
+
+/* ---------------- tabs ---------------- */
+let tab = 'size';
+function setTab(name) {
+  tab = name;
+  $$('.tabs button').forEach(x => x.setAttribute('aria-selected', String(x.dataset.tab === name)));
+  for (const id of ['pW', 'pD', 'pH']) $('#' + id).hidden = name !== 'size';
+  $('#toolbar').hidden = name !== 'preview';
+  $('#gridChip').hidden = name !== 'grid';
+  $('#view').classList.toggle('pick', name === 'grid');
+  if (name === 'preview' && state.stack && !$('#optStack').dataset.touched) $('#optStack').checked = true;
+  requestDraw();
+}
+$$('.tabs button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
+['optStack', 'optCut', 'optEdges', 'optLid'].forEach(id => $('#' + id).addEventListener('change', e => { e.target.dataset.touched = '1'; requestDraw(); }));
+
+/* ---------------- layout tree operations ---------------- */
+const parts = p => (p === '' ? [] : p.split('.').map(Number));
+function nodeAt(tree, path) { let n = tree; for (const i of parts(path)) n = n.c[i]; return n; }
+function setAt(path, node) {
+  if (path === '') { state.layout = node; return; }
+  const ps = parts(path), parent = nodeAt(state.layout, ps.slice(0, -1).join('.'));
+  parent.c[ps[ps.length - 1]] = node;
+}
+const parentPath = p => parts(p).slice(0, -1).join('.');
+function lca(paths) {
+  const arr = paths.map(parts); let k = 0;
+  while (arr.every(a => a.length > k && a[k] === arr[0][k])) k++;
+  return arr[0].slice(0, k).join('.');
+}
+function leafRect(path) { const L = mesh && mesh.params.leaves.find(l => l.path === path); return L && L.r; }
+function canSplit(path, cols, rows) {
+  const r = leafRect(path); if (!r) return false;
+  const t = mesh.params.t, w = (r[1] - r[0] - (cols - 1) * t) / cols, h = (r[3] - r[2] - (rows - 1) * t) / rows;
+  return w >= 4 && h >= 4;
+}
+function doSplit() {
+  const cols = ui.sc, rows = ui.sr; if (cols * rows === 1) return;
+  const targets = selection.size ? [...selection] : null;
+  if (!targets) {
+    const t = state.t;
+    if ((state.W - 2 * t - (cols - 1) * t) / cols < 4 || (state.D - 2 * t - (rows - 1) * t) / rows < 4) return flash('Too small: compartments would be under 4 mm');
+    state.layout = G.gridTree(cols, rows);
+  } else {
+    const bad = targets.filter(p => !canSplit(p, cols, rows));
+    if (bad.length) return flash(`Too small: ${bad.length === targets.length ? 'the selection' : bad.length + ' selected compartment(s)'} can’t be split ${cols}×${rows} (min 4 mm)`);
+    // replace each selected leaf; if the parent splits the same way, insert as siblings (keeps partitions aligned)
+    for (const p of targets.sort((a, b) => b.localeCompare(a))) setAt(p, G.gridTree(cols, rows));
+  }
+  selection.clear(); afterLayoutChange();
+}
+function doMerge() {
+  if (!selection.size) return;
+  const paths = [...selection];
+  let target = paths.length > 1 ? lca(paths) : parentPath(paths[0]);
+  if (paths.length === 1 && paths[0] === '') return;
+  setAt(target, {});
+  selection = new Set([target]); afterLayoutChange();
+}
+function doEqual() {
+  const targets = selection.size ? new Set([...selection].map(parentPath)) : null;
+  (function rec(n, path) {
+    if (!G.isSplit(n)) return;
+    if (!targets || targets.has(path)) n.w = n.c.map(() => 1);
+    n.c.forEach((c, i) => rec(c, path === '' ? String(i) : path + '.' + i));
+  })(state.layout, '');
+  afterLayoutChange();
+}
+function afterLayoutChange() { doRebuild(); pruneSelection(); renderLayout(); commit(); }
+function pruneSelection() { if (!mesh) return; const ok = new Set(mesh.params.leaves.map(l => l.path)); for (const p of [...selection]) if (!ok.has(p)) selection.delete(p); }
+$('#splitBtn').onclick = doSplit; $('#mergeBtn').onclick = doMerge; $('#equalBtn').onclick = doEqual;
+function selectLeaf(path, additive) {
+  if (path == null) { if (!additive) selection.clear(); }
+  else if (additive) selection.has(path) ? selection.delete(path) : selection.add(path);
+  else if (selection.size === 1 && selection.has(path)) selection.clear();
+  else selection = new Set([path]);
+  renderLayout(); requestDraw();
+}
+let flashTimer = 0;
+function flash(msg) { const w = $('#warns'); const d = document.createElement('div'); d.className = 'warn'; d.textContent = msg; d.dataset.flash = '1'; w.prepend(d); clearTimeout(flashTimer); flashTimer = setTimeout(() => d.remove(), 3500); }
+
+/* ---------------- layout editor (top view) ---------------- */
+const svgNS = 'http://www.w3.org/2000/svg';
+let drag = null;
+function renderLayout() {
+  if (!mesh) return;
+  const q = mesh.params, svg = $('#laySvg');
+  const maxW = 228, maxH = 230, sc = Math.min(maxW / q.W, maxH / q.D);
+  svg.setAttribute('width', (q.W * sc).toFixed(1)); svg.setAttribute('height', (q.D * sc).toFixed(1));
+  svg.setAttribute('viewBox', `0 0 ${q.W} ${q.D}`);
+  const Y = y => q.D - y;       // flip: depth goes up like the 3D view
+  let h = `<rect x="0" y="0" width="${q.W}" height="${q.D}" rx="${q.f + q.t}" fill="${css('--model')}"/>`;
+  for (const L of q.leaves) {
+    const r = L.r, sel = selection.has(L.path);
+    h += `<rect class="leaf${sel ? ' sel' : ''}" data-p="${L.path}" x="${r[0]}" y="${Y(r[3])}" width="${r[1] - r[0]}" height="${r[3] - r[2]}" rx="${Math.min(q.f, (r[1] - r[0]) / 2, (r[3] - r[2]) / 2)}"/>`;
+    const w = r[1] - r[0], hh = r[3] - r[2], fs = 9 / sc;
+    if (w * sc > 46 && hh * sc > 16) h += `<text x="${(r[0] + r[1]) / 2}" y="${Y((r[2] + r[3]) / 2) + fs * 0.35}" font-size="${fs}" text-anchor="middle">${fmt(w)}×${fmt(hh)}</text>`;
+  }
+  const hit = 7 / sc;
+  q.dividers.forEach((d, idx) => {
+    const wd = Math.max(q.t, hit);
+    if (d.ax === 0) h += `<rect class="div-hit x" data-d="${idx}" x="${d.center - wd / 2}" y="${Y(d.to)}" width="${wd}" height="${d.to - d.from}"/>`;
+    else h += `<rect class="div-hit y" data-d="${idx}" x="${d.from}" y="${Y(d.center + wd / 2)}" width="${d.to - d.from}" height="${wd}"/>`;
+  });
+  if (drag && drag.label) h += drag.label;
+  svg.innerHTML = h;
+  // selection info + buttons
+  const n = selection.size, cols = ui.sc, rows = ui.sr;
+  $('#selInfo').innerHTML = n ? `<b>${n}</b> compartment${n > 1 ? 's' : ''} selected` : 'Nothing selected – Split re-divides the <b>whole tray</b>';
+  $('#splitBtn').textContent = n ? `Split ${cols}×${rows}` : `Grid ${cols}×${rows}`;
+  $('#splitBtn').disabled = cols * rows === 1;
+  $('#mergeBtn').disabled = !n || (n === 1 && [...selection][0] === '');
+}
+function svgPoint(evt) {
+  const svg = $('#laySvg'), pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY;
+  const p = pt.matrixTransform(svg.getScreenCTM().inverse()); return [p.x, mesh.params.D - p.y];
+}
+function minSpan(node, ax, t) {   // smallest size a subtree can take along an axis
+  if (!G.isSplit(node)) return 4;
+  const ch = node.c.map(c => minSpan(c, ax, t));
+  return (node.d === 'x') === (ax === 0) ? ch.reduce((a, b) => a + b, 0) + (node.c.length - 1) * t : Math.max(...ch);
+}
+$('#laySvg').addEventListener('pointerdown', e => {
+  const tgt = e.target;
+  if (tgt.classList.contains('div-hit')) {
+    const d = mesh.params.dividers[+tgt.dataset.d], node = nodeAt(state.layout, d.path);
+    drag = { d, node, sizes: d.sizes.slice() };
+    $('#laySvg').setPointerCapture(e.pointerId); tgt.classList.add('drag'); e.preventDefault(); return;
+  }
+  if (tgt.classList.contains('leaf')) selectLeaf(tgt.dataset.p, e.shiftKey || e.ctrlKey || e.metaKey);
+  else selectLeaf(null, e.shiftKey);
+});
+$('#laySvg').addEventListener('pointermove', e => {
+  if (!drag) return;
+  const { d, node, sizes } = drag, t = mesh.params.t, u = svgPoint(e)[d.ax];
+  let start = d.lo; for (let k = 0; k < d.i; k++) start += sizes[k] + t;
+  const pair = sizes[d.i] + sizes[d.i + 1];
+  const minA = minSpan(node.c[d.i], d.ax, t), minB = minSpan(node.c[d.i + 1], d.ax, t);
+  const step = e.shiftKey ? 0.1 : 0.5;
+  let a = Math.round((u - t / 2 - start) / step) * step;
+  a = Math.max(minA, Math.min(pair - minB, a));
+  const ns = sizes.slice(); ns[d.i] = a; ns[d.i + 1] = pair - a;
+  node.w = ns;
+  const q = mesh.params, c = start + a + t / 2, fs = 10 / Math.min(228 / q.W, 230 / q.D);
+  const lx = d.ax === 0 ? c : (d.from + d.to) / 2, ly = d.ax === 0 ? (d.from + d.to) / 2 : c;
+  drag.label = `<text x="${lx}" y="${q.D - ly}" font-size="${fs}" text-anchor="middle" style="fill:${css('--text')};paint-order:stroke;stroke:${css('--panel')};stroke-width:${fs / 3}px">${fmt(a)} | ${fmt(pair - a)}</text>`;
+  rebuild();
+});
+const endDrag = () => { if (!drag) return; drag = null; commit(); renderLayout(); };
+$('#laySvg').addEventListener('pointerup', endDrag); $('#laySvg').addEventListener('pointercancel', endDrag);
+
+/* ---------------- geometry ---------------- */
+let mesh = null, lid = null, gpu = null, gpuLid = null;
+let rebuildQueued = false;
+function rebuild() { if (rebuildQueued) return; rebuildQueued = true; requestAnimationFrame(() => { rebuildQueued = false; doRebuild(); }); }
+function params() { return Object.assign({}, state, { lid: state.lid.style === 'none' ? null : state.lid }); }
+function doRebuild() {
+  const p = params();
+  mesh = G.build(p);
+  lid = p.lid ? G.buildLid(p, mesh) : null;
+  uploadAll();
+  updateStats();
+  const w = $('#warns'); [...w.children].forEach(c => { if (!c.dataset.flash) c.remove(); });
+  for (const m of mesh.warnings.concat(lid ? lid.warnings : [])) { const d = document.createElement('div'); d.className = 'warn'; d.textContent = m; w.appendChild(d); }
+  const q = mesh.params;
+  $('#nestHint').textContent = q.stack ? `Next tray drops ${fmt(q.nest)} mm into this one; a stack of n trays is ${fmt(q.H)} + (n−1)×${fmt(q.H - q.nest)} mm tall.` : '';
+  pruneSelection();
+  if (!drag) renderLayout(); else { const dl = drag.label; renderLayout(); }
+  secCache = {};
+  requestDraw();
+}
+function updateStats() {
+  if (!mesh) return;
+  const q = mesh.params, gt = mesh.volume / 1000 * density, gl_ = lid ? lid.volume / 1000 * density : 0;
+  $('#weight').innerHTML = lid ? `${(gt + gl_).toFixed(1)} <small>g total</small>` : `${gt.toFixed(1)} <small>g</small>`;
+  const rows = [
+    ['Outer', `${fmt(q.W)} × ${fmt(q.D)} × ${fmt(q.H)}`],
+    ['Compartments', String(q.leaves.length)],
+    ['Partitions', q.single ? '—' : `${fmt(q.hp)} mm high`],
+  ];
+  if (q.stack) rows.push(['Nest depth', `${fmt(q.nest)} mm`]);
+  rows.push(['Tray', `${gt.toFixed(1)} g · ${(mesh.volume / 1000).toFixed(2)} cm³`]);
+  if (lid) rows.push([`Lid (${lid.style})`, `${gl_.toFixed(1)} g`]);
+  $('#stats').innerHTML = rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join('');
+}
+
+/* ---------------- download ---------------- */
+function save_(meshObj, name) {
+  const blob = new Blob([G.toSTL(meshObj, name)], { type: 'model/stl' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function baseName() { const q = mesh.params; return `tray_${fmt(q.W)}x${fmt(q.D)}x${fmt(q.H)}_${q.leaves.length}c_t${fmt(q.t)}${q.stack ? '_stack' : ''}`; }
+function download(kind) {
+  $('#dlMenu').hidden = true;
+  if (!mesh) return;
+  if (kind === 'tray' || !lid) return save_(mesh, baseName() + '.stl');
+  if (kind === 'lid') return save_(lid, baseName() + `_lid-${lid.style}.stl`);
+  const fp = lid.footprint, gap = 10;
+  const moved = G.transformMesh(lid, { dx: mesh.params.W + gap - fp[0], dy: -fp[2] });
+  save_(G.mergeMeshes([mesh, moved]), baseName() + `_with-lid-${lid.style}.stl`);
+}
+$('#download').onclick = e => { e.stopPropagation(); if (!lid) return download('tray'); $('#dlMenu').hidden = !$('#dlMenu').hidden; };
+$$('[data-dl]').forEach(b => b.onclick = e => { e.stopPropagation(); download(b.dataset.dl); });
+document.addEventListener('click', () => { $('#dlMenu').hidden = true; });
+
+/* ---------------- WebGL viewer ---------------- */
+const canvas = $('#view');
+const gl = canvas.getContext('webgl', { antialias: true, preserveDrawingBuffer: true });
+if (!gl) document.body.insertAdjacentHTML('beforeend', '<div class="warn" style="position:fixed;top:80px;left:50%;transform:translateX(-50%)">WebGL is not available – the 3D preview is off, but layout editing and Download still work.</div>');
+const VS = `attribute vec3 aPos;attribute vec3 aNor;uniform mat4 uVP;uniform vec3 uOff;uniform vec3 uScl;varying vec3 vN;varying vec3 vW;
+void main(){vec3 w=aPos*uScl+uOff;vW=w;vN=aNor*uScl;gl_Position=uVP*vec4(w,1.0);}`;
+const FS = `precision highp float;varying vec3 vN;varying vec3 vW;uniform vec3 uColor;uniform vec3 uInner;uniform vec3 uEye;uniform float uClip;uniform float uClipOn;
+void main(){if(uClipOn>0.5&&vW.y<uClip)discard;vec3 n=normalize(vN);vec3 base=uColor;if(!gl_FrontFacing){n=-n;base=uInner;}
+vec3 V=normalize(uEye-vW);vec3 L1=normalize(vec3(-0.45,-0.75,0.85));vec3 L2=normalize(vec3(0.7,0.35,0.45));
+float d=max(dot(n,L1),0.0)*0.5+max(dot(n,L2),0.0)*0.22;float hemi=0.5+0.5*n.z;
+vec3 col=base*(0.42+0.2*hemi+d);float sp=pow(max(dot(reflect(-L1,n),V),0.0),48.0)*0.10;gl_FragColor=vec4(col+sp,1.0);}`;
+const LVS = `attribute vec3 aPos;uniform mat4 uVP;uniform vec3 uOff;uniform vec3 uScl;varying vec3 vW;void main(){vec3 w=aPos*uScl+uOff;vW=w;gl_Position=uVP*vec4(w,1.0);}`;
+const LFS = `precision highp float;varying vec3 vW;uniform vec4 uColor;uniform float uClip;uniform float uClipOn;void main(){if(uClipOn>0.5&&vW.y<uClip-0.001)discard;gl_FragColor=uColor;}`;
+function prog(vs, fs) {
+  const p = gl.createProgram();
+  for (const [type, src] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]]) {
+    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+    gl.attachShader(p, s);
+  }
+  gl.linkProgram(p);
+  const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+  for (let i = 0; i < n; i++) { const name = gl.getActiveUniform(p, i).name; u[name] = gl.getUniformLocation(p, name); }
+  return { p, u, aPos: gl.getAttribLocation(p, 'aPos'), aNor: gl.getAttribLocation(p, 'aNor') };
+}
+let P1, P2;
+if (gl) { P1 = prog(VS, FS); P2 = prog(LVS, LFS); }
+function buf(data) { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW); return b; }
+function prep(m) {
+  const P = m.positions, I = m.indices, nT = I.length / 3, V = P.length / 3, fn = new Float32Array(nT * 3);
+  for (let f = 0; f < nT; f++) {
+    const a = I[3 * f] * 3, b = I[3 * f + 1] * 3, c = I[3 * f + 2] * 3;
+    const ux = P[b] - P[a], uy = P[b + 1] - P[a + 1], uz = P[b + 2] - P[a + 2], vx = P[c] - P[a], vy = P[c + 1] - P[a + 1], vz = P[c + 2] - P[a + 2];
+    fn[3 * f] = uy * vz - uz * vy; fn[3 * f + 1] = uz * vx - ux * vz; fn[3 * f + 2] = ux * vy - uy * vx;
+  }
+  const un = new Float32Array(nT * 3);
+  for (let f = 0; f < nT; f++) { const l = Math.hypot(fn[3 * f], fn[3 * f + 1], fn[3 * f + 2]) || 1; un[3 * f] = fn[3 * f] / l; un[3 * f + 1] = fn[3 * f + 1] / l; un[3 * f + 2] = fn[3 * f + 2] / l; }
+  const start = new Uint32Array(V + 1); for (let i = 0; i < I.length; i++) start[I[i] + 1]++;
+  for (let i = 0; i < V; i++) start[i + 1] += start[i];
+  const fill = start.slice(0, V), adj = new Uint32Array(I.length);
+  for (let i = 0; i < I.length; i++) adj[fill[I[i]]++] = (i / 3) | 0;
+  const pos = new Float32Array(nT * 9), nor = new Float32Array(nT * 9), cosT = Math.cos(32 * Math.PI / 180);
+  for (let f = 0; f < nT; f++) for (let k = 0; k < 3; k++) {
+    const v = I[3 * f + k]; let sx = 0, sy = 0, sz = 0;
+    for (let j = start[v]; j < start[v + 1]; j++) {
+      const g = adj[j];
+      if (un[3 * g] * un[3 * f] + un[3 * g + 1] * un[3 * f + 1] + un[3 * g + 2] * un[3 * f + 2] > cosT) { sx += fn[3 * g]; sy += fn[3 * g + 1]; sz += fn[3 * g + 2]; }
+    }
+    const l = Math.hypot(sx, sy, sz) || 1, o = 9 * f + 3 * k;
+    pos[o] = P[3 * v]; pos[o + 1] = P[3 * v + 1]; pos[o + 2] = P[3 * v + 2]; nor[o] = sx / l; nor[o + 1] = sy / l; nor[o + 2] = sz / l;
+  }
+  const em = new Map(), lines = [], cosE = Math.cos(28 * Math.PI / 180);
+  for (let f = 0; f < nT; f++) for (let k = 0; k < 3; k++) {
+    const a = I[3 * f + k], b = I[3 * f + (k + 1) % 3], key = a < b ? a * 4294967 + b : b * 4294967 + a, prev = em.get(key);
+    if (prev === undefined) em.set(key, f);
+    else if (un[3 * prev] * un[3 * f] + un[3 * prev + 1] * un[3 * f + 1] + un[3 * prev + 2] * un[3 * f + 2] < cosE) lines.push(P[3 * a], P[3 * a + 1], P[3 * a + 2], P[3 * b], P[3 * b + 1], P[3 * b + 2]);
+  }
+  return { pos: buf(pos), nor: buf(nor), n: nT * 3, edges: buf(new Float32Array(lines)), ne: lines.length / 3 };
+}
+function free(g) { if (g) for (const b of [g.pos, g.nor, g.edges]) gl.deleteBuffer(b); }
+function uploadAll() {
+  if (gl) { free(gpu); free(gpuLid); gpu = prep(mesh); gpuLid = lid ? prep(lid) : null; }
+  const q = mesh.params;
+  if (!view.fitted || view.fitKey !== `${q.W}|${q.D}|${q.H}`) fitView(q, !view.fitted);
+}
+
+let gridBuf = null, gridN = 0, gridMajorBuf = null, gridMajorN = 0;
+function makeGrid(q) {
+  if (!gl) return;
+  const ext = Math.max(q.W, q.D) * 1.4 + 140, x0 = Math.floor((q.W / 2 - ext) / 10) * 10, x1 = Math.ceil((q.W / 2 + ext) / 10) * 10;
+  const y0 = Math.floor((q.D / 2 - ext) / 10) * 10, y1 = Math.ceil((q.D / 2 + ext) / 10) * 10, minor = [], major = [];
+  for (let x = x0; x <= x1; x += 10) (x % 50 === 0 ? major : minor).push(x, y0, -0.02, x, y1, -0.02);
+  for (let y = y0; y <= y1; y += 10) (y % 50 === 0 ? major : minor).push(x0, y, -0.02, x1, y, -0.02);
+  if (gridBuf) { gl.deleteBuffer(gridBuf); gl.deleteBuffer(gridMajorBuf); }
+  gridBuf = buf(new Float32Array(minor)); gridN = minor.length / 3; gridMajorBuf = buf(new Float32Array(major)); gridMajorN = major.length / 3;
+}
+
+/* camera */
+const view = { theta: -2.2, phi: 0.62, dist: 300, target: [40, 80, 10], fitted: false, fitKey: '' };
+function fitView(q, resetAngles) {
+  const r = Math.hypot(q.W, q.D, q.H) / 2;
+  view.target = [q.W / 2, q.D / 2, q.H / 2];
+  const rc = canvas.getBoundingClientRect(), asp = rc.width > 0 && rc.height > 0 ? rc.width / rc.height : 1.6;
+  const halfV = 17.5 * Math.PI / 180, halfH = Math.atan(Math.tan(halfV) * asp);
+  view.dist = r / Math.sin(Math.min(halfV, halfH)) * 1.08;
+  if (resetAngles) { view.theta = -2.2; view.phi = 0.62; }
+  view.fitted = true; view.fitKey = `${q.W}|${q.D}|${q.H}`; makeGrid(q);
+}
+function eye() { const c = Math.cos(view.phi); return [view.target[0] + view.dist * c * Math.cos(view.theta), view.target[1] + view.dist * c * Math.sin(view.theta), view.target[2] + view.dist * Math.sin(view.phi)]; }
+function persp(fovy, asp, n, f) { const t = 1 / Math.tan(fovy / 2); return [t / asp, 0, 0, 0, 0, t, 0, 0, 0, 0, (f + n) / (n - f), -1, 0, 0, 2 * f * n / (n - f), 0]; }
+function lookAt(e, c, up) {
+  let zx = e[0] - c[0], zy = e[1] - c[1], zz = e[2] - c[2]; let l = Math.hypot(zx, zy, zz); zx /= l; zy /= l; zz /= l;
+  let xx = up[1] * zz - up[2] * zy, xy = up[2] * zx - up[0] * zz, xz = up[0] * zy - up[1] * zx; l = Math.hypot(xx, xy, xz); xx /= l; xy /= l; xz /= l;
+  const yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
+  return [xx, yx, zx, 0, xy, yy, zy, 0, xz, yz, zz, 0, -(xx * e[0] + xy * e[1] + xz * e[2]), -(yx * e[0] + yy * e[1] + yz * e[2]), -(zx * e[0] + zy * e[1] + zz * e[2]), 1];
+}
+function mul(a, b) { const o = new Array(16); for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + j] * b[i * 4 + k]; o[i * 4 + j] = s; } return o; }
+let VP = null, EYE = null;
+function project(p) {
+  const x = VP[0] * p[0] + VP[4] * p[1] + VP[8] * p[2] + VP[12], y = VP[1] * p[0] + VP[5] * p[1] + VP[9] * p[2] + VP[13], w = VP[3] * p[0] + VP[7] * p[1] + VP[11] * p[2] + VP[15];
+  if (w <= 0) return null;
+  const r = canvas.getBoundingClientRect(); return [(x / w * 0.5 + 0.5) * r.width, (1 - (y / w * 0.5 + 0.5)) * r.height];
+}
+// pick the compartment under a screen point: intersect the view ray with the floor plane z = t
+function pickLeaf(cx, cy) {
+  if (!mesh || !VP) return null;
+  const r = canvas.getBoundingClientRect(), q = mesh.params;
+  const nx = (cx - r.left) / r.width * 2 - 1, ny = 1 - (cy - r.top) / r.height * 2;
+  // solve VP * [x, y, z0, 1] = w * [nx, ny, *, 1] for x, y (z fixed) – 2 linear equations
+  const z0 = q.t, M = VP;
+  const a1 = M[0] - nx * M[3], b1 = M[4] - nx * M[7], c1 = -(M[8] * z0 + M[12] - nx * (M[11] * z0 + M[15]));
+  const a2 = M[1] - ny * M[3], b2 = M[5] - ny * M[7], c2 = -(M[9] * z0 + M[13] - ny * (M[11] * z0 + M[15]));
+  const det = a1 * b2 - a2 * b1; if (Math.abs(det) < 1e-12) return null;
+  const x = (c1 * b2 - c2 * b1) / det, y = (a1 * c2 - a2 * c1) / det;
+  const L = q.leaves.find(l => x >= l.r[0] && x <= l.r[1] && y >= l.r[2] && y <= l.r[3]);
+  return L ? L.path : null;
+}
+
+/* interaction */
+const ptrs = new Map(); let mode = 'rot', pinch0 = 0, dist0 = 0, down = null;
+canvas.addEventListener('pointerdown', e => {
+  canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+  down = { x: e.clientX, y: e.clientY, moved: false };
+  mode = (e.button === 2 || e.button === 1 || e.shiftKey && tab !== 'grid') ? 'pan' : 'rot';
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); dist0 = view.dist; }
+});
+canvas.addEventListener('pointermove', e => {
+  if (!ptrs.has(e.pointerId)) return;
+  const prev = ptrs.get(e.pointerId), dx = e.clientX - prev[0], dy = e.clientY - prev[1];
+  ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+  if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 4) down.moved = true;
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; const d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pinch0 > 0) view.dist = Math.max(10, dist0 * pinch0 / d); }
+  else if (mode === 'rot') { view.theta -= dx * 0.008; view.phi = Math.max(-1.2, Math.min(1.53, view.phi + dy * 0.008)); }
+  else {
+    const s = view.dist * 0.0016, ct = Math.cos(view.theta), st = Math.sin(view.theta), sp = Math.sin(view.phi), cp = Math.cos(view.phi);
+    const right = [-st, ct, 0], up = [-sp * ct, -sp * st, cp];
+    for (let i = 0; i < 3; i++) view.target[i] += (-dx * right[i] + dy * up[i]) * s;
+  }
+  requestDraw();
+});
+const endPtr = e => {
+  if (e.type === 'pointerup' && down && !down.moved && ptrs.size === 1 && tab === 'grid' && e.button === 0)
+    selectLeaf(pickLeaf(e.clientX, e.clientY), e.shiftKey || e.ctrlKey || e.metaKey);
+  ptrs.delete(e.pointerId); pinch0 = 0; if (!ptrs.size) down = null;
+};
+canvas.addEventListener('pointerup', endPtr); canvas.addEventListener('pointercancel', endPtr);
+canvas.addEventListener('wheel', e => { e.preventDefault(); view.dist = Math.max(10, view.dist * Math.exp(e.deltaY * 0.0012)); requestDraw(); }, { passive: false });
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+const resetView = () => { if (mesh) { fitView(mesh.params, true); requestDraw(); } };
+canvas.addEventListener('dblclick', resetView); $('#resetView').onclick = resetView;
+
+/* draw */
+let drawQueued = false;
+function requestDraw() { if (drawQueued) return; drawQueued = true; requestAnimationFrame(() => { drawQueued = false; draw(); }); }
+function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function rgb(hex) { const h = hex.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16) / 255); }
+// what is shown where: list of {g (gpu), m (mesh), scl, off, color}
+function scene() {
+  const q = mesh.params, items = [];
+  const stacked = tab === 'preview' && state.stack && $('#optStack').checked;
+  items.push({ g: gpu, m: mesh, scl: [1, 1, 1], off: [0, 0, 0], color: '--model', label: stacked ? 'lower tray' : 'tray' });
+  if (stacked) items.push({ g: gpu, m: mesh, scl: [1, 1, 1], off: [0, 0, mesh.stackOffset], color: '--model-2', label: 'upper tray' });
+  if (lid && tab === 'preview') {
+    const top = stacked ? mesh.stackOffset : 0;
+    if ($('#optLid').checked) {
+      const pl = lid.place;
+      items.push(pl.flip ? { g: gpuLid, m: lid, scl: [1, -1, -1], off: [0, q.D, pl.z0 + top], color: '--lid', label: 'lid' }
+                         : { g: gpuLid, m: lid, scl: [1, 1, 1], off: [0, 0, pl.z0 + top], color: '--lid', label: 'lid' });
+    } else items.push({ g: gpuLid, m: lid, scl: [1, 1, 1], off: [q.W + 12 - lid.footprint[0], 0, 0], color: '--lid', label: 'lid' });
+  }
+  return items;
+}
+function draw() {
+  if (!mesh) return;
+  const q = mesh.params;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2), r = canvas.getBoundingClientRect();
+  const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  const cut = tab === 'preview' && $('#optCut').checked, edges = !(tab === 'preview' && !$('#optEdges').checked);
+  EYE = eye();
+  VP = mul(persp(35 * Math.PI / 180, w / h, Math.max(0.5, view.dist * 0.01), view.dist * 20), lookAt(EYE, view.target, [0, 0, 1]));
+  updatePills(q);
+  const items = scene();
+  updateSection(q, cut, items);
+  if (!gl) return;
+  const bg = rgb(css('--bg-canvas'));
+  gl.viewport(0, 0, w, h); gl.clearColor(bg[0], bg[1], bg[2], 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.enable(gl.DEPTH_TEST);
+  const clipY = sectionY(q);
+  gl.useProgram(P2.p); gl.uniformMatrix4fv(P2.u.uVP, false, VP); gl.uniform3f(P2.u.uOff, 0, 0, 0); gl.uniform3f(P2.u.uScl, 1, 1, 1); gl.uniform1f(P2.u.uClipOn, 0);
+  gl.enableVertexAttribArray(P2.aPos);
+  const gc = rgb(css('--grid')), gm = rgb(css('--grid-major'));
+  gl.bindBuffer(gl.ARRAY_BUFFER, gridBuf); gl.vertexAttribPointer(P2.aPos, 3, gl.FLOAT, false, 0, 0); gl.uniform4f(P2.u.uColor, gc[0], gc[1], gc[2], 1); gl.drawArrays(gl.LINES, 0, gridN);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gridMajorBuf); gl.vertexAttribPointer(P2.aPos, 3, gl.FLOAT, false, 0, 0); gl.uniform4f(P2.u.uColor, gm[0], gm[1], gm[2], 1); gl.drawArrays(gl.LINES, 0, gridMajorN);
+  gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1, 1);
+  gl.useProgram(P1.p); gl.uniformMatrix4fv(P1.u.uVP, false, VP); gl.uniform3fv(P1.u.uEye, EYE);
+  gl.uniform1f(P1.u.uClip, clipY); gl.uniform1f(P1.u.uClipOn, cut ? 1 : 0); gl.uniform3fv(P1.u.uInner, rgb(css('--model-inner')));
+  for (const it of items) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, it.g.pos); gl.enableVertexAttribArray(P1.aPos); gl.vertexAttribPointer(P1.aPos, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, it.g.nor); gl.enableVertexAttribArray(P1.aNor); gl.vertexAttribPointer(P1.aNor, 3, gl.FLOAT, false, 0, 0);
+    // a mirrored scale (1,-1,-1) is a rotation, so winding stays correct
+    gl.uniform3fv(P1.u.uOff, it.off); gl.uniform3fv(P1.u.uScl, it.scl); gl.uniform3fv(P1.u.uColor, rgb(css(it.color)));
+    gl.drawArrays(gl.TRIANGLES, 0, it.g.n);
+  }
+  gl.disableVertexAttribArray(P1.aNor); gl.disable(gl.POLYGON_OFFSET_FILL);
+  gl.useProgram(P2.p); gl.uniformMatrix4fv(P2.u.uVP, false, VP); gl.uniform1f(P2.u.uClip, clipY); gl.uniform1f(P2.u.uClipOn, cut ? 1 : 0);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  if (edges) {
+    const ec = rgb(css('--edge')); gl.uniform4f(P2.u.uColor, ec[0], ec[1], ec[2], 0.55);
+    for (const it of items) { if (!it.g.ne) continue; gl.bindBuffer(gl.ARRAY_BUFFER, it.g.edges); gl.vertexAttribPointer(P2.aPos, 3, gl.FLOAT, false, 0, 0); gl.uniform3fv(P2.u.uOff, it.off); gl.uniform3fv(P2.u.uScl, it.scl); gl.drawArrays(gl.LINES, 0, it.g.ne); }
+  }
+  // selected compartments: highlight their floors
+  if (selection.size && tab !== 'preview') {
+    const tri = [], z = q.t + 0.06;
+    for (const L of q.leaves) if (selection.has(L.path)) {
+      const ins = Math.min(q.fb + 0.3, (L.r[1] - L.r[0]) / 3, (L.r[3] - L.r[2]) / 3), x0 = L.r[0] + ins, x1 = L.r[1] - ins, y0 = L.r[2] + ins, y1 = L.r[3] - ins;
+      tri.push(x0, y0, z, x1, y0, z, x1, y1, z, x0, y0, z, x1, y1, z, x0, y1, z);
+    }
+    const sb = buf(new Float32Array(tri)), sc = rgb(css('--sel'));
+    gl.uniform3f(P2.u.uOff, 0, 0, 0); gl.uniform3f(P2.u.uScl, 1, 1, 1); gl.uniform4f(P2.u.uColor, sc[0], sc[1], sc[2], 0.75);
+    gl.bindBuffer(gl.ARRAY_BUFFER, sb); gl.vertexAttribPointer(P2.aPos, 3, gl.FLOAT, false, 0, 0); gl.drawArrays(gl.TRIANGLES, 0, tri.length / 3);
+    gl.deleteBuffer(sb);
+  }
+  gl.disable(gl.BLEND);
+}
+
+/* 2D cross-section of the real meshes, zoomed on the wall joint */
+function sectionY(q) { const L = q.leaves.find(l => l.r[0] <= q.t + 1e-6 && l.r[2] <= q.t + 1e-6) || q.leaves[0]; return (L.r[2] + L.r[3]) / 2 + 0.0137; }
+function sliceLoops(P, I, y0) {
+  const segs = [];
+  for (let i = 0; i < I.length; i += 3) {
+    const v = [I[i], I[i + 1], I[i + 2]], pts = [];
+    for (let k = 0; k < 3; k++) {
+      const a = v[k] * 3, b = v[(k + 1) % 3] * 3, ya = P[a + 1] - y0, yb = P[b + 1] - y0;
+      if ((ya < 0) !== (yb < 0)) { const t = ya / (ya - yb); pts.push([P[a] + t * (P[b] - P[a]), P[a + 2] + t * (P[b + 2] - P[a + 2])]); }
+    }
+    if (pts.length === 2) segs.push(pts);
+  }
+  const key = p => Math.round(p[0] * 1e4) + ',' + Math.round(p[1] * 1e4), map = new Map();
+  segs.forEach((s, i) => { for (const p of s) { const k = key(p); if (!map.has(k)) map.set(k, []); map.get(k).push(i); } });
+  const used = new Uint8Array(segs.length), loops = [];
+  for (let i = 0; i < segs.length; i++) {
+    if (used[i]) continue; used[i] = 1; const loop = [segs[i][0], segs[i][1]];
+    for (let g = 0; g < segs.length; g++) {
+      const last = loop[loop.length - 1], cand = (map.get(key(last)) || []).find(j => !used[j]);
+      if (cand === undefined) break; used[cand] = 1; const s = segs[cand]; loop.push(key(s[0]) === key(last) ? s[1] : s[0]);
+    }
+    loops.push(loop);
+  }
+  return loops;
+}
+let secCache = {};
+function updateSection(q, show, items) {
+  const el = $('#section'); el.hidden = !show; if (!show) return;
+  const y0 = sectionY(q);
+  const parts_ = items.map(it => {
+    const k = it.label + it.off.join(',') + it.scl.join(',');
+    if (!secCache[k]) {
+      const P = it.m.positions, T = new Float32Array(P.length);
+      for (let i = 0; i < P.length; i += 3) { T[i] = P[i] * it.scl[0] + it.off[0]; T[i + 1] = P[i + 1] * it.scl[1] + it.off[1]; T[i + 2] = P[i + 2] * it.scl[2] + it.off[2]; }
+      secCache[k] = sliceLoops(T, it.m.indices, y0);
+    }
+    return { loops: secCache[k], color: css(it.color), label: it.label };
+  });
+  const stacked = items.some(i => i.label === 'upper tray'), lidOn = items.some(i => i.label === 'lid' && i.off[0] === 0);
+  let cx, cz, half;
+  if (stacked || lidOn) {
+    const zJ = q.H + (lidOn && stacked ? mesh.stackOffset : 0);
+    half = Math.max(3.4, (q.stack ? q.s * 1.35 : 0) + 0.8, lidOn ? (lid.L || 0) * 0.75 + 1.2 : 0);
+    cx = q.t + half * 0.3; cz = zJ - (lidOn && lid.style !== 'stack' ? half * 0.2 : 0.3);
+  } else { half = Math.max(3.2, (q.stack ? q.s + 1.6 : q.fb + q.t + 2.2)); cx = half * 0.75 - 0.6; cz = half * 0.75 - 0.6; }
+  const x0 = cx - half, z1 = cz + half, size = half * 2, sw = size / 220;
+  let out = '';
+  for (const p of parts_) out += `<path d="${p.loops.map(l => 'M' + l.map(v => `${v[0].toFixed(4)} ${(-v[1]).toFixed(4)}`).join('L') + 'Z').join('')}" fill="${p.color}" fill-opacity=".9" fill-rule="evenodd" stroke="${css('--text')}" stroke-width="${sw}"/>`;
+  const bx = x0 + size * 0.7, bz = -(z1 - size * 0.94);
+  out += `<line x1="${bx}" y1="${bz}" x2="${bx + 1}" y2="${bz}" stroke="${css('--text')}" stroke-width="${sw * 2}"/><text x="${bx + 1.2}" y="${bz + size * 0.015}" font-size="${size * 0.045}" fill="${css('--muted')}" font-family="monospace">1 mm</text>`;
+  if (stacked && !lidOn) {
+    const fs = size * 0.042, tx = q.t + size * 0.035;
+    out += `<circle cx="${q.t}" cy="${-q.H}" r="${size * 0.012}" fill="${css('--sel')}"/><text x="${tx}" y="${-q.H + size * 0.075}" font-size="${fs}" fill="${css('--text')}" font-family="monospace">contact</text><text x="${tx}" y="${-q.H + size * 0.075 + fs * 1.25}" font-size="${fs}" fill="${css('--muted')}" font-family="monospace">drops ${fmt(q.nest)} mm</text>`;
+  }
+  const svg = $('#secSvg'); svg.setAttribute('viewBox', `${x0} ${-z1} ${size} ${size}`); svg.innerHTML = out;
+  $('#secTitle').textContent = lidOn ? 'Section · lid fit' : stacked ? 'Section · stacking joint' : q.stack ? 'Section · chamfered wall' : 'Section · wall & floor';
+  $('#secLegend').innerHTML = parts_.filter((p, i, a) => a.findIndex(x => x.label === p.label) === i).map(p => `<span><i style="background:${p.color}"></i>${p.label}</span>`).join('') + `<span>wall ${fmt(q.t)} mm</span>` + (lidOn && lid.c ? `<span>gap ${fmt(lid.c)} mm</span>` : '');
+}
+
+function place(id, p) {
+  const el = $('#' + id); if (el.hidden) return;
+  const s = project(p); if (!s) { el.style.visibility = 'hidden'; return; }
+  const r = canvas.getBoundingClientRect();
+  el.style.visibility = ''; el.style.left = Math.min(r.width - 70, Math.max(70, s[0])) + 'px'; el.style.top = Math.min(r.height - 30, Math.max(70, s[1])) + 'px';
+}
+function updatePills(q) {
+  const off = Math.max(q.W, q.D) * 0.06 + 4;
+  place('pW', [q.W / 2, -off, 0]); place('pD', [-off, q.D / 2, 0]); place('pH', [q.W + off * 0.6, -off * 0.6, q.H / 2]);
+}
+new ResizeObserver(requestDraw).observe(canvas);
+if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { renderLayout(); requestDraw(); });
+
+doRebuild(); syncUI(); updateHistoryButtons(); setTab('size');
+window.__tray = { get mesh() { return mesh; }, get lid() { return lid; }, get state() { return state; }, get selection() { return [...selection]; },
+  set: o => { Object.assign(state, o); syncUI(); doRebuild(); commit(); }, draw, screenOf: p => { const s = project(p), r = canvas.getBoundingClientRect(); return s && [s[0] + r.left, s[1] + r.top]; }, select: (paths) => { selection = new Set(paths); renderLayout(); requestDraw(); } };
+})();
+</script>
+</body>
+</html>

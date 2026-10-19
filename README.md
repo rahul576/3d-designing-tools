@@ -8,7 +8,9 @@ Each tool in this repository targets a common pain point in 3D design work, such
 
 ## Tools
 
-No tools yet. Each tool will get its own folder with a short README describing what it does and how to run it.
+Each tool has its own folder with a short README describing what it does and how to run it.
+
+- [Tray Generator](tray-generator/) — parametric stackable trays and boxes with lids, exported as STL/3MF. [Open it online](https://rahul576.github.io/3d-designing-tools/tray-generator/).
 
 ## Contributing
 
