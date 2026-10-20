@@ -116,6 +116,8 @@ h2{font-size:32px;letter-spacing:-.025em;margin:0;line-height:1.2}
 .features{list-style:none;padding:0;margin:0 0 26px;display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}
 .features li{display:flex;gap:10px;font-size:14.5px;line-height:1.45}
 .features li svg{flex:0 0 18px;width:18px;height:18px;color:var(--c,var(--accent));margin-top:1px}
+.ver{display:inline-flex;align-items:center;gap:10px;margin:0 0 18px;font-size:14px;font-weight:600;color:var(--muted)}
+.ver select{font:600 14px Inter,system-ui,sans-serif;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:10px;height:38px;padding:0 12px;cursor:pointer}
 .detail .actions{display:flex;flex-wrap:wrap;gap:10px}
 .detail .media{position:relative;background:linear-gradient(160deg,color-mix(in srgb,var(--c,var(--accent)) 16%,var(--bg-2)),var(--bg-2));display:flex;flex-direction:column;justify-content:center;gap:14px;padding:26px;border-left:1px solid var(--line)}
 .detail .media img{width:100%;border-radius:12px;border:1px solid var(--line);background:#fff;box-shadow:var(--shadow)}
@@ -236,6 +238,9 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
   TOOLS: one entry per tool folder. To add a new tool, put it in its own
   folder at the repo root (with an index.html) and add an entry here.
   A tab and an overview card are created for it automatically.
+  Versions: the folder's index.html is always the latest version, and every
+  version is also kept at <folder>/versions/vN/index.html. List them in
+  "versions", newest first, and the tool's tab gets a version picker.
 */
 const TOOLS = [
   {
@@ -245,6 +250,7 @@ const TOOLS = [
     color: "#3b6ff5",
     icon: "tray",
     version: "v7",
+    versions: ["v7", "v6", "v5", "v4", "v3", "v2"],
     tagline: "Parametric, stackable, lightweight trays and boxes for 3D printing, with lids, compartments and wall patterns.",
     tags: ["Stackable", "Lids", "STL / 3MF"],
     features: [
@@ -312,8 +318,9 @@ function renderTool(t) {
       <h3>${esc(t.name)}</h3>
       <p class="tagline">${esc(t.tagline)}</p>
       <ul class="features">${(t.features || []).map(f => `<li>${svg("check", 2.4)}<span>${esc(f)}</span></li>`).join("")}</ul>
+      ${versionPicker(t)}
       <div class="actions">
-        <a class="btn primary" href="${esc(t.folder)}" style="background:linear-gradient(135deg,${esc(t.color)},var(--accent-2))">Open ${esc(t.name)} ${svg("arrow", 2.2)}</a>
+        <a class="btn primary" data-open href="${esc(t.folder)}" style="background:linear-gradient(135deg,${esc(t.color)},var(--accent-2))">Open ${esc(t.name)} ${svg("arrow", 2.2)}</a>
         ${(t.links || []).map(l => `<a class="btn ghost" href="${esc(l.href)}">${esc(l.label)}</a>`).join("")}
       </div>
       ${meta ? `<div class="meta">${meta}</div>` : ""}
@@ -324,6 +331,18 @@ function renderTool(t) {
     </figure>
   </article>`;
 }
+
+function versionPicker(t) {
+  if (!t.versions || !t.versions.length) return "";
+  const opts = [`<option value="${esc(t.folder)}">Latest (${esc(t.versions[0])})</option>`,
+    ...t.versions.map(v => `<option value="${esc(t.folder + "versions/" + v + "/")}">${esc(v)}</option>`)];
+  return `<label class="ver">Version <select data-ver>${opts.join("")}</select></label>`;
+}
+
+panelEl.addEventListener("change", e => {
+  const sel = e.target.closest("[data-ver]"); if (!sel) return;
+  const open = panelEl.querySelector("[data-open]"); if (open) open.href = sel.value;
+});
 
 function show(id, fromHash) {
   const tool = TOOLS.find(t => t.id === id);
