@@ -5,7 +5,7 @@
 # version and sha256 here whenever the version in 3mf-viewer/mac/Info.plist changes.
 cask "3mf-viewer" do
   version "1.1"
-  sha256 :no_check
+  sha256 "dd8a1bee33e51ca5537573a9ed61dfea338ac9486d3dc7eb9f23e8e60da0a8d3"
 
   url "https://github.com/rahul576/3d-designing-tools/releases/download/3mf-viewer-mac-v#{version}/3MF-Viewer-#{version}.zip"
   name "3MF Viewer"
