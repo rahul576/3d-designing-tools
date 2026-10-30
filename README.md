@@ -15,7 +15,7 @@ Each tool has its own folder with a short README describing what it does and how
 
 ## Home page
 
-The root `index.html` is the home page (https://rahul576.github.io/3d-designing-tools/). It shows one tab per tool, built from the `TOOLS` list near the bottom of the file.
+The root `index.html` is the home page (https://rahul576.github.io/3d-designing-tools/). It is a simple grid with one picture card per tool (screenshot, short description, Open button, version picker and guide link), built from the `TOOLS` list near the bottom of the file.
 
 The site is published from the `gh-pages` branch. A GitHub Actions workflow (`.github/workflows/sync-gh-pages.yml`) resets `gh-pages` to `main` on every push to `main`, so merged changes go live automatically.
 
@@ -29,6 +29,6 @@ Work goes straight to `main` (the site is not public yet, so no pull requests). 
 ## Adding a new tool
 
 1. Put the tool in its own top-level folder (for example `my-tool/`) with an `index.html` and a README.
-2. Add one entry for it to the `TOOLS` list in the root `index.html`. Its tab and overview card appear automatically.
+2. Add one entry for it to the `TOOLS` list in the root `index.html`, plus a `thumb.png` screenshot of the tool (1280×800) in its folder. Its card appears automatically.
 3. Add it to the Tools list above.
 4. Commit and push to `main`; tags are created automatically.
