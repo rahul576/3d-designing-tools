@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Photo Frame Generator v5</title>
+<title>Photo Frame Generator v6</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link id="gfonts" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@600&family=Great+Vibes&family=Lobster&family=Pacifico&family=Playfair+Display:ital,wght@0,600;1,600&family=Roboto+Slab:wght@500&family=Special+Elite&display=swap" rel="stylesheet">
@@ -116,7 +116,8 @@ main{flex:1;position:relative;min-width:0}
 #gl3d:active{cursor:grabbing}
 #gl3dMsg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--panel);padding:10px 16px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.18);font-size:13px;z-index:2;max-width:80%;text-align:center}
 #view.drop{outline:3px dashed var(--accent);outline-offset:-10px}
-#canvasWrap{min-width:100%;min-height:100%;display:flex;align-items:center;justify-content:center;padding:70px 90px 110px 24px}
+#canvasWrap{min-width:100%;min-height:100%;display:flex;align-items:center;justify-content:center;padding:106px 90px 110px 24px}
+#view.design #canvasWrap{padding-left:240px}
 #canvasWrap svg{display:block;flex:none;color:var(--muted)}
 #view.real #canvasWrap svg{border-radius:10px;box-shadow:0 6px 30px rgba(0,0,0,.35)}
 #canvasWrap svg.dragging{cursor:grabbing}
@@ -125,8 +126,46 @@ main{flex:1;position:relative;min-width:0}
 .tabs{position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;padding:3px;border-radius:10px;background:var(--panel);box-shadow:0 2px 10px rgba(0,0,0,.14);z-index:3;white-space:nowrap}
 .tabs button,.tabs label{border:0;background:transparent;color:var(--text);font:12px var(--mono);letter-spacing:.02em;padding:7px 10px;border-radius:7px;cursor:pointer;display:flex;align-items:center;gap:6px}
 .tabs button:hover,.tabs label:hover{background:var(--panel-2)}
-.tabs .on,.tabs label:has(input:checked){background:var(--accent);color:#fff}
-.tabs input{display:none}
+.tabs button.on,.tabs .on,.tabs label:has(input:checked){background:var(--accent);color:#fff}
+.tabs input,.subbar input{display:none}
+.tabs button{font-size:13px;padding:8px 14px}
+.subbar{position:absolute;top:64px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;padding:3px;border-radius:9px;background:var(--panel);box-shadow:0 2px 8px rgba(0,0,0,.12);z-index:3;white-space:nowrap}
+.subbar>span{display:flex;gap:2px}
+.subbar button,.subbar label{border:0;background:transparent;color:var(--text);font:11.5px var(--mono);padding:6px 9px;border-radius:6px;cursor:pointer}
+.subbar button:hover,.subbar label:hover{background:var(--panel-2)}
+.subbar button.on,.subbar label:has(input:checked){background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.subbar select{border:0;background:transparent;color:var(--text);font:11.5px var(--mono);padding:5px 4px;cursor:pointer}
+.surprise{position:absolute;top:18px;left:18px;z-index:4;display:flex;align-items:center;gap:10px;border:0;cursor:pointer;color:#fff;font:700 16px system-ui,sans-serif;padding:13px 22px 13px 18px;border-radius:30px;background:linear-gradient(135deg,#8b5cf6,#ec4899 55%,#f59e0b);box-shadow:0 6px 18px rgba(139,92,246,.45);transition:transform .15s,box-shadow .15s}
+.surprise:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 10px 24px rgba(236,72,153,.45)}
+.surprise:active{transform:scale(.97)}
+.surprise svg{transition:transform .4s}
+.surprise.spin svg{transform:rotate(360deg)}
+.pod{position:absolute;left:18px;top:86px;z-index:3;width:206px;background:var(--panel);border-radius:12px;box-shadow:0 3px 14px rgba(0,0,0,.16);padding:10px 10px 10px;display:grid;gap:7px}
+.pod-h{font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pod-r{display:grid;grid-template-columns:46px 28px 1fr 28px;align-items:center;gap:4px}
+.pod-l{font-size:12px;color:var(--muted)}
+.pod-r button{height:28px;border:0;border-radius:50%;background:#2b8be6;color:#fff;font:700 16px system-ui;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.pod-r button:hover{background:#1d74c7}
+.pod-r input{width:100%;height:28px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);font:12px var(--mono);text-align:center;padding:0 2px;-moz-appearance:textfield}
+.pod-photo{font-size:11.5px;line-height:1.45;color:var(--text);background:var(--panel-2);border-radius:7px;padding:6px 8px}
+.pod-photo b{color:#e4572e;font-weight:600}
+.pod-fit{display:flex;align-items:center;justify-content:center;gap:7px;height:34px;border:0;border-radius:8px;cursor:pointer;background:#14a38b;color:#fff;font:600 12.5px system-ui,sans-serif;box-shadow:0 2px 6px rgba(20,163,139,.35)}
+.pod-fit:hover{background:#0f8a75}
+.zoombox{position:absolute;right:18px;bottom:70px;z-index:3;display:flex;flex-direction:column;align-items:center;background:var(--panel);border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.14);padding:3px}
+.zoombox button{width:34px;height:32px;border:0;background:transparent;color:var(--text);font:16px var(--mono);border-radius:7px;cursor:pointer}
+.zoombox button:hover{background:var(--panel-2)}
+.zoombox .zoomv{font:10px var(--mono);color:var(--muted);padding:2px 0}
+/* pattern picker */
+.pats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.pats button{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:3px;cursor:pointer;display:flex;flex-direction:column;gap:3px;align-items:stretch}
+.pats button:hover{border-color:var(--muted)}
+.pats button.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);background:var(--accent-soft)}
+.pats svg{width:100%;aspect-ratio:1;display:block;border-radius:5px}
+.pats span{font-size:9.5px;line-height:1.15;color:var(--muted);text-align:center;height:22px;overflow:hidden}
+#patZoom{position:fixed;z-index:19;background:var(--panel);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);padding:8px;pointer-events:none;width:236px}
+#patZoom svg{width:220px;height:220px;display:block;border-radius:8px}
+#patZoom div{font-size:12px;font-weight:600;padding:6px 2px 0}
+#patZoom small{display:block;font-weight:400;color:var(--muted);font-size:11px}
 .tabs .sep{width:1px;height:20px;background:var(--line);margin:0 4px}
 .tabs .zoomv{min-width:42px;text-align:center;font:12px var(--mono);color:var(--muted)}
 .tabs select{border:0;background:transparent;font:12px var(--mono);padding:6px 4px;cursor:pointer}
@@ -176,10 +215,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
   .app{flex-direction:column-reverse}
   aside{width:100%;height:46%;border-right:0;border-top:1px solid var(--line)}
   main{height:54%;flex:none}
-  .tabs{top:10px;max-width:calc(100% - 16px);overflow-x:auto}
+  .tabs{top:10px;max-width:calc(100% - 16px);overflow-x:auto} .subbar{top:52px;max-width:calc(100% - 16px);overflow-x:auto}
+  .surprise{top:auto;bottom:14px;left:12px;font-size:13px;padding:9px 14px 9px 12px} .pod{display:none!important} .zoombox{display:none}
   .dl{top:auto;bottom:14px;right:12px} .btn-dark span{display:none} .menu{top:auto;bottom:46px}
   #info{left:12px;bottom:14px;max-width:calc(100% - 90px)} .stats{display:none} .reset{display:none}
-  #canvasWrap{padding:56px 70px 70px 12px}
+  #canvasWrap,#view.design #canvasWrap{padding:90px 70px 70px 12px}
 }
 </style>
 </head>
@@ -188,8 +228,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
   <aside>
     <div class="brand">
       <svg class="logo" width="30" height="24" viewBox="0 0 30 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="26" height="20" rx="1.5"/><rect x="7" y="6.5" width="16" height="11" rx=".5"/><path d="m7 15 4-4 3 3 2.5-2.5L23 17"/></svg>
-      <h1>Frame <span>v5</span></h1>
-      <button class="icon-btn" id="btnRandom" data-tip="Surprise me: pick a random frame style and colours. Click again for another one." aria-label="Random style"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="16" cy="16" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="16" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="16" r="1.2" fill="currentColor"/></svg></button>
+      <h1>Frame <span>v6</span></h1>
       <button class="icon-btn" id="btnHelp" data-tip="How it works: designing, printing and assembling the frame" aria-label="Help"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.7"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg></button>
       <button class="icon-btn" id="themeBtn" data-tip="Switch between light and dark mode" aria-label="Toggle dark mode"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button>
     </div>
@@ -216,27 +255,39 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
     <canvas id="gl3d" hidden></canvas>
     <div id="gl3dMsg" hidden></div>
     <div class="tabs" role="toolbar" aria-label="Preview">
-      <button id="vFront" data-tip="Design view: the front of the frame on a measuring grid">Design</button>
+      <button id="vFront" data-tip="Design view: the front of the frame on a measuring grid, with its sizes">Design</button>
       <button id="vReal" data-tip="Real world view: see the frame at true size on a wall or shelf">Real world</button>
-      <button id="v3d" data-tip="3D view: the real printed pieces in their filament colours. Drag to turn it, scroll to zoom, right-drag to move, double-click to reset">3D</button>
-      <button id="vBack" data-tip="Back view: the printed back with the photo pocket, snap pins and hanger, as seen from behind">Back</button>
-      <span class="sep"></span>
-      <button id="zOut" data-tip="Zoom out" aria-label="Zoom out">−</button>
-      <span class="zoomv" id="zVal">Fit</span>
-      <button id="zIn" data-tip="Zoom in" aria-label="Zoom in">+</button>
-      <button id="zFit" data-tip="Fit the whole preview on screen">Fit</button>
-      <span class="sep"></span>
-      <span id="designOpts" style="display:flex;gap:2px">
-        <label data-tip="Show the outer width and height"><input type="checkbox" id="tDims" checked>Size</label>
-        <label data-tip="Show the photo edge (red dashes) that hides under the frame"><input type="checkbox" id="tGuides" checked>Guides</label>
+      <button id="v3d" data-tip="3D rendering: the real printed pieces in their filament colours. Drag to turn it, scroll to zoom, right-drag to move, double-click to reset">3D rendering</button>
+    </div>
+    <div class="subbar" id="subbar">
+      <span id="designOpts">
+        <label data-tip="Show the frame and photo sizes on the drawing"><input type="checkbox" id="tDims" checked>Sizes</label>
+        <label data-tip="Show the photo edge (red dashes) that hides under the frame"><input type="checkbox" id="tGuides" checked>Photo edge</label>
       </span>
-      <span id="opts3d" style="display:flex;gap:2px">
-        <select id="t3dLayout" data-tip="Assembled shows the finished frame with your photo; As printed shows every piece the way it sits on the print bed" aria-label="3D layout"><option value="assembled">Assembled</option><option value="printed">As printed</option></select>
+      <span id="opts3d" class="lay3d">
+        <button data-l="assembled" data-tip="The finished frame from the front, with your photo">Front</button>
+        <button data-l="back" data-tip="The back: the photo slot, finger hole and hanger">Back</button>
+        <button data-l="insert" data-tip="How the photo goes in: it slides into the slot in the side (or, with a removable back, the back comes off)">Photo going in</button>
+        <button data-l="printed" data-tip="Every piece the way it lies on the print bed">As printed</button>
       </span>
-      <span id="realOpts" style="display:flex;gap:2px">
+      <span id="realOpts">
         <select id="tScene" data-tip="Choose where to see the frame" aria-label="Scene"><option value="wall">Living room wall</option><option value="kids">Kids room wall</option><option value="shelf">Shelf / desk</option></select>
         <select id="tWall" data-tip="Wall colour" aria-label="Wall colour"><option value="#eeeae3">Warm white</option><option value="#d9dcdf">Light grey</option><option value="#c9d6c4">Sage</option><option value="#f1d9d2">Blush</option><option value="#cfe3f3">Sky blue</option><option value="#2f3a4a">Navy</option><option value="#e3d3b8">Beige</option></select>
       </span>
+    </div>
+    <button class="surprise" id="btnSurprise" data-tip="Surprise me: a random frame style and colours. Click again for another one."><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="16" cy="16" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="16" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="16" r="1.3" fill="currentColor"/></svg><span>Surprise me</span></button>
+    <div class="pod" id="sizePod" aria-label="Frame size">
+      <div class="pod-h">Frame size</div>
+      <div class="pod-r"><span class="pod-l">Width</span><button data-d="W" data-k="-1" data-tip="Make the frame narrower (Shift: 1 mm steps)" aria-label="Narrower">−</button><input id="podW" type="number" step="any" aria-label="Frame width" data-tip="Type the outer width you want"><button data-d="W" data-k="1" data-tip="Make the frame wider (Shift: 1 mm steps)" aria-label="Wider">+</button></div>
+      <div class="pod-r"><span class="pod-l">Height</span><button data-d="H" data-k="-1" data-tip="Make the frame shorter (Shift: 1 mm steps)" aria-label="Shorter">−</button><input id="podH" type="number" step="any" aria-label="Frame height" data-tip="Type the outer height you want"><button data-d="H" data-k="1" data-tip="Make the frame taller (Shift: 1 mm steps)" aria-label="Taller">+</button></div>
+      <div class="pod-photo" id="podPhoto"></div>
+      <button class="pod-fit" id="btnAutoFit" data-tip="Resize the frame to suit the photo: borders sized for the photo, with room for the hanger and caption"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>Fit frame to photo</button>
+    </div>
+    <div class="zoombox">
+      <button id="zIn" data-tip="Zoom in" aria-label="Zoom in">+</button>
+      <span class="zoomv" id="zVal">Fit</span>
+      <button id="zOut" data-tip="Zoom out" aria-label="Zoom out">−</button>
+      <button id="zFit" data-tip="Fit the whole frame on screen" aria-label="Fit">⤢</button>
     </div>
     <div class="dl">
       <button class="btn-dark" id="download" aria-haspopup="menu" aria-expanded="false" data-tip="Download files for your 3D printer and the photo print"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg><span>Download</span></button>
@@ -259,6 +310,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 <input type="file" id="filePhoto" accept="image/*" hidden multiple>
 <div class="toast" id="toast"></div>
 <div id="tip" role="tooltip"></div>
+<div id="patZoom" hidden></div>
 <div class="modal" id="modal" hidden><div class="card" id="modalCard"></div></div>
 
 <script>
@@ -428,11 +480,12 @@ const SECTIONS=[
   len('capOffset','Nudge down',0,-60,60,0.25),
   slot('capFil','Text colour',2),
  ]},
- {id:'hang',title:'Hanging & back',sub:'',acc:'#64748b',fields:[
+ {id:'hang',title:'Photo slot & hanging',sub:'',acc:'#64748b',fields:[
+  sel('load','How the photo goes in','right',[['right','Slides in from the right side'],['left','Slides in from the left side'],['back','Take the back off (snap pins)']],null,'Slide-in: the back has a slot that is open on one side, so you push the photo in from the side without taking anything apart, and push it out again through the finger hole in the back. Take the back off: the back snaps on with pins and you open it to change the photo.'),
   sel('hang','Hang or stand','keyhole2',[['none','Nothing (lean it on a shelf)'],['stand','Desk stand leg (extra printed piece)'],['loop','From the top: loop for a nail or ribbon'],['keyhole1','From the back: one keyhole slot'],['keyhole2','From the back: two keyhole slots'],['string','From the back: two holes for a string']],null,'Keyhole slots sit flat on the wall on one or two screws. The top loop shows above the frame. The stand leg glues to the back.'),
   len('holeD','Hole diameter',5,2,15,0.25,p=>p.hang==='loop'||p.hang==='string'),
   len('holeSpacing',p=>p.hang==='string'?'Hole spacing':'Keyhole spacing',70,10,500,0.5,p=>p.hang==='string'||p.hang==='keyhole2'),
-  chk('pegs','Snap pins hold the back on',true,null,'Small pins on the back plate push into holes in the frame, so you can open it to change the photo. Turn off to glue the back instead.'),
+  chk('pegs',p=>p.load==='back'?'Snap pins hold the back on':'Pins line up the back',true,null,'Small pins on the back plate push into holes in the frame. With a slide-in slot they line the back up and you can also glue it; with a removable back they hold it on so you can open it. Turn off to glue the back instead.'),
  ]},
  {id:'print',title:'3D print settings',sub:'',acc:'#ef4444',fields:[
   sel('printStyle','Colour method','raised',[['raised','Raised colours (any printer)'],['flat','Flat colours, face down (AMS / multi-material)']],null,'Raised: the frame prints face up and each extra colour is a raised layer, so you swap filament once per colour at a set height. Flat: the front prints face down and all colours sit flush; this needs an AMS or similar and changes filament on the first few layers.'),
@@ -750,6 +803,9 @@ function computeGeo(P){
   if(P.capText&&P.capSize<5)warn.push('The caption is smaller than 5 mm and may be hard to read once printed.');
   const hb=coll?{cx:box.cx,cy:box.cy,hfw,hfh}:{cx,cy,hfw,hfh};
   const G={W,H,cx:hb.cx,cy:hb.cy,hfw:hb.hfw,hfh:hb.hfh,side,top,bottom,mt,ed,outerBase,outer,wins,photoArea,pocket,warn,coll};
+  // slide-in: the pocket runs out through one side of the back, so the photo slides in without opening the frame
+  if(P.load==='right'||P.load==='left'){const pk=bbox(pocket),X=P.load==='right'?W+50:-50;
+    G.slot=norm([[P.load==='right'?pk.x0:X,pk.y0],[P.load==='right'?X:pk.x1,pk.y0],[P.load==='right'?X:pk.x1,pk.y1],[P.load==='right'?pk.x0:X,pk.y1]]);}
   G.back=backFeatures(P,G);
   warn.push(...G.back.warn);
   G.y0=Math.min(0,G.back.tab?G.back.tab.top:0);
@@ -761,14 +817,16 @@ const PEG_R=1.5,KH_HEAD=4.5,KH_SHANK=2.1,KH_LEN=7;
 function circlePts(x,y,r,n=32){const p=[];for(let i=0;i<n;i++){const a=i/n*2*Math.PI;p.push([x+r*Math.cos(a),y+r*Math.sin(a)]);}return p;}
 function stadiumV(x,y0,y1,r,n=12){// vertical slot from y0 (bottom centre) up to y1 (top centre), y1<y0
   return[...arcPts(x,y0,r,r,0,Math.PI,n),...arcPts(x,y1,r,r,Math.PI,2*Math.PI,n)];}
+function stadiumH(x0,x1,y,r,n=12){return[...arcPts(x1,y,r,r,-Math.PI/2,Math.PI/2,n),...arcPts(x0,y,r,r,Math.PI/2,1.5*Math.PI,n)];}
 function keyholePts(x,y){// head circle at (x,y), shank slot going up
   const h=Math.sqrt(KH_HEAD**2-KH_SHANK**2),phi=Math.asin(KH_SHANK/KH_HEAD);
   return[...arcPts(x,y,KH_HEAD,KH_HEAD,-Math.PI/2+phi,1.5*Math.PI-phi,40),[x-KH_SHANK,y-KH_LEN],...arcPts(x,y-KH_LEN,KH_SHANK,KH_SHANK,Math.PI,2*Math.PI,12).slice(1)];}
 function backFeatures(P,G){
   const B={pegs:[],keyholes:[],strings:[],tab:null,warn:[],pegH:0};
   const pk=bbox(G.pocket);
-  const okCircle=(x,y,r)=>{if(!inPoly(x,y,G.outer)||inPoly(x,y,G.pocket))return false;
-    for(let a=0;a<16;a++){const px=x+r*Math.cos(a*Math.PI/8),py=y+r*Math.sin(a*Math.PI/8);if(!inPoly(px,py,G.outer)||inPoly(px,py,G.pocket))return false;}return true;};
+  const inPk=(x,y)=>inPoly(x,y,G.pocket)||(G.slot&&inPoly(x,y,G.slot));
+  const okCircle=(x,y,r)=>{if(!inPoly(x,y,G.outer)||inPk(x,y))return false;
+    for(let a=0;a<16;a++){const px=x+r*Math.cos(a*Math.PI/8),py=y+r*Math.sin(a*Math.PI/8);if(!inPoly(px,py,G.outer)||inPk(px,py))return false;}return true;};
   const okPoly=(pts,m)=>pts.every(([x,y])=>okCircle(x,y,m));
   const topAt=x=>{const t=rayHit(G.outer,x,pk.y0,0,-1);return isFinite(t)?pk.y0-t:pk.y0;};
   const clash=(x,y,r)=>[...B.keyholes.map(k=>[k.x,k.y-KH_LEN/2,KH_HEAD+KH_LEN/2]),...B.strings.map(s=>[s.x,s.y,s.r])].some(([a,b,rr])=>Math.hypot(a-x,b-y)<r+rr+2);
@@ -790,6 +848,11 @@ function backFeatures(P,G){
     else{const hy=yTop-2-P.holeD/2;
       const pts=[[G.cx-tw/2,yTop+ovl],[G.cx+tw/2,yTop+ovl],...arcPts(G.cx,hy,tw/2,tw/2,0,-Math.PI,24)];
       B.tab={pts,hole:circlePts(G.cx,hy,P.holeD/2,32),hx:G.cx,hy,top:hy-tw/2};}
+  }
+  if(G.slot){// finger hole in the back, to push the photo out of the slot
+    const pw=pk.x1-pk.x0,ph=pk.y1-pk.y0;
+    if(pw>=45&&ph>=28){const L=Math.min(32,pw*0.3),r=Math.min(7,ph*0.2),y=(pk.y0+pk.y1)/2,xa=P.load==='right'?pk.x0+pw*0.12:pk.x1-pw*0.12-L;
+      B.finger=stadiumH(xa+r,xa+L-r,y,r);}
   }
   if(P.pegs){
     B.pegH=Math.min(2.5,Math.max(1.2,P.frontT-1.4));
@@ -1011,6 +1074,8 @@ function buildSVG(P,G,o={}){
       s+=tick(x,y0,x,G.H)+tick(x-fs*0.4,y0,x+fs*0.4,y0)+tick(x-fs*0.4,G.H,x+fs*0.4,G.H);
       s+=`<rect x="${f2(x-fs*0.7)}" y="${f2(y0+Ht/2-fs*3.4)}" width="${f2(fs*1.4)}" height="${f2(fs*6.8)}" style="fill:var(--stagebg)"/>`;
       s+=`<text transform="translate(${f2(x)} ${f2(y0+Ht/2)}) rotate(-90)" text-anchor="middle" dominant-baseline="central">${fmtLen(Ht)}</text>`;
+      const A=G.photoArea,pl=`${G.coll?'Photo sheet':'Photo'} ${fmtLen(A.w)} × ${fmtLen(A.h)}`+(G.coll?'':` · visible ${fmtLen(G.wins[0].ww)} × ${fmtLen(G.wins[0].wh)}`);
+      s+=`<text x="${f2(G.W/2)}" y="${f2(G.H+m*0.42)}" text-anchor="middle" dominant-baseline="central" fill="#e4572e" font-weight="600">${pl}</text>`;
       s+=`</g>`;
     }
   }
@@ -1281,6 +1346,10 @@ function makeRow(f){
     nI.addEventListener('change',()=>{set(P[f.id]);});
     wrap.append(r,nI);el.append(lab,wrap);
     set=v=>{const dv=dround(f,disp(f,v));r.value=dv;if(document.activeElement!==nI)nI.value=dv;};
+  }else if(f.type==='sel'&&f.id==='pattern'){
+    lab.innerHTML=`<span class="t"></span> <small>hover to see it close up</small>`;labelEl=lab.querySelector('.t');
+    const box=document.createElement('div');box.className='pats';box.id='pats';el.append(lab,box);initPatterns(box);
+    set=()=>renderPatterns();
   }else if(f.type==='sel'){
     lab.innerHTML=`<span class="t"></span>${help}`;labelEl=lab.querySelector('.t');
     const s=document.createElement('select');s.className='inp';s.id='c_'+f.id;lab.htmlFor=s.id;
@@ -1428,34 +1497,100 @@ function addSlot(){
   P.nCol++;P['fil'+P.nCol]=pick;syncControls();schedule();setTimeout(()=>openColorPop(P.nCol),30);
 }
 
+/* ---------- floating frame size buttons (design view) ---------- */
+function frameDelta(d,delta){
+  if(isOuter(P)){if(d==='W')P.outerW=clamp(P.outerW+delta,20,1200);else P.outerH=clamp(P.outerH+delta,20,1200);}
+  else{if(P.uniform){P.bTop=P.bBottom=P.bSide;P.uniform=false;}
+    if(d==='W')P.bSide=clamp(P.bSide+delta/2,0,250);
+    else{P.bTop=clamp(P.bTop+delta/2,0,250);P.bBottom=clamp(P.bBottom+delta/2,0,250);}}
+}
+function setFrameSize(d,target){
+  for(let i=0;i<5;i++){const g=computeGeo(P),cur=d==='W'?g.W:g.H,delta=target-cur;if(Math.abs(delta)<0.05)break;frameDelta(d,delta);}
+  if(activeStyle){activeStyle='';markGallery();}syncControls();schedule();
+}
+function autoFit(){
+  const[pw,ph]=isCollage(P)?[P.colW,P.colH]:photoDims(P);
+  const b=Math.round(clamp(Math.min(pw,ph)*0.16,15,45));
+  let top=b,bottom=b+Math.round(b*0.2);
+  if(P.capText){const need=Math.round(P.capSize*2+8);if(P.capPos==='top')top=Math.max(top,need);else bottom=Math.max(bottom,need);}
+  if(['keyhole1','keyhole2','loop','string'].includes(P.hang))top=Math.max(top,22);
+  if(isSingle(P))P.sizeMode='photo';
+  P.uniform=false;P.bSide=b;P.bTop=top;P.bBottom=bottom;
+  if(activeStyle){activeStyle='';markGallery();}syncControls();schedule();
+  const g=computeGeo(P);toast(`Frame fitted to the photo: ${fmtLen(g.W)} × ${fmtLen(g.H)}, ${fmtLen(b)} borders`);
+}
+function initSizePod(){
+  const pod=$('#sizePod');
+  pod.addEventListener('click',e=>{const bt=e.target.closest('button[data-d]');if(!bt)return;
+    const step=e.shiftKey?1:P.units==='in'?MM_IN/4:5;frameDelta(bt.dataset.d,+bt.dataset.k*step);
+    if(activeStyle){activeStyle='';markGallery();}syncControls();schedule();});
+  for(const d of['W','H']){const inp=$('#pod'+d);
+    inp.addEventListener('change',()=>{const v=parseFloat(inp.value);if(!isNaN(v)&&v>0)setFrameSize(d,P.units==='in'?v*MM_IN:v);});
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();});}
+  $('#btnAutoFit').onclick=autoFit;
+}
+function syncSizePod(){
+  if(!G||$('#sizePod').hidden)return;
+  const dv=mm=>P.units==='in'?(mm/MM_IN).toFixed(2):(Math.round(mm*10)/10).toString();
+  for(const[d,v]of[['W',G.W],['H',G.H]]){const inp=$('#pod'+d);if(document.activeElement!==inp)inp.value=dv(v);}
+  const A=G.photoArea,pr=isSingle(P)?PHOTO_PRESETS.find(p=>p[0]===P.photoPreset&&p[2]):null;
+  $('#podPhoto').innerHTML=G.coll?`<b>Photo sheet</b> ${fmtLen(A.w)} × ${fmtLen(A.h)}<br>${G.wins.length} photos`:`<b>Photo</b> ${pr?esc(pr[1].replace(/ \(.*\)/,''))+' · ':''}${fmtLen(A.w)} × ${fmtLen(A.h)}<br>Visible ${fmtLen(G.wins[0].ww)} × ${fmtLen(G.wins[0].wh)}`;
+  $('#podPhoto').innerHTML+=`<br>${G.slot?`Slides in from the ${P.load} side`:'Back comes off to change it'}`;
+}
+
+/* ---------- pattern picker with pictures and a close-up on hover ---------- */
+function patSVG(t,sz,scale){
+  const fc=s=>P['fil'+clamp(s|0,1,4)]||'#888';
+  const PP={...P,pattern:t,patScale:scale,patOffX:0,patOffY:0,patRot:t==='none'?0:P.patRot};
+  const sh=t==='none'?[]:genPattern(PP,{W:sz,H:sz,cx:sz/2,cy:sz/2});
+  return`<svg viewBox="0 0 ${sz} ${sz}" xmlns="http://www.w3.org/2000/svg"><rect width="${sz}" height="${sz}" fill="${fc(P.frameFil)}"/>${shapesSVG(sh,fc)}</svg>`;
+}
+let patKey='';
+function renderPatterns(force){
+  const box=$('#pats');if(!box)return;
+  const key=[P.frameFil,P.patFil,P.patFil2,P.fil1,P.fil2,P.fil3,P.fil4,P.patWeight,P.patLine,P.patRot,P.patSeed].join();
+  if(key!==patKey||force||!box.children.length){patKey=key;
+    box.innerHTML=PATTERNS.map(([v,n])=>`<button type="button" data-p="${v}" aria-label="${esc(n)}">${patSVG(v,40,9)}<span>${esc(n.replace(/ \(.*\)/,''))}</span></button>`).join('');}
+  box.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.p===P.pattern));
+}
+function initPatterns(box){
+  const z=$('#patZoom');
+  box.addEventListener('click',e=>{const b=e.target.closest('button');if(b)setParam('pattern',b.dataset.p);});
+  box.addEventListener('mouseover',e=>{const b=e.target.closest('button');if(!b)return;const t=b.dataset.p,n=(PATTERNS.find(p=>p[0]===t)||[])[1]||'';
+    z.innerHTML=patSVG(t,60,Math.max(2,P.patScale))+`<div>${esc(n)}<small>${t==='none'?'Plain frame colour':`Close-up: 60 mm square at your pattern size (${fmtLen(P.patScale)})`}</small></div>`;
+    z.hidden=false;const r=b.getBoundingClientRect(),zh=z.offsetHeight;
+    z.style.left=Math.min(innerWidth-246,r.right+12)+'px';z.style.top=clamp(r.top+r.height/2-zh/2,8,innerHeight-zh-8)+'px';});
+  box.addEventListener('mouseleave',()=>{z.hidden=true;});
+}
+
 /* ---------- render ---------- */
 let raf=0,saveT=0,view='front',zoom=1,viewBox=[0,0,1,1],G=null,frameBoxInView=[0,0,1,1];
-const prefs={dims:true,guides:true,view:'front',scene:'wall',wall:'#eeeae3',open:'styles'};
+const prefs={dims:true,guides:true,view:'front',scene:'wall',wall:'#eeeae3',open:'styles',lay3d:'assembled'};
 function savePrefs(re=true){lsSet('pfg-v4-prefs',JSON.stringify({...prefs,curPid:LIB[curPhoto]?.sample?curPid:null}));if(re)schedule();}
 function schedule(){if(!raf)raf=requestAnimationFrame(()=>{raf=0;render();});}
 function render(){
   G=computeGeo(P);syncCur();
   const v=$('#view'),wrap=$('#canvasWrap');
-  v.classList.toggle('real',view==='real');
+  v.classList.toggle('real',view==='real');v.classList.toggle('design',view==='front');
   wrap.style.setProperty('--stagebg',getComputedStyle(document.documentElement).getPropertyValue('--bg-canvas'));
   const is3d=view==='3d';$('#gl3d').hidden=!is3d;wrap.hidden=is3d;
   if(is3d){wrap.innerHTML='';}
   else if(view==='real'){wrap.innerHTML=buildScene(P,G,prefs.scene,prefs.wall);}
-  else if(view==='back'){wrap.innerHTML=buildBackSVG(P,G);frameBoxInView=[0,G.y0,G.W,G.H-G.y0];}
   else{wrap.innerHTML=buildSVG(P,G,{preview:true,photos:windowPhotos(P,G),dims:prefs.dims,guides:prefs.guides,hit:true,sel:G.coll?selCell:null});frameBoxInView=[0,G.y0,G.W,G.H-G.y0];}
   const svg=wrap.firstChild;
   if(svg){const vbv=svg.viewBox.baseVal;viewBox=[vbv.x,vbv.y,vbv.width,vbv.height];}
-  for(const[id,on]of[['vFront',view==='front'],['vReal',view==='real'],['v3d',is3d],['vBack',view==='back']])$('#'+id).classList.toggle('on',on);
+  for(const[id,on]of[['vFront',view==='front'],['vReal',view==='real'],['v3d',is3d]])$('#'+id).classList.toggle('on',on);
   $('#designOpts').hidden=view!=='front';$('#realOpts').hidden=view!=='real';$('#opts3d').hidden=!is3d;
+  $('#sizePod').hidden=view!=='front';syncSizePod();
   renderColorBar();sizeSVG();if(svg)bindDrag(svg);info();secSubs();
   if(is3d)queue3D();else $('#gl3dMsg').hidden=true;
-  clearTimeout(render._g);render._g=setTimeout(()=>renderGallery(false),250);
+  clearTimeout(render._g);render._g=setTimeout(()=>{renderGallery(false);renderPatterns();},250);
   clearTimeout(saveT);saveT=setTimeout(()=>{lsSet('pfg-v4',JSON.stringify(P));},400);
 }
 function sizeSVG(){
   if(view==='3d'){$('#zVal').textContent='3D';positionColorBar();draw3D();return;}
   const svg=$('#canvasWrap svg');if(!svg)return;const v=$('#view');
-  const narrow=innerWidth<=820,aw=v.clientWidth-(narrow?90:130),ah=v.clientHeight-(narrow?126:180);const sc=Math.max(0.05,Math.min(aw/viewBox[2],ah/viewBox[3]))*zoom;
+  const narrow=innerWidth<=820,aw=v.clientWidth-(narrow?90:view==='front'?340:130),ah=v.clientHeight-(narrow?140:220);const sc=Math.max(0.05,Math.min(aw/viewBox[2],ah/viewBox[3]))*zoom;
   svg.style.width=f2(viewBox[2]*sc)+'px';svg.style.height=f2(viewBox[3]*sc)+'px';
   $('#zVal').textContent=zoom===1?'Fit':Math.round(zoom*100)+'%';
   positionColorBar();
@@ -1636,11 +1771,21 @@ function frontParts(P,G,M,kind){
   tiers.forEach((s,t)=>{const T=s===P.frameFil?body:[];extrude(T,maskPolys(M,p=>M.raised[p]>=128&&M.lab[p]===s),fT,fT+(t+1)*rH,tf);if(T!==body)parts.push({name:`Colour ${s} raised`,slot:s,tris:T});});
   return{parts,fT,rH,iD,flat:false,tiers:tiers.map((s,t)=>({slot:s,start:fT+t*rH,top:fT+(t+1)*rH}))};
 }
+// the layer around the photo: the outline with the pocket cut out, or for a slide-in slot a U shape open on one side
+function pocketRing(G,holes){
+  if(!G.slot)return[{outer:G.outer,holes:[G.pocket,...holes]}];
+  const pk=bbox(G.slot),B=1e5,R=(x0,y0,x1,y1)=>norm([[x0,y0],[x1,y0],[x1,y1],[x0,y1]]);
+  const closed=pk.x0<0?R(pk.x1,pk.y0,B,pk.y1):R(-B,pk.y0,pk.x0,pk.y1);
+  const out=[];
+  for(const c of[R(-B,-B,B,pk.y0),R(-B,pk.y1,B,B),closed]){const o=clipConvex(G.outer,c);if(o.length<3||Math.abs(polyArea(o))<1)continue;
+    out.push({outer:norm(o),holes:holes.filter(h=>{const b=bbox(h);return inPoly((b.x0+b.x1)/2,(b.y0+b.y1)/2,o);})});}
+  return out;
+}
 function backParts(P,G){
   const{bT,pD}=heights(P),ox=G.W+15,tf=([x,y])=>[x+ox,G.H-y],B=G.back,T=[];
   const strings=B.strings.map(s=>circlePts(s.x,s.y,s.r,32));
-  extrude(T,[{outer:G.outer,holes:[...B.keyholes.map(k=>k.through),...strings]}],0,bT,tf,true);
-  extrude(T,[{outer:G.outer,holes:[G.pocket,...B.keyholes.map(k=>k.cavity),...strings]}],bT,bT+pD,tf,true);
+  extrude(T,[{outer:G.outer,holes:[...B.keyholes.map(k=>k.through),...strings,...(B.finger?[B.finger]:[])]}],0,bT,tf,true);
+  extrude(T,pocketRing(G,[...B.keyholes.map(k=>k.cavity),...strings]),bT,bT+pD,tf,true);
   for(const p of B.pegs)extrude(T,[{outer:circlePts(p.x,p.y,p.r,24),holes:[]}],bT+pD,bT+pD+B.pegH,tf);
   if(B.tab)extrude(T,[{outer:B.tab.pts,holes:[B.tab.hole]}],0,bT+pD,tf,true);
   const parts=[{name:'Back with photo pocket',slot:P.frameFil,tris:T}];
@@ -1651,7 +1796,7 @@ function backParts(P,G){
 /* ---------- file writers ---------- */
 function stlBlob(tris){
   const n=tris.length/3,buf=new ArrayBuffer(84+n*50),dv=new DataView(buf);
-  const hdr='Photo frame generator v5 STL (mm)';for(let i=0;i<hdr.length;i++)dv.setUint8(i,hdr.charCodeAt(i));
+  const hdr='Photo frame generator v6 STL (mm)';for(let i=0;i<hdr.length;i++)dv.setUint8(i,hdr.charCodeAt(i));
   dv.setUint32(80,n,true);let off=84;
   for(let t=0;t<tris.length;t+=3){const a=tris[t],b=tris[t+1],c=tris[t+2];const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;const l=Math.hypot(nx,ny,nz)||1;
     for(const v of[nx/l,ny/l,nz/l,...a,...b,...c]){dv.setFloat32(off,v,true);off+=4;}dv.setUint16(off,0,true);off+=2;}
@@ -1683,7 +1828,7 @@ function meshXML(id,name,tris,pindex){
 }
 function build3MF(objects,multi){
   const slots=multi?[...new Set(objects.flatMap(o=>o.parts.map(p=>p.slot)))].sort():[];
-  const x=[`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">Photo frame</metadata><metadata name="Application">Photo Frame Generator v5</metadata><resources>`];
+  const x=[`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">Photo frame</metadata><metadata name="Application">Photo Frame Generator v6</metadata><resources>`];
   if(multi)x.push(`<basematerials id="1">${slots.map(s=>`<base name="Colour ${s}" displaycolor="${P['fil'+s].toUpperCase()}FF"/>`).join('')}</basematerials>`);
   let id=2;const build=[];
   for(const o of objects){
@@ -1736,7 +1881,7 @@ function showPrintGuide(kind,F,Bk){
   let h=`<button class="btn small close" id="mClose">Close</button><h2>How to print your frame</h2>`;
   h+=`<p>Your file is downloading. Open it in Bambu Studio, OrcaSlicer, PrusaSlicer or Cura. No supports are needed.</p><h3>Pieces</h3><table><tr><th>Piece</th><th>How it prints</th></tr>`;
   h+=`<tr><td>Frame front</td><td>${F.flat?'Face down on the bed (the bed gives a smooth front).':'Face up, flat back on the bed.'} ${fmtLen(F.fT)} thick${F.flat?'':' plus the raised colours'}.</td></tr>`;
-  h+=`<tr><td>Back with photo pocket</td><td>Flat side down, pocket${G.back.pegs.length?' and snap pins':''} facing up.</td></tr>`;
+  h+=`<tr><td>Back with photo ${G.slot?'slot':'pocket'}</td><td>Flat side down, ${G.slot?'slot':'pocket'}${G.back.pegs.length?' and pins':''} facing up.</td></tr>`;
   if(Bk.some(p=>p.leg))h+=`<tr><td>Stand leg</td><td>Lying flat. Glue its long straight edge to the middle of the back, with the short edge on the table.</td></tr>`;
   h+=`</table>`;
   if(kind==='multi'){
@@ -1748,7 +1893,7 @@ function showPrintGuide(kind,F,Bk){
       if(swaps.length)h+=`<table><tr><th>At height</th><th>Layer</th><th>Change to</th></tr>${swaps.map(t=>`<tr><td>${f2(t.start)} mm</td><td>${layer(t.start)}</td><td>${dot(t.slot)}Colour ${t.slot}</td></tr>`).join('')}</table><p class="tips">Heights assume ${lh} mm layers. Each colour stands ${fmtLen(F.rH)} above the one before it, so from the front you see every colour on top.</p>`;
     }
   }else h+=`<p>Everything prints in one colour. The pattern, mats, lines and text stand ${fmtLen(F.rH)} proud as raised texture.</p>`;
-  h+=`<h3>Put it together</h3><ol><li>Download <b>Photo print, actual size</b> and print it at 100 % scale (no “fit to page”). Trim on the grey line.</li><li>Lay the photo face down in the back’s pocket.</li><li>${G.back.pegs.length?'Press the front onto the back so the pins click into their holes.':'Glue the back to the front around the edges.'}</li>`;
+  h+=`<h3>Put it together</h3><ol><li>Download <b>Photo print, actual size</b> and print it at 100 % scale (no “fit to page”). Trim on the grey line.</li>${G.slot?`<li>${G.back.pegs.length?'Press the front onto the back so the pins click into their holes, and add a few drops of glue around the edge if you like. The back stays on for good.':'Glue the back to the front around the edges (keep glue away from the slot).'}</li><li>Slide the photo, face forward, into the slot on the ${P.load} side (seen from the front) until it stops. To change it, push it back out with a finger through the hole in the back.</li>`:`<li>Lay the photo face down in the back’s pocket.</li><li>${G.back.pegs.length?'Press the front onto the back so the pins click into their holes. Pull the back off again to change the photo.':'Glue the back to the front around the edges.'}</li>`}`;
   const hg={keyhole1:'Hang it on one screw or nail through the keyhole slot, then slide it down to lock.',keyhole2:'Fix two screws at the keyhole spacing ('+fmtLen(P.holeSpacing)+' apart, level), hook the frame on and slide it down.',loop:'Hang the loop on a nail or tie a ribbon through it.',string:'Tie a string or picture wire through the two holes and hang it on a nail.',stand:'Glue on the stand leg and stand it on a shelf or desk.',none:'Lean it on a shelf or picture ledge.'};
   h+=`<li>${hg[P.hang]}</li></ol>`;
   $('#modalCard').innerHTML=h;$('#modal').hidden=false;$('#mClose').onclick=()=>{$('#modal').hidden=true;};
@@ -1756,8 +1901,8 @@ function showPrintGuide(kind,F,Bk){
 function showHelp(){
   $('#modalCard').innerHTML=`<button class="btn small close" id="mClose">Close</button><h2>Photo Frame Generator</h2>
   <p>Design a frame for your 3D printer, see it on a wall at true size, and download files for your slicer.</p>
-  <h3>1. Design</h3><ul><li>Start from a <b>Frame style</b>, or use <b>Single photo</b> / <b>Collage</b> at the top of the left panel.</li><li>Pick a sample kid photo or upload your own. In a collage, choose many photos at once; click an opening in the preview to choose which photo goes there.</li><li>The round buttons to the right of the frame are your <b>filament colours</b>. Click one to change it, or + to add a colour.</li></ul>
-  <h3>2. Check</h3><ul><li><b>3D</b> shows the real printed pieces in their colours; drag to turn them. <b>Real world</b> shows the frame at true size on a wall or shelf. <b>Back</b> shows the photo pocket, snap pins and hanger.</li><li>Yellow notes at the bottom left warn about anything that may not print well.</li></ul>
+  <h3>1. Design</h3><ul><li>Start from a <b>Frame style</b>, or use <b>Single photo</b> / <b>Collage</b> at the top of the left panel.</li><li>Pick a sample kid photo or upload your own. In a collage, choose many photos at once; click an opening in the preview to choose which photo goes there.</li><li>The round buttons to the right of the frame are your <b>filament colours</b>. Click one to change it, or + to add a colour.</li><li>The <b>Frame size</b> box makes the frame wider, narrower, taller or shorter; <b>Fit frame to photo</b> picks good borders for your photo. <b>Surprise me</b> tries a random style.</li><li>The photo slides into a slot in the side of the back, so you can change it any time without opening the frame (or choose a removable back under <b>Photo slot &amp; hanging</b>).</li></ul>
+  <h3>2. Check</h3><ul><li><b>3D</b> shows the real printed pieces in their colours; drag to turn them. <b>Real world</b> shows the frame at true size on a wall or shelf. In 3D, <b>Back</b> shows the photo slot and hanger, and <b>Photo going in</b> shows how the photo slides in.</li><li>Yellow notes at the bottom left warn about anything that may not print well.</li></ul>
   <h3>3. Print</h3><ul><li><b>Raised colours</b> (default) work on any printer: the frame prints face up and each extra colour stands a little higher, so you change filament only once per colour.</li><li><b>Flat colours</b> print face down for a smooth front, for printers with an AMS or multi-material unit.</li><li>The multicolour 3MF has one part per colour. The single colour 3MF and STL turn the decorations into raised texture.</li></ul>
   <p class="tips">Hover over any button for a short explanation.</p>`;
   $('#modal').hidden=false;$('#mClose').onclick=()=>{$('#modal').hidden=true;};
@@ -1776,10 +1921,10 @@ function randomize(){
     mat1On:r()<0.55,mat2On:r()<0.3,linesWhere:pick(['none','inner','outer','both']),linesDash:pick(['solid','dashed','dotted']),
     ornament:r()<0.6?'none':pick(ORNAMENTS.slice(1)).at(0)});
   if(isSingle(P))P.winShape=pick(['rect','rect','rounded','oval','arch','octagon','circle','heart','stadium']);else P.cellShape=pick(['rect','rounded','oval','circle','arch']);
-  activeStyle='';markGallery();syncControls();schedule();toast('Random style: click the dice again for another');
+  activeStyle='';markGallery();syncControls();schedule();toast('Random style: click Surprise me again for another');
 }
 let activeStyle='',galleryKey='';
-const KEEP=['mode','layout','colW','colH','colGap','cellShape','cellR','units','photoPreset','photoW','photoH','orient','sizeMode','outerW','outerH','photoFit','photoZoom','photoX','photoY','hang','holeD','holeSpacing','pegs','printStyle','frontT','reliefH','inlayD','backT','pocketD','pocketClear','layerH'];
+const KEEP=['mode','layout','colW','colH','colGap','cellShape','cellR','units','photoPreset','photoW','photoH','orient','sizeMode','outerW','outerH','photoFit','photoZoom','photoX','photoY','hang','holeD','holeSpacing','pegs','load','printStyle','frontT','reliefH','inlayD','backT','pocketD','pocketClear','layerH'];
 function presetParams(name){const keep={};for(const k of KEEP)keep[k]=P[k];const pp={...DEFAULTS,...legacyToSlots(PRESETS[name]),...keep};if(pp.mode==='collage'&&pp.cellShape==='rect'&&PRESETS[name].winShape&&CELL_SHAPES.some(c=>c[0]===PRESETS[name].winShape))pp.cellShape=PRESETS[name].winShape;return pp;}
 function applyPreset(name){if(!PRESETS[name])return;P=presetParams(name);buildControls();schedule();activeStyle=name;markGallery();toast(`Style: ${name}`);}
 function initPresets(){
@@ -1825,7 +1970,7 @@ const V3D={theta:-Math.PI/2,phi:0.75,dist:400,target:[0,0,0],r:100,gl:null,mesh:
 function init3D(){
   const cv=$('#gl3d');let gl=null;
   try{gl=cv.getContext('webgl',{antialias:true,preserveDrawingBuffer:true})||cv.getContext('experimental-webgl');}catch(e){}
-  $('#t3dLayout').onchange=()=>{V3D.key='';V3D.fitKey='';queue3D(0);};
+  $('#opts3d').onclick=e=>{const b=e.target.closest('button');if(!b)return;prefs.lay3d=b.dataset.l;savePrefs(false);markLay3d();V3D.key='';V3D.fitKey='';queue3D(0);};markLay3d();
   if(!gl)return;
   V3D.gl=gl;
   const prog=(vs,fs)=>{const p=gl.createProgram();for(const[t,src]of[[gl.VERTEX_SHADER,vs],[gl.FRAGMENT_SHADER,fs]]){const sh=gl.createShader(t);gl.shaderSource(sh,src);gl.compileShader(sh);if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(sh));gl.attachShader(p,sh);}
@@ -1834,9 +1979,9 @@ function init3D(){
   V3D.mesh=prog(`attribute vec3 aPos;attribute vec3 aNor;uniform mat4 uVP;varying vec3 vN;varying vec3 vW;void main(){vN=aNor;vW=aPos;gl_Position=uVP*vec4(aPos,1.0);}`,
     `precision highp float;varying vec3 vN;varying vec3 vW;uniform vec3 uColor;uniform vec3 uEye;void main(){vec3 n=normalize(vN);if(!gl_FrontFacing)n=-n;vec3 V=normalize(uEye-vW);
      vec3 L1=normalize(vec3(-0.4,-0.6,0.9));vec3 L2=normalize(vec3(0.7,0.4,0.5));float d=max(dot(n,L1),0.0)*0.55+max(dot(n,L2),0.0)*0.2;float hemi=0.5+0.5*n.z;
-     vec3 c=uColor*(0.38+0.18*hemi+d);float sp=pow(max(dot(reflect(-L1,n),V),0.0),40.0)*0.08;gl_FragColor=vec4(c+sp,1.0);}`);
+     vec3 c=uColor*(0.3+0.14*hemi+d+max(dot(n,V),0.0)*0.22);float sp=pow(max(dot(reflect(-L1,n),V),0.0),40.0)*0.08;gl_FragColor=vec4(c+sp,1.0);}`);
   V3D.texp=prog(`attribute vec3 aPos;attribute vec2 aUV;uniform mat4 uVP;varying vec2 vUV;void main(){vUV=aUV;gl_Position=uVP*vec4(aPos,1.0);}`,
-    `precision mediump float;varying vec2 vUV;uniform sampler2D uTex;void main(){gl_FragColor=vec4(texture2D(uTex,vUV).rgb*0.97,1.0);}`);
+    `precision mediump float;varying vec2 vUV;uniform sampler2D uTex;void main(){gl_FragColor=gl_FrontFacing?vec4(0.93,0.93,0.91,1.0):vec4(texture2D(uTex,vUV).rgb*0.97,1.0);}`);
   // orbit, pan and zoom
   const ptr=new Map();let pan=false,pinch=0,d0=0;
   cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,[e.clientX,e.clientY]);pan=e.button===2||e.button===1||e.shiftKey;
@@ -1851,10 +1996,12 @@ function init3D(){
   cv.addEventListener('contextmenu',e=>e.preventDefault());
   cv.addEventListener('dblclick',()=>{fit3D(true);draw3D();});
 }
+const lay3d=()=>['assembled','back','insert','printed'].includes(prefs.lay3d)?prefs.lay3d:'assembled';
+function markLay3d(){document.querySelectorAll('#opts3d button').forEach(b=>b.classList.toggle('on',b.dataset.l===lay3d()));}
 function msg3D(t){const m=$('#gl3dMsg');m.textContent=t||'';m.hidden=!t;}
 function queue3D(delay=350){
   if(!V3D.gl){msg3D('This browser cannot show 3D (WebGL is turned off or not supported). The other views and the downloads still work.');return;}
-  const lay=$('#t3dLayout').value,key=JSON.stringify(P)+'|'+lay+'|'+(isCollage(P)?CELLS.map(c=>[c.pid,c.x,c.y,c.z].join()).join(';'):curPid);
+  const lay=lay3d(),key=JSON.stringify(P)+'|'+lay+'|'+(isCollage(P)?CELLS.map(c=>[c.pid,c.x,c.y,c.z].join()).join(';'):curPid);
   if(key===V3D.key){draw3D();return;}
   clearTimeout(V3D.timer);if(!V3D.items.length)msg3D('Building the 3D model…');
   V3D.timer=setTimeout(()=>build3D(key,lay),V3D.items.length?delay:30);
@@ -1863,7 +2010,9 @@ async function build3D(key,lay){
   const seq=++V3D.seq,gl=V3D.gl;
   try{
     const PP={...P},GG=G,M=await rasterFront(PP,GG,4,1.6e6);if(seq!==V3D.seq)return;
-    const F=frontParts(PP,GG,M,'multi'),Bk=backParts(PP,GG),{fT,bT,pD}=heights(PP),asm=lay==='assembled';
+    const F=frontParts(PP,GG,M,'multi'),Bk=backParts(PP,GG),{fT,bT,pD}=heights(PP),asm=lay!=='printed',ins=lay==='insert';
+    // "photo going in": slide-in frames show the photo half way out of its slot; a removable back is pulled away
+    const slideX=ins&&GG.slot?(PP.load==='right'?1:-1)*GG.photoArea.w*0.55:0,gapZ=ins&&!GG.slot?Math.max(30,0.25*Math.max(GG.W,GG.H)):0;
     const items=[],col=s=>hex2rgb(PP['fil'+s]).map(v=>v/255);
     const add=(tris,c,tf)=>{if(!tris.length)return;const n=tris.length,pos=new Float32Array(n*3),nor=new Float32Array(n*3);
       for(let t=0;t<n;t+=3){const a=tf(tris[t]),b=tf(tris[t+1]),c2=tf(tris[t+2]);const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c2[0]-a[0],vy=c2[1]-a[1],vz=c2[2]-a[2];
@@ -1873,7 +2022,7 @@ async function build3D(key,lay){
       const nb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,nb);gl.bufferData(gl.ARRAY_BUFFER,nor,gl.STATIC_DRAW);
       items.push({pb,nb,n,color:c,pos});};
     // assembled: stand the frame up with its front towards the viewer (-y)
-    const up=v=>[v[0],-v[2],v[1]],id=v=>v,front=v=>up(F.flat?[GG.W-v[0],v[1],fT-v[2]]:v),backAsm=v=>up([v[0]-(GG.W+15),v[1],v[2]-(bT+pD)]);
+    const up=v=>[v[0],-v[2],v[1]],id=v=>v,front=v=>up(F.flat?[GG.W-v[0],v[1],fT-v[2]]:v),backAsm=v=>up([v[0]-(GG.W+15),v[1],v[2]-(bT+pD)-gapZ]);
     for(const p of F.parts)add(p.tris,col(p.slot),asm?front:id);
     for(const p of Bk){if(asm&&p.leg)continue;add(p.tris,col(p.slot),asm?backAsm:id);}
     // the photo, sitting in the pocket behind the windows
@@ -1884,7 +2033,7 @@ async function build3D(key,lay){
         c.save();c.beginPath();c.rect((R.x-A.x)*kk,(R.y-A.y)*kk,R.w*kk,R.h*kk);c.clip();try{c.drawImage(p.ph.img,(b.x-A.x)*kk,(b.y-A.y)*kk,b.w*kk,b.h*kk);}catch(e){}c.restore();});
       tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,cv);
       for(const[k2,v]of[[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,k2,v);
-      const z=-0.25,x0=A.x,x1=A.x+A.w,y0=GG.H-A.y,y1=GG.H-A.y-A.h;
+      const z=-0.25-gapZ/2,x0=A.x+slideX,x1=A.x+A.w+slideX,y0=GG.H-A.y,y1=GG.H-A.y-A.h;
       const q=(x,y,u,v)=>[...up([x,y,z]),u,v],d=new Float32Array([...q(x0,y0,0,0),...q(x1,y0,1,0),...q(x1,y1,1,1),...q(x0,y0,0,0),...q(x1,y1,1,1),...q(x0,y1,0,1)]);
       quad=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,quad);gl.bufferData(gl.ARRAY_BUFFER,d,gl.STATIC_DRAW);}
     for(const it of V3D.items){gl.deleteBuffer(it.pb);gl.deleteBuffer(it.nb);}if(V3D.quad)gl.deleteBuffer(V3D.quad);if(V3D.tex)gl.deleteTexture(V3D.tex);
@@ -1901,7 +2050,7 @@ function fit3D(resetAngles){
   V3D.target=[(lo[0]+hi[0])/2,(lo[1]+hi[1])/2,(lo[2]+hi[2])/2];
   const r=Math.hypot(hi[0]-lo[0],hi[1]-lo[1],hi[2]-lo[2])/2,asp=cv.clientWidth/Math.max(1,cv.clientHeight),half=0.35,hh=Math.atan(Math.tan(half)*asp);
   V3D.dist=r/Math.sin(Math.min(half,hh))*1.05;V3D.r=r;
-  if(resetAngles){const a=$('#t3dLayout').value==='assembled';V3D.theta=a?-1.95:-Math.PI/2;V3D.phi=a?0.28:0.75;}
+  if(resetAngles){const l=lay3d(),A={assembled:[-1.95,0.28],back:[1.3,0.25],insert:[-2.25,0.45],printed:[-Math.PI/2,0.75]}[l]||[-1.95,0.28];V3D.theta=A[0];V3D.phi=A[1];}
 }
 function draw3D(){
   const gl=V3D.gl;if(!gl||view!=='3d')return;
@@ -1935,7 +2084,8 @@ function init(){
   if(start){const src='frameColor' in start?{...start,...legacyToSlots(start)}:start;for(const k in src)if(k in DEFAULTS)P[k]=src[k];}
   try{const pr=JSON.parse(lsGet('pfg-v4-prefs')||'null');if(pr){Object.assign(prefs,pr);if(pr.curPid)curPid=pr.curPid;}}catch(e){}
   if(!start)activeStyle='';
-  view=['front','real','back','3d'].includes(prefs.view)?prefs.view:'front';
+  if(prefs.view==='back'){prefs.view='3d';prefs.lay3d='back';}
+  view=['front','real','3d'].includes(prefs.view)?prefs.view:'front';
   syncCur();
   $('#tDims').checked=prefs.dims;$('#tGuides').checked=prefs.guides;$('#tScene').value=prefs.scene;$('#tWall').value=prefs.wall;
   $('#tDims').onchange=e=>{prefs.dims=e.target.checked;savePrefs();};
@@ -1943,10 +2093,11 @@ function init(){
   $('#tScene').onchange=e=>{prefs.scene=e.target.value;if(e.target.value==='kids'&&prefs.wall==='#eeeae3'){prefs.wall='#cfe3f3';$('#tWall').value=prefs.wall;}zoom=1;savePrefs();};
   $('#tWall').onchange=e=>{prefs.wall=e.target.value;savePrefs();};
   const setView=v=>{view=v;prefs.view=v;zoom=1;savePrefs();};
-  $('#vFront').onclick=()=>setView('front');$('#v3d').onclick=()=>setView('3d');$('#vReal').onclick=()=>setView('real');$('#vBack').onclick=()=>setView('back');
+  $('#vFront').onclick=()=>setView('front');$('#v3d').onclick=()=>setView('3d');$('#vReal').onclick=()=>setView('real');
   $('#modeSingle').onclick=()=>setMode('single');$('#modeCollage').onclick=()=>setMode('collage');
   buildControls();initTips();
-  $('#btnRandom').onclick=randomize;$('#btnHelp').onclick=showHelp;
+  $('#btnSurprise').onclick=()=>{const b=$('#btnSurprise');b.classList.remove('spin');void b.offsetWidth;b.classList.add('spin');randomize();};
+  initSizePod();$('#btnHelp').onclick=showHelp;
   $('#btnReset').onclick=()=>{applySettings({});toast('Reset to defaults');};
   const menu=$('#dlMenu'),dlBtn=$('#download');
   const showMenu=on=>{menu.hidden=!on;dlBtn.setAttribute('aria-expanded',on);};
@@ -1959,7 +2110,7 @@ function init(){
   $('#colorBar').addEventListener('click',e=>{e.stopPropagation();const b=e.target.closest('.sw');if(b){const s=+b.dataset.s;if(popSlot===s)closeColorPop();else openColorPop(s);return;}if(e.target.closest('#cbAdd'))addSlot();});
   try{const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}
   $('#themeBtn').onclick=()=>{const de=document.documentElement;const dark=de.dataset.theme?de.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;de.dataset.theme=dark?'light':'dark';lsSet('theme',de.dataset.theme);schedule();};
-  $('#btnSave').onclick=()=>download('photo-frame-settings.json',JSON.stringify({v:4,...P},null,2),'application/json');
+  $('#btnSave').onclick=()=>download('photo-frame-settings.json',JSON.stringify({v:6,...P},null,2),'application/json');
   $('#btnLoad').onclick=()=>$('#fileSettings').click();
   $('#fileSettings').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{applySettings(JSON.parse(t));toast('Settings loaded');}catch(err){toast('That file is not a settings file.');}});e.target.value='';};
   $('#btnLink').onclick=()=>{const url=location.href.split('#')[0]+'#s='+encodeHash();history.replaceState(null,'',url);(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast('Link copied (photos not included)'),()=>toast('Link is in the address bar'));};
