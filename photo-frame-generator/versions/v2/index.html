@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo Frame Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link id="gfonts" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@600&family=Great+Vibes&family=Lobster&family=Pacifico&family=Playfair+Display:ital,wght@0,600;1,600&family=Roboto+Slab:wght@500&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f1ec;--panel:#ffffff;--ink:#1e1d1b;--muted:#6d695f;--line:#e3dfd6;--field:#f7f6f2;
+  --accent:#c2562b;--accent-ink:#fff;--stage:#e6e2da;--warn-bg:#fff3e6;--warn-ink:#8a4b12;
+  --shadow:0 1px 2px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141312;--panel:#1d1c1a;--ink:#eceae5;--muted:#a19c91;--line:#33302b;--field:#262420;
+    --accent:#e47a4c;--accent-ink:#1a0f0a;--stage:#0e0d0c;--warn-bg:#3a2614;--warn-ink:#f6c48f;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141312;--panel:#1d1c1a;--ink:#eceae5;--muted:#a19c91;--line:#33302b;--field:#262420;
+  --accent:#e47a4c;--accent-ink:#1a0f0a;--stage:#0e0d0c;--warn-bg:#3a2614;--warn-ink:#f6c48f;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
+button,select,input{font:inherit;color:inherit}
+header.top{display:flex;align-items:center;gap:16px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand svg{width:30px;height:30px;color:var(--accent)}
+.brand h1{font-size:16px;margin:0;font-weight:650;letter-spacing:-.01em}
+.brand p{margin:0;color:var(--muted);font-size:12px}
+.actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--field);padding:6px 11px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.small{padding:4px 8px;font-size:12px}
+.sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+select.btn{padding-right:6px}
+main{flex:1;display:grid;grid-template-columns:350px 1fr;min-height:0}
+aside{background:var(--panel);border-right:1px solid var(--line);overflow:auto;min-height:0}
+.sec{border-bottom:1px solid var(--line)}
+.sec summary{list-style:none;cursor:pointer;padding:12px 16px;font-weight:600;display:flex;align-items:center;justify-content:space-between;user-select:none}
+.sec summary::-webkit-details-marker{display:none}
+.sec summary::after{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .15s;margin-right:4px}
+.sec[open] summary::after{transform:rotate(-135deg)}
+.sec-body{padding:2px 16px 14px;display:grid;gap:10px}
+.row{display:grid;gap:4px}
+.row[hidden]{display:none}
+.row label.lbl{font-size:12px;color:var(--muted);display:flex;justify-content:space-between}
+.pair{display:grid;grid-template-columns:1fr 78px;gap:8px;align-items:center}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=number],input[type=text],select.inp{width:100%;background:var(--field);border:1px solid var(--line);border-radius:7px;padding:5px 7px}
+input[type=number]{text-align:right}
+.colrow{display:grid;grid-template-columns:36px 1fr;gap:8px;align-items:center}
+input[type=color]{width:36px;height:30px;border:1px solid var(--line);border-radius:7px;padding:2px;background:var(--field);cursor:pointer}
+.chk{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px}
+.chk input{accent-color:var(--accent);width:16px;height:16px}
+.photo-btns{display:flex;gap:6px;flex-wrap:wrap}
+.gal-hint{font-weight:400;font-size:12px;color:var(--muted);margin-left:auto;margin-right:10px}
+.gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:2px 16px 16px;max-height:560px;overflow:auto}
+.tile{display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:8px 8px 7px;border:1px solid var(--line);border-radius:12px;background:var(--field);cursor:pointer;text-align:center;transition:border-color .12s,transform .12s,box-shadow .12s}
+.tile:hover{border-color:var(--muted);transform:translateY(-1px);box-shadow:var(--shadow)}
+.tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tile.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.tile .thumb{height:132px;border-radius:8px;background:var(--stage);display:flex;align-items:center;justify-content:center;padding:8px;overflow:hidden}
+.tile .thumb svg{width:100%;height:100%;display:block}
+.tile span{font-size:12px;font-weight:600;line-height:1.2}
+.side-foot{padding:14px 16px 24px;display:grid;gap:8px}
+.side-foot .actions{gap:6px}
+.tips{font-size:12px;color:var(--muted);line-height:1.5}
+.tips b{color:var(--ink);font-weight:600}
+.stage{display:flex;flex-direction:column;min-height:0;min-width:0}
+.stage-bar{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+.stage-bar .zoomv{min-width:46px;text-align:center;font-variant-numeric:tabular-nums;color:var(--muted)}
+.stage-bar .spacer{flex:1}
+#view{flex:1;overflow:auto;background:var(--stage);position:relative;min-height:320px}
+#view.drop{outline:3px dashed var(--accent);outline-offset:-10px}
+#canvasWrap{min-width:100%;min-height:100%;display:flex;align-items:center;justify-content:center;padding:16px}
+#canvasWrap svg{display:block;flex:none;color:var(--muted)}
+#canvasWrap svg.dragging{cursor:grabbing}
+#canvasWrap svg.can-drag .win-hit{cursor:grab}
+#info{display:flex;gap:18px;flex-wrap:wrap;padding:10px 14px;background:var(--panel);border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+#info b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+#info .warn{flex-basis:100%;background:var(--warn-bg);color:var(--warn-ink);padding:6px 10px;border-radius:7px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+@media (max-width: 820px){
+  main{grid-template-columns:1fr;grid-template-rows:auto auto}
+  aside{order:2;border-right:0;border-top:1px solid var(--line);overflow:visible}
+  .stage{order:1}
+  #view{height:60vh;flex:none}
+  header.top{padding:10px 16px}
+  .actions{width:100%}
+}
+@media print{body>*{display:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="26" height="26" rx="3"/><rect x="9" y="9" width="14" height="14" rx="1"/><path d="M9 20l4-4 3 3 2-2 5 5" stroke-width="1.6"/></svg>
+    <div><h1>Photo Frame Generator</h1><p>Custom sizes, shapes, edges and patterns with live preview</p></div>
+  </div>
+  <div class="actions">
+    <select id="presetSel" class="btn" title="Load a ready-made style"></select>
+    <button class="btn" id="btnRandom" title="Random style">Surprise me</button>
+    <button class="btn" id="btnReset">Reset</button>
+    <span class="sep"></span>
+    <button class="btn primary" data-exp="svg" title="Vector file at real size (mm)">SVG</button>
+    <button class="btn primary" data-exp="png" title="Image at the DPI set under Fabrication &amp; export">PNG</button>
+    <button class="btn primary" data-exp="dxf" title="Laser / CNC cut file with layered pieces">DXF</button>
+    <button class="btn primary" data-exp="stl" title="3D printable frame">STL</button>
+    <button class="btn" data-exp="print" title="Print at actual size">Print</button>
+  </div>
+</header>
+<main>
+  <aside>
+    <details class="sec gal-sec" open>
+      <summary>Frame styles <span class="gal-hint">click one to apply</span></summary>
+      <div class="gallery" id="gallery"></div>
+    </details>
+    <div id="controls"></div>
+    <div class="side-foot">
+      <div class="actions">
+        <button class="btn small" id="btnSave">Save settings</button>
+        <button class="btn small" id="btnLoad">Load settings</button>
+        <button class="btn small" id="btnLink">Copy share link</button>
+      </div>
+      <div class="tips">
+        <b>Tips.</b> Drag the photo in the preview to reposition it, or drop an image file onto the preview.
+        <b>SVG</b> and <b>PNG</b> export the finished design at real size.
+        <b>DXF</b> holds laser pieces side by side (front, mats, spacer, back) with the cut on layer CUT and the pattern on layer ENGRAVE.
+        <b>STL</b> is a 3D printable frame that prints face down; slide the photo in from the back.
+        Settings are remembered in this browser.
+      </div>
+    </div>
+  </aside>
+  <section class="stage">
+    <div class="stage-bar">
+      <button class="btn small" id="zOut" title="Zoom out">−</button>
+      <span class="zoomv" id="zVal">Fit</span>
+      <button class="btn small" id="zIn" title="Zoom in">+</button>
+      <button class="btn small" id="zFit">Fit</button>
+      <span class="spacer"></span>
+      <label class="chk"><input type="checkbox" id="tDims" checked> Dimensions</label>
+      <label class="chk"><input type="checkbox" id="tGuides" checked> Photo edge &amp; holes</label>
+      <select id="tBg" class="btn small" title="Preview background">
+        <option value="">Neutral</option><option value="#ffffff">White wall</option><option value="#2b2b2b">Dark wall</option><option value="#c9b79c">Beige wall</option><option value="#8fa89a">Sage wall</option>
+      </select>
+    </div>
+    <div id="view"><div id="canvasWrap"></div></div>
+    <div id="info"></div>
+  </section>
+</main>
+<input type="file" id="fileSettings" accept=".json,application/json" hidden>
+<input type="file" id="filePhoto" accept="image/*" hidden>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const f2=v=>Math.round(v*100)/100;
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const MM_IN=25.4;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),2200);}
+function download(name,data,type){const blob=data instanceof Blob?data:new Blob([data],{type});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}
+function rng(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+
+/* ---------- option lists ---------- */
+const PHOTO_PRESETS=[
+  ['custom','Custom size'],
+  ['wallet','Wallet 2.5×3.5 in',63.5,88.9],['3.5x5','3.5×5 in',88.9,127],['4x6','4×6 in',101.6,152.4],
+  ['5x7','5×7 in',127,177.8],['8x10','8×10 in',203.2,254],['8.5x11','8.5×11 in (Letter)',215.9,279.4],
+  ['11x14','11×14 in',279.4,355.6],['12x18','12×18 in',304.8,457.2],['sq4','Square 4×4 in',101.6,101.6],
+  ['sq8','Square 8×8 in',203.2,203.2],['a6','A6 (105×148)',105,148],['a5','A5 (148×210)',148,210],
+  ['a4','A4 (210×297)',210,297],['a3','A3 (297×420)',297,420],['10x15','10×15 cm',100,150],['13x18','13×18 cm',130,180],
+  ['instax','Instax Mini print',54,86],['instaxsq','Instax Square print',62,72],['polaroid','Polaroid print',88,107]
+];
+const SHAPES_OUT=[['rect','Rectangle'],['rounded','Rounded rectangle'],['stadium','Pill'],['oval','Oval'],['circle','Circle'],['arch','Arch top'],['gothic','Gothic arch'],['octagon','Octagon (cut corners)'],['ticket','Notched corners'],['hexagon','Hexagon']];
+const SHAPES_WIN=[...SHAPES_OUT,['heart','Heart'],['diamond','Diamond']];
+const EDGES=[['plain','Plain'],['scallop','Scalloped'],['zigzag','Pinked / zigzag'],['wave','Wavy'],['stamp','Postage stamp'],['crenel','Castle']];
+const PATTERNS=[['none','None (plain colour)'],['stripes','Stripes'],['pinstripe','Pinstripes'],['grid','Grid'],['checker','Checkerboard'],['gingham','Gingham'],['plaid','Plaid'],['dots','Dots'],['polka','Polka dots'],['chevron','Chevron'],['zigzag','Zigzag lines'],['waves','Waves'],['diamonds','Diamonds / argyle'],['honeycomb','Honeycomb'],['triangles','Triangles'],['stars','Stars'],['hearts','Hearts'],['flowers','Flowers'],['scales','Fish scales'],['bricks','Bricks'],['herringbone','Herringbone'],['meander','Greek key'],['basket','Basket weave'],['circles','Interlocking circles'],['sunburst','Sunburst'],['rings','Concentric rings'],['crosses','Crosses'],['confetti','Confetti'],['woodgrain','Wood grain']];
+const ORNAMENTS=[['none','None'],['circle','Circle'],['diamond','Diamond'],['star','Star'],['heart','Heart'],['flower','Flower'],['square','Square'],['bracket','Corner brackets']];
+const FONTS=[["Georgia, serif","Georgia"],["'Playfair Display', Georgia, serif","Playfair Display"],["'Dancing Script', cursive","Dancing Script"],["'Great Vibes', cursive","Great Vibes"],["Pacifico, cursive","Pacifico"],["Lobster, cursive","Lobster"],["'Roboto Slab', serif","Roboto Slab"],["'Special Elite', monospace","Typewriter"],["'Bebas Neue', sans-serif","Bebas Neue"],["'Helvetica Neue', Arial, sans-serif","Helvetica"],["'Courier New', monospace","Courier"]];
+const GOOGLE_FONTS=new Set(['Playfair Display','Dancing Script','Great Vibes','Pacifico','Lobster','Roboto Slab','Typewriter','Bebas Neue']);
+
+/* ---------- control schema ---------- */
+const len=(id,label,def,min,max,step,show)=>({id,label,type:'len',def,min,max,step:step||0.5,show});
+const num=(id,label,def,min,max,step,show)=>({id,label,type:'num',def,min,max,step:step||1,show});
+const sel=(id,label,def,opts,show)=>({id,label,type:'sel',def,opts,show});
+const col=(id,label,def,show)=>({id,label,type:'col',def,show});
+const chk=(id,label,def,show)=>({id,label,type:'chk',def,show});
+const txt=(id,label,def,show)=>({id,label,type:'txt',def,show});
+const isPhoto=p=>p.sizeMode==='photo', isOuter=p=>p.sizeMode==='outer';
+const hasR=k=>['rounded','octagon','ticket'].includes(k);
+const usesLine=p=>['pinstripe','grid','plaid','zigzag','waves','honeycomb','scales','bricks','herringbone','meander','circles','rings','woodgrain'].includes(p.pattern);
+const usesC2=p=>['pinstripe','plaid','diamonds','triangles','flowers','confetti'].includes(p.pattern);
+
+const SECTIONS=[
+ {title:'Size',open:true,fields:[
+  sel('units','Units','mm',[['mm','Millimetres'],['in','Inches']]),
+  sel('sizeMode','Size from','photo',[['photo','Photo size + border'],['outer','Fixed outer size']]),
+  sel('photoPreset','Photo size','4x6',PHOTO_PRESETS.map(p=>[p[0],p[1]])),
+  len('photoW','Photo width',101.6,20,800,0.5),
+  len('photoH','Photo height',152.4,20,800,0.5),
+  sel('orient','Orientation','portrait',[['portrait','Portrait'],['landscape','Landscape']]),
+  len('overlap','Photo overlap (hidden under frame)',4,0,30,0.5),
+  chk('uniform','Same border on all sides',false,isPhoto),
+  len('bSide',p=>p.uniform?'Border width':'Side borders',30,0,250,0.5,isPhoto),
+  len('bTop','Top border',30,0,250,0.5,p=>isPhoto(p)&&!p.uniform),
+  len('bBottom','Bottom border',36,0,250,0.5,p=>isPhoto(p)&&!p.uniform),
+  len('outerW','Outer width',220,20,1200,0.5,isOuter),
+  len('outerH','Outer height',280,20,1200,0.5,isOuter),
+  len('vOffset','Move opening up',6,-150,150,0.5,isOuter),
+ ]},
+ {title:'Shape & edges',open:true,fields:[
+  sel('outerShape','Outer shape','rect',SHAPES_OUT),
+  len('outerR',p=>p.outerShape==='octagon'?'Corner cut':p.outerShape==='ticket'?'Notch size':'Corner radius',10,0,200,0.5,p=>hasR(p.outerShape)),
+  sel('outerEdge','Outer edge','plain',EDGES),
+  len('outerEdgeSize','Edge repeat',16,2,100,0.5,p=>p.outerEdge!=='plain'),
+  len('outerEdgeDepth','Edge depth',4,0.5,40,0.25,p=>p.outerEdge!=='plain'),
+  sel('winShape','Opening shape','rect',SHAPES_WIN),
+  len('winR',p=>p.winShape==='octagon'?'Corner cut':p.winShape==='ticket'?'Notch size':'Corner radius',6,0,200,0.5,p=>hasR(p.winShape)),
+  sel('winEdge','Opening edge','plain',EDGES),
+  len('winEdgeSize','Edge repeat',12,2,100,0.5,p=>p.winEdge!=='plain'),
+  len('winEdgeDepth','Edge depth',3,0.5,40,0.25,p=>p.winEdge!=='plain'),
+ ]},
+ {title:'Mats & bevel',fields:[
+  chk('mat1On','Outer mat',true),
+  len('mat1W','Mat width',18,1,200,0.5,p=>p.mat1On),
+  col('mat1Color','Mat colour','#f6f2e9',p=>p.mat1On),
+  chk('mat2On','Inner accent mat',false),
+  len('mat2W','Accent width',5,0.5,100,0.5,p=>p.mat2On),
+  col('mat2Color','Accent colour','#c2562b',p=>p.mat2On),
+  chk('bevelOn','Bevel line around photo',true),
+  len('bevelW','Bevel width',1.5,0.2,15,0.1,p=>p.bevelOn),
+  col('bevelColor','Bevel colour','#ffffff',p=>p.bevelOn),
+ ]},
+ {title:'Colour & finish',open:true,fields:[
+  sel('fillType','Frame fill','solid',[['solid','Solid colour'],['linear','Linear gradient'],['radial','Radial gradient']]),
+  col('frameColor','Frame colour','#284b63'),
+  col('frameColor2','Second colour','#122838',p=>p.fillType!=='solid'),
+  num('gradAngle','Gradient angle °',45,0,360,1,p=>p.fillType==='linear'),
+  chk('shadow','Soft shadow (depth effect)',true),
+ ]},
+ {title:'Pattern',open:true,fields:[
+  sel('pattern','Pattern','polka',PATTERNS),
+  col('patColor','Pattern colour','#ffffff',p=>p.pattern!=='none'),
+  col('patColor2','Second pattern colour','#f2c14e',p=>p.pattern!=='none'&&usesC2(p)),
+  num('patOpacity','Opacity',0.22,0.05,1,0.01,p=>p.pattern!=='none'),
+  len('patScale','Pattern size',11,2,120,0.5,p=>p.pattern!=='none'),
+  num('patWeight','Density / thickness',0.35,0.05,0.95,0.01,p=>p.pattern!=='none'),
+  len('patLine','Line width',0.8,0.1,8,0.1,p=>p.pattern!=='none'&&usesLine(p)),
+  num('patRot','Rotation °',0,0,180,1,p=>p.pattern!=='none'),
+  len('patOffX','Shift horizontally',0,-60,60,0.5,p=>p.pattern!=='none'),
+  len('patOffY','Shift vertically',0,-60,60,0.5,p=>p.pattern!=='none'),
+  num('patSeed','Random seed',7,1,999,1,p=>p.pattern==='confetti'),
+ ]},
+ {title:'Lines & ornaments',fields:[
+  sel('linesWhere','Decorative lines','inner',[['none','None'],['outer','Along outer edge'],['inner','Around opening'],['both','Both']]),
+  num('linesCount','Number of lines',1,1,6,1,p=>p.linesWhere!=='none'),
+  len('linesInset','Distance from edge',4,0,80,0.25,p=>p.linesWhere!=='none'),
+  len('linesGap','Gap between lines',3,0.5,40,0.25,p=>p.linesWhere!=='none'&&p.linesCount>1),
+  len('linesWidth','Line width',0.6,0.1,6,0.1,p=>p.linesWhere!=='none'),
+  sel('linesDash','Line style','solid',[['solid','Solid'],['dashed','Dashed'],['dotted','Dotted (stitches)']],p=>p.linesWhere!=='none'),
+  col('linesColor','Line colour','#f2c14e',p=>p.linesWhere!=='none'),
+  sel('ornament','Ornaments','none',ORNAMENTS),
+  sel('ornPlaces','Place at','corners',[['corners','Corners'],['all','Corners and sides']],p=>p.ornament!=='none'&&p.ornament!=='bracket'),
+  len('ornSize','Ornament size',12,2,100,0.5,p=>p.ornament!=='none'),
+  len('ornLine','Bracket line width',1.2,0.2,8,0.1,p=>p.ornament==='bracket'),
+  col('ornColor','Ornament colour','#f2c14e',p=>p.ornament!=='none'),
+ ]},
+ {title:'Caption text',fields:[
+  txt('capText','Text',''),
+  sel('capPos','Position','bottom',[['bottom','Bottom border'],['top','Top border']]),
+  sel('capFont','Font',FONTS[1][0],FONTS),
+  sel('capStyle','Style','normal',[['normal','Regular'],['bold','Bold'],['italic','Italic'],['bold italic','Bold italic']]),
+  len('capSize','Text size',9,2,80,0.25),
+  num('capSpacing','Letter spacing (mm)',0.4,0,10,0.1),
+  len('capOffset','Nudge down',0,-60,60,0.25),
+  col('capColor','Text colour','#ffffff'),
+ ]},
+ {title:'Photo',fields:[
+  {id:'_photo',type:'photo'},
+  sel('photoFit','Fit','fill',[['fill','Fill the opening (crop)'],['fit','Show whole photo']]),
+  num('photoZoom','Zoom',1,1,5,0.01),
+  len('photoX','Move left / right',0,-300,300,0.5),
+  len('photoY','Move up / down',0,-300,300,0.5),
+  sel('photoFilter','Photo effect','none',[['none','None'],['gray','Black & white'],['sepia','Sepia'],['vintage','Vintage'],['bright','Bright & warm']]),
+ ]},
+ {title:'Fabrication & export',fields:[
+  sel('holes','Hanging holes (back)','two',[['none','None'],['one','One, centred'],['two','Two']]),
+  len('holeD','Hole diameter',5,1,25,0.25,p=>p.holes!=='none'),
+  len('holeSpacing','Hole spacing',60,5,500,0.5,p=>p.holes==='two'),
+  len('frontT','STL: front thickness',4,0.6,40,0.1),
+  len('lipT','STL: mat step thickness',1.2,0.4,20,0.1,p=>p.mat1On||p.mat2On),
+  len('rabbetT','STL: photo pocket depth',1.6,0.4,20,0.1),
+  len('rabbetClear','Photo pocket clearance',0.6,0,6,0.1),
+  chk('dxfFront','DXF: front piece',true),
+  chk('dxfMats','DXF: mat pieces',true,p=>p.mat1On||p.mat2On),
+  chk('dxfSpacer','DXF: photo spacer piece',true),
+  chk('dxfBack','DXF: back piece',true),
+  chk('dxfEngrave','DXF: pattern as engrave layer',true),
+  sel('pngDpi','PNG resolution','300',[['150','150 DPI'],['300','300 DPI (print)'],['600','600 DPI']]),
+ ]},
+];
+const FIELDS={};SECTIONS.forEach(s=>s.fields.forEach(f=>{if(f.def!==undefined)FIELDS[f.id]=f;}));
+const DEFAULTS=Object.fromEntries(Object.values(FIELDS).map(f=>[f.id,f.def]));
+
+/* ---------- presets ---------- */
+const PRESETS={
+ 'Classic gallery':{frameColor:'#1c1c1c',fillType:'solid',pattern:'none',mat1On:true,mat1W:45,mat1Color:'#fbfaf6',mat2On:false,bevelOn:true,bevelW:1.6,bevelColor:'#ffffff',bSide:22,bTop:22,bBottom:22,uniform:true,linesWhere:'none',ornament:'none',capText:'',outerShape:'rect',winShape:'rect',outerEdge:'plain',winEdge:'plain'},
+ 'Polaroid':{frameColor:'#fbfaf6',fillType:'solid',pattern:'none',mat1On:false,mat2On:false,bevelOn:false,uniform:false,bSide:12,bTop:12,bBottom:46,overlap:2,outerShape:'rounded',outerR:2,winShape:'rect',linesWhere:'none',ornament:'none',capText:'summer ’26',capFont:"'Dancing Script', cursive",capSize:13,capColor:'#2e2e2e',capStyle:'normal',capSpacing:0.3,photoPreset:'sq4',photoW:101.6,photoH:101.6,photoFilter:'vintage',outerEdge:'plain',winEdge:'plain',holes:'none'},
+ 'Scalloped nursery':{frameColor:'#f6d5dc',fillType:'solid',pattern:'polka',patColor:'#ffffff',patOpacity:0.75,patScale:12,patWeight:0.3,outerShape:'rounded',outerR:24,outerEdge:'scallop',outerEdgeSize:22,outerEdgeDepth:6,winShape:'oval',winEdge:'plain',mat1On:false,mat2On:true,mat2W:6,mat2Color:'#ffffff',bevelOn:false,linesWhere:'inner',linesCount:1,linesInset:4,linesWidth:0.9,linesDash:'dotted',linesColor:'#d97a93',uniform:false,bSide:34,bTop:34,bBottom:44,capText:'Hello, little one',capFont:"Pacifico, cursive",capSize:8,capColor:'#c25e7b',ornament:'none'},
+ 'Vintage stamp':{frameColor:'#f1e7d0',fillType:'solid',pattern:'waves',patColor:'#8a6d3b',patOpacity:0.18,patScale:9,patWeight:0.3,patLine:0.5,patRot:0,outerShape:'rect',outerEdge:'stamp',outerEdgeSize:9,outerEdgeDepth:2.6,winShape:'rect',winEdge:'plain',mat1On:false,mat2On:false,bevelOn:true,bevelW:1,bevelColor:'#8a6d3b',linesWhere:'both',linesCount:1,linesInset:5,linesWidth:0.6,linesDash:'solid',linesColor:'#8a6d3b',uniform:true,bSide:20,photoFilter:'sepia',capText:'',ornament:'none'},
+ 'Art deco':{frameColor:'#141414',fillType:'solid',pattern:'sunburst',patColor:'#c9a227',patOpacity:0.28,patScale:10,patWeight:0.5,outerShape:'octagon',outerR:26,outerEdge:'plain',winShape:'arch',winEdge:'plain',mat1On:true,mat1W:10,mat1Color:'#1f1f1f',mat2On:true,mat2W:3,mat2Color:'#c9a227',bevelOn:false,linesWhere:'both',linesCount:2,linesInset:4,linesGap:2.5,linesWidth:0.7,linesDash:'solid',linesColor:'#c9a227',ornament:'diamond',ornPlaces:'corners',ornSize:12,ornColor:'#c9a227',uniform:true,bSide:34,capText:'',photoFilter:'gray'},
+ 'Picnic gingham':{frameColor:'#ffffff',fillType:'solid',pattern:'gingham',patColor:'#d1495b',patOpacity:0.85,patScale:10,patWeight:0.5,patRot:0,outerShape:'rounded',outerR:8,outerEdge:'zigzag',outerEdgeSize:7,outerEdgeDepth:2.5,winShape:'rounded',winR:10,winEdge:'plain',mat1On:false,mat2On:true,mat2W:7,mat2Color:'#ffffff',bevelOn:false,linesWhere:'inner',linesCount:1,linesInset:3,linesWidth:0.8,linesDash:'dashed',linesColor:'#d1495b',uniform:true,bSide:30,capText:'',ornament:'none'},
+ 'Warm wood':{frameColor:'#9a6434',frameColor2:'#5d3819',fillType:'linear',gradAngle:90,pattern:'woodgrain',patColor:'#2f1b0b',patOpacity:0.3,patScale:16,patWeight:0.45,patLine:0.45,patRot:0,outerShape:'rect',outerEdge:'plain',winShape:'rect',winEdge:'plain',mat1On:true,mat1W:30,mat1Color:'#f3efe6',mat2On:false,bevelOn:true,bevelW:1.6,bevelColor:'#ffffff',linesWhere:'outer',linesCount:1,linesInset:5,linesWidth:0.5,linesDash:'solid',linesColor:'#d8a979',uniform:true,bSide:26,capText:'',ornament:'none'},
+ 'Wedding oval':{frameColor:'#fbf8f1',fillType:'solid',pattern:'circles',patColor:'#d9c7a1',patOpacity:0.55,patScale:14,patWeight:0.5,patLine:0.5,outerShape:'rect',outerEdge:'plain',winShape:'oval',winEdge:'scallop',winEdgeSize:12,winEdgeDepth:3,mat1On:true,mat1W:10,mat1Color:'#efe6d4',mat2On:false,bevelOn:true,bevelW:1.2,bevelColor:'#c9a227',linesWhere:'outer',linesCount:2,linesInset:6,linesGap:2,linesWidth:0.5,linesDash:'solid',linesColor:'#c9a227',ornament:'flower',ornPlaces:'corners',ornSize:16,ornColor:'#c9a227',uniform:false,bSide:30,bTop:30,bBottom:44,capText:'Forever & Always',capFont:"'Great Vibes', cursive",capSize:13,capColor:'#a8862a',capStyle:'normal'},
+ 'Confetti party':{frameColor:'#fff6dc',fillType:'solid',pattern:'confetti',patColor:'#ff6b6b',patColor2:'#2ec4b6',patOpacity:0.9,patScale:9,patWeight:0.45,patSeed:11,outerShape:'rounded',outerR:14,outerEdge:'wave',outerEdgeSize:24,outerEdgeDepth:4,winShape:'rounded',winR:12,winEdge:'plain',mat1On:false,mat2On:true,mat2W:5,mat2Color:'#ffffff',bevelOn:false,linesWhere:'none',ornament:'none',uniform:false,bSide:30,bTop:30,bBottom:40,capText:'Party time!',capFont:"Lobster, cursive",capSize:11,capColor:'#ff6b6b',capStyle:'normal'},
+ 'Honey hexagon':{frameColor:'#f4b942',fillType:'radial',frameColor2:'#d98e04',pattern:'honeycomb',patColor:'#8a5a00',patOpacity:0.35,patScale:12,patWeight:0.5,patLine:0.9,outerShape:'hexagon',outerEdge:'plain',winShape:'hexagon',winEdge:'plain',mat1On:false,mat2On:true,mat2W:5,mat2Color:'#fff3d1',bevelOn:false,linesWhere:'none',ornament:'none',uniform:true,bSide:28,capText:'',photoPreset:'sq4',photoW:101.6,photoH:101.6,holes:'one'},
+ 'Minimal white':{frameColor:'#ffffff',fillType:'solid',pattern:'none',mat1On:true,mat1W:28,mat1Color:'#f4f1ea',mat2On:false,bevelOn:true,bevelW:1.2,bevelColor:'#ffffff',uniform:true,bSide:14,outerShape:'rect',winShape:'rect',outerEdge:'plain',winEdge:'plain',linesWhere:'none',ornament:'none',capText:''},
+ 'Starry night':{frameColor:'#1b2a4a',fillType:'radial',frameColor2:'#0d1424',pattern:'stars',patColor:'#ffe08a',patOpacity:0.85,patScale:13,patWeight:0.3,outerShape:'rounded',outerR:12,outerEdge:'plain',winShape:'circle',winEdge:'plain',mat1On:false,mat2On:true,mat2W:4,mat2Color:'#ffe08a',bevelOn:false,linesWhere:'none',ornament:'none',uniform:true,bSide:30,capText:'Dream big',capFont:"'Dancing Script', cursive",capSize:9,capColor:'#ffe08a',capStyle:'normal',holes:'one'},
+ 'Tartan':{frameColor:'#7a1f2b',fillType:'solid',pattern:'plaid',patColor:'#1e3d2f',patColor2:'#f2c14e',patOpacity:0.7,patScale:14,patWeight:0.45,patLine:0.6,outerShape:'rect',outerEdge:'plain',winShape:'rect',winEdge:'plain',mat1On:true,mat1W:12,mat1Color:'#f3ead8',mat2On:false,bevelOn:true,bevelW:1,bevelColor:'#ffffff',linesWhere:'outer',linesCount:1,linesInset:3,linesWidth:0.8,linesDash:'dotted',linesColor:'#f2c14e',ornament:'none',uniform:true,bSide:26,capText:''},
+ 'Brick loft':{frameColor:'#a8553a',fillType:'solid',pattern:'bricks',patColor:'#e8d5c4',patOpacity:0.55,patScale:14,patWeight:0.42,patLine:0.7,outerShape:'rect',outerEdge:'crenel',outerEdgeSize:14,outerEdgeDepth:4,winShape:'rect',winEdge:'plain',mat1On:false,mat2On:true,mat2W:5,mat2Color:'#2b2b2b',bevelOn:false,linesWhere:'none',ornament:'none',uniform:true,bSide:30,capText:''},
+ 'Garden flowers':{frameColor:'#e8f3e1',fillType:'solid',pattern:'flowers',patColor:'#f28ca8',patColor2:'#f6c445',patOpacity:0.95,patScale:16,patWeight:0.55,outerShape:'rounded',outerR:16,outerEdge:'scallop',outerEdgeSize:18,outerEdgeDepth:4,winShape:'arch',winEdge:'plain',mat1On:false,mat2On:true,mat2W:6,mat2Color:'#ffffff',bevelOn:false,linesWhere:'inner',linesCount:1,linesInset:3,linesWidth:0.8,linesDash:'dashed',linesColor:'#7fb069',ornament:'none',uniform:false,bSide:30,bTop:30,bBottom:40,capText:'Spring',capFont:"Pacifico, cursive",capSize:9,capColor:'#e0607e',capStyle:'normal'},
+ 'Mint chevron':{frameColor:'#bfe6d6',fillType:'solid',pattern:'chevron',patColor:'#ffffff',patOpacity:0.8,patScale:12,patWeight:0.3,outerShape:'rect',outerEdge:'plain',winShape:'rounded',winR:8,winEdge:'plain',mat1On:false,mat2On:true,mat2W:5,mat2Color:'#ffffff',bevelOn:false,linesWhere:'none',ornament:'none',uniform:true,bSide:28,capText:''},
+ 'Herringbone oak':{frameColor:'#c8a27a',frameColor2:'#a77d52',fillType:'linear',gradAngle:45,pattern:'herringbone',patColor:'#6e4a2a',patOpacity:0.4,patScale:8,patWeight:0.35,patLine:0.5,patRot:90,outerShape:'rect',outerEdge:'plain',winShape:'rect',winEdge:'plain',mat1On:true,mat1W:22,mat1Color:'#faf7f0',mat2On:false,bevelOn:true,bevelW:1.4,bevelColor:'#ffffff',linesWhere:'none',ornament:'none',uniform:true,bSide:24,capText:''},
+ 'Love hearts':{frameColor:'#fde2e4',fillType:'solid',pattern:'hearts',patColor:'#e5566f',patOpacity:0.55,patScale:13,patWeight:0.4,outerShape:'rounded',outerR:20,outerEdge:'wave',outerEdgeSize:20,outerEdgeDepth:3,winShape:'heart',winEdge:'plain',mat1On:false,mat2On:true,mat2W:5,mat2Color:'#ffffff',bevelOn:false,linesWhere:'none',ornament:'none',uniform:false,bSide:30,bTop:30,bBottom:42,capText:'Love you',capFont:"'Great Vibes', cursive",capSize:12,capColor:'#c43c57',capStyle:'normal',photoPreset:'sq4',photoW:101.6,photoH:101.6,holes:'one'},
+ 'Gothic window':{frameColor:'#3d2b56',fillType:'linear',frameColor2:'#1d1430',gradAngle:90,pattern:'meander',patColor:'#e0c36c',patOpacity:0.3,patScale:10,patLine:0.6,outerShape:'gothic',outerEdge:'plain',winShape:'gothic',winEdge:'plain',mat1On:true,mat1W:8,mat1Color:'#e0c36c',mat2On:false,bevelOn:false,linesWhere:'inner',linesCount:1,linesInset:3,linesWidth:0.6,linesColor:'#e0c36c',linesDash:'solid',ornament:'star',ornPlaces:'corners',ornSize:10,ornColor:'#e0c36c',uniform:true,bSide:26,capText:''},
+};
+
+/* ---------- state ---------- */
+let P={...DEFAULTS};
+let photo=null; // {url, data, w, h, name}
+let zoom=1, viewBox=[0,0,1,1], G=null;
+const openState={};
+const prefs={dims:true,guides:true,bg:''};
+
+/* ---------- geometry ---------- */
+function polyArea(p){let a=0;for(let i=0,n=p.length;i<n;i++){const q=p[i],r=p[(i+1)%n];a+=q[0]*r[1]-r[0]*q[1];}return a/2;}
+function norm(p){return polyArea(p)<0?p.slice().reverse():p;}
+function perim(p){let L=0;for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];L+=Math.hypot(b[0]-a[0],b[1]-a[1]);}return L;}
+function translate(p,dx,dy){return p.map(([x,y])=>[x+dx,y+dy]);}
+function arcPts(cx,cy,rx,ry,a0,a1,n){const o=[];for(let i=0;i<=n;i++){const a=a0+(a1-a0)*i/n;o.push([cx+rx*Math.cos(a),cy+ry*Math.sin(a)]);}return o;}
+function dedupe(p){const o=[];for(const q of p){const l=o[o.length-1];if(!l||Math.hypot(l[0]-q[0],l[1]-q[1])>1e-6)o.push(q);}while(o.length>2&&Math.hypot(o[0][0]-o[o.length-1][0],o[0][1]-o[o.length-1][1])<1e-6)o.pop();return o;}
+function fitBox(q,w,h){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const[x,y]of q){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}const sx=w/(x1-x0),sy=h/(y1-y0);return q.map(([x,y])=>[(x-(x0+x1)/2)*sx,(y-(y0+y1)/2)*sy]);}
+const _hearts={};
+function heartUnit(n){if(_hearts[n])return _hearts[n];const q=[];for(let i=0;i<n;i++){const t=i/n*2*Math.PI;q.push([16*Math.sin(t)**3,-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))]);}return _hearts[n]=fitBox(q,1,0.92);}
+function starPts(cx,cy,r,ri,n=5){const p=[];for(let i=0;i<2*n;i++){const a=-Math.PI/2+i*Math.PI/n,rr=i&1?ri:r;p.push([cx+rr*Math.cos(a),cy+rr*Math.sin(a)]);}return p;}
+
+function shapePts(kind,w,h,r){
+  w=Math.max(w,0.5);h=Math.max(h,0.5);
+  const W=w/2,H=h/2,PI=Math.PI;let p;
+  switch(kind){
+    case 'rounded':case 'stadium':{
+      const rr=kind==='stadium'?Math.min(W,H):clamp(r,0,Math.min(W,H));
+      if(rr<0.05){p=[[-W,-H],[W,-H],[W,H],[-W,H]];break;}
+      p=dedupe([...arcPts(W-rr,-H+rr,rr,rr,-PI/2,0,18),...arcPts(W-rr,H-rr,rr,rr,0,PI/2,18),...arcPts(-W+rr,H-rr,rr,rr,PI/2,PI,18),...arcPts(-W+rr,-H+rr,rr,rr,PI,1.5*PI,18)]);break;}
+    case 'oval':p=arcPts(0,0,W,H,0,2*PI,240);p.pop();break;
+    case 'circle':{const R=Math.min(W,H);p=arcPts(0,0,R,R,0,2*PI,240);p.pop();break;}
+    case 'arch':{const ah=Math.min(W,h),cy=-H+ah;p=dedupe([[W,H],[-W,H],...arcPts(0,cy,W,ah,PI,2*PI,120)]);break;}
+    case 'gothic':{const k=Math.sqrt(3)/2,ah=Math.min(k*w,h),cy=-H+ah,s=ah/(k*w);
+      const L=arcPts(W,0,w,w,PI,4*PI/3,60).map(([x,y])=>[x,cy+y*s]);
+      const R=arcPts(-W,0,w,w,-PI/3,0,60).map(([x,y])=>[x,cy+y*s]);
+      p=dedupe([[W,H],[-W,H],...L,...R.slice(1)]);break;}
+    case 'octagon':{const c=clamp(r,0,Math.min(W,H));p=dedupe([[-W+c,-H],[W-c,-H],[W,-H+c],[W,H-c],[W-c,H],[-W+c,H],[-W,H-c],[-W,-H+c]]);break;}
+    case 'ticket':{const c=clamp(r,0,Math.min(W,H));if(c<0.05){p=[[-W,-H],[W,-H],[W,H],[-W,H]];break;}
+      p=dedupe([...arcPts(W,-H,c,c,PI,PI/2,14),...arcPts(W,H,c,c,-PI/2,-PI,14),...arcPts(-W,H,c,c,0,-PI/2,14),...arcPts(-W,-H,c,c,PI/2,0,14)]);break;}
+    case 'hexagon':p=[[-W,0],[-W/2,-H],[W/2,-H],[W,0],[W/2,H],[-W/2,H]];break;
+    case 'diamond':p=[[0,-H],[W,0],[0,H],[-W,0]];break;
+    case 'heart':p=fitBox(heartUnit(240),w,h);break;
+    default:p=[[-W,-H],[W,-H],[W,H],[-W,H]];
+  }
+  return norm(p);
+}
+function resample(p,N){
+  const n=p.length,cum=[0];for(let i=0;i<n;i++){const a=p[i],b=p[(i+1)%n];cum.push(cum[i]+Math.hypot(b[0]-a[0],b[1]-a[1]));}
+  const L=cum[n],out=[];let seg=0;
+  for(let k=0;k<N;k++){const d=k*L/N;while(seg<n-1&&cum[seg+1]<=d)seg++;const a=p[seg],b=p[(seg+1)%n],sl=cum[seg+1]-cum[seg]||1,t=(d-cum[seg])/sl;out.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);}
+  return out;
+}
+function edgeF(style,u){
+  switch(style){
+    case 'scallop':return Math.sqrt(Math.max(0,1-(2*u-1)**2));
+    case 'zigzag':return 1-Math.abs(2*u-1);
+    case 'wave':return (1-Math.cos(2*Math.PI*u))/2;
+    case 'stamp':{const d=Math.abs(u-0.5);return d<0.32?1-Math.sqrt(1-(d/0.32)**2):1;}
+    case 'crenel':return u<0.5?1:0;
+  }return 1;
+}
+// sign -1: decoration bites inward (outer edge stays at nominal size); +1: decoration grows outward from a hole
+// round sharp corners so an offset edge pattern cannot fold over itself there
+function fillet(p,t0){
+  const n=p.length,out=[];
+  for(let i=0;i<n;i++){
+    const A=p[(i-1+n)%n],V=p[i],B=p[(i+1)%n];
+    const la=Math.hypot(A[0]-V[0],A[1]-V[1]),lb=Math.hypot(B[0]-V[0],B[1]-V[1]);
+    if(la<1e-9||lb<1e-9){out.push(V);continue;}
+    const ux=(A[0]-V[0])/la,uy=(A[1]-V[1])/la,vx=(B[0]-V[0])/lb,vy=(B[1]-V[1])/lb;
+    const turn=Math.PI-Math.acos(clamp(ux*vx+uy*vy,-1,1));
+    if(turn<0.25){out.push(V);continue;}
+    const t=Math.min(t0*(0.6+turn),la*0.45,lb*0.45);
+    const P1=[V[0]+ux*t,V[1]+uy*t],P2=[V[0]+vx*t,V[1]+vy*t];
+    for(let k=0;k<=10;k++){const s=k/10,a=(1-s)*(1-s),b=2*(1-s)*s,c=s*s;out.push([a*P1[0]+b*V[0]+c*P2[0],a*P1[1]+b*V[1]+c*P2[1]]);}
+  }
+  return out;
+}
+function decorate(p,style,period,depth,sign){
+  if(style==='plain'||!(depth>0))return p;
+  p=fillet(p,depth*1.6);
+  const L=perim(p),reps=Math.max(3,Math.round(L/Math.max(period,1))),sub=24,N=reps*sub,q=resample(p,N),out=[];
+  const m=Math.max(1,Math.min(Math.floor(N/8),Math.ceil(1.5*depth/(L/N))));
+  for(let k=0;k<N;k++){
+    const a=q[(k-m+N)%N],b=q[(k+m)%N];const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1;
+    const nx=dy/L,ny=-dx/L,f=edgeF(style,(k%sub)/sub),off=sign>0?depth*f:-depth*(1-f);
+    out.push([q[k][0]+nx*off,q[k][1]+ny*off]);
+  }
+  return out;
+}
+function inPoly(x,y,p){let c=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const a=p[i],b=p[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])c=!c;}return c;}
+function rayHit(p,ox,oy,dx,dy){let best=Infinity;for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];const ex=b[0]-a[0],ey=b[1]-a[1],den=dx*ey-dy*ex;if(Math.abs(den)<1e-12)continue;const t=((a[0]-ox)*ey-(a[1]-oy)*ex)/den,u=((a[0]-ox)*dy-(a[1]-oy)*dx)/den;if(t>1e-9&&u>=0&&u<=1)best=Math.min(best,t);}return best;}
+function clipConvex(subject,clip){
+  let out=subject;
+  for(let i=0;i<clip.length&&out.length;i++){
+    const A=clip[i],B=clip[(i+1)%clip.length],inp=out,side=p=>(B[0]-A[0])*(p[1]-A[1])-(B[1]-A[1])*(p[0]-A[0]);out=[];
+    for(let j=0;j<inp.length;j++){const Pp=inp[j],Q=inp[(j+1)%inp.length],sp=side(Pp),sq=side(Q);
+      if(sp>=0)out.push(Pp);if((sp>=0)!==(sq>=0)){const t=sp/(sp-sq);out.push([Pp[0]+(Q[0]-Pp[0])*t,Pp[1]+(Q[1]-Pp[1])*t]);}}
+  }
+  return dedupe(out);
+}
+function selfCross(p){
+  const n=p.length,bx=[];for(let i=0;i<n;i++){const a=p[i],b=p[(i+1)%n];bx.push([Math.min(a[0],b[0]),Math.max(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[1],b[1])]);}
+  for(let i=0;i<n;i++){const a=p[i],b=p[(i+1)%n],I=bx[i];
+    for(let j=i+2;j<n;j++){if(i===0&&j===n-1)continue;const J=bx[j];if(J[0]>I[1]||J[1]<I[0]||J[2]>I[3]||J[3]<I[2])continue;
+      const c=p[j],d=p[(j+1)%n];const d1=cross(c,d,a),d2=cross(c,d,b),d3=cross(a,b,c),d4=cross(a,b,d);
+      if(((d1>0&&d2<0)||(d1<0&&d2>0))&&((d3>0&&d4<0)||(d3<0&&d4>0)))return true;}}
+  return false;
+}
+function bbox(p){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const[x,y]of p){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}return{x0,y0,x1,y1};}
+
+function photoDims(P){let pw=P.photoW,ph=P.photoH;if((P.orient==='landscape'&&pw<ph)||(P.orient==='portrait'&&pw>ph))[pw,ph]=[ph,pw];return[pw,ph];}
+
+function computeGeo(P){
+  const warn=[];
+  const [pw,ph]=photoDims(P);
+  let ww=Math.max(5,pw-2*P.overlap),wh=Math.max(5,ph-2*P.overlap);
+  if(P.winShape==='circle'){const d=Math.min(ww,wh);ww=wh=d;}
+  const m1=P.mat1On?P.mat1W:0,m2=P.mat2On?P.mat2W:0,mt=m1+m2;
+  const ed=P.winEdge!=='plain'?P.winEdgeDepth:0;
+  const hfw=ww+2*mt+2*ed,hfh=wh+2*mt+2*ed;
+  let W,H,cx,cy,side,top,bottom;
+  if(P.sizeMode==='outer'){
+    W=P.outerW;H=P.outerH;side=(W-hfw)/2;const tv=H-hfh;top=tv/2-P.vOffset;bottom=tv/2+P.vOffset;
+    cx=W/2;cy=top+hfh/2;
+  }else{
+    side=P.bSide;top=P.uniform?P.bSide:P.bTop;bottom=P.uniform?P.bSide:P.bBottom;
+    const oed=P.outerEdge!=='plain'?P.outerEdgeDepth:0;
+    side+=oed;top+=oed;bottom+=oed;
+    const sameShape=P.outerShape===P.winShape||(['arch','gothic'].includes(P.winShape)&&['arch','gothic'].includes(P.outerShape));
+    if(P.outerShape==='arch'&&!sameShape){const r=(hfw+2*side)/2,x=hfw/2;top=Math.max(top,r-Math.sqrt(Math.max(0,r*r-x*x))+side);}
+    if(P.outerShape==='gothic'&&!sameShape){const Wd=hfw+2*side,x=hfw/2,y=Math.sqrt(Math.max(0,Wd*Wd-(x+Wd/2)**2));top=Math.max(top,Wd*Math.sqrt(3)/2-y+side);}
+    W=hfw+2*side;H=hfh+top+bottom;cx=W/2;cy=top+hfh/2;
+    if(P.outerShape==='oval'||P.outerShape==='circle'||P.outerShape==='hexagon'){
+      const roundWin=sameShape||['oval','circle','heart','diamond'].includes(P.winShape);
+      let a,b;
+      if(P.outerShape==='hexagon'){a=hfw/2*(sameShape?1:roundWin?1.25:1.5)+side*1.15;b=hfh/2*(roundWin?1.1:1.2)+(top+bottom)/2;}
+      else{const k=roundWin?1:Math.SQRT2;a=hfw/2*k+side;b=hfh/2*k+(top+bottom)/2;if(P.outerShape==='circle')a=b=Math.max(a,b);}
+      const shift=(bottom-top)/2;
+      W=2*a;H=2*b;cx=W/2;cy=H/2-shift;side=(W-hfw)/2;top=cy-hfh/2;bottom=H-cy-hfh/2;
+    }
+  }
+  if(W<10||H<10){W=Math.max(W,10);H=Math.max(H,10);}
+  const outerBase=translate(shapePts(P.outerShape,W,H,P.outerR),W/2,H/2);
+  const outer=decorate(outerBase,P.outerEdge,P.outerEdgeSize,P.outerEdgeDepth,-1);
+  const inflate=d=>translate(shapePts(P.winShape,ww+2*d,wh+2*d,P.winR+d),cx,cy);
+  const win=inflate(0);
+  const holeF=decorate(inflate(mt),P.winEdge,P.winEdgeSize,P.winEdgeDepth,1);
+  const mats=[];
+  if(m1>0)mats.push({outerP:holeF,innerP:m2>0?inflate(m2):win,color:P.mat1Color});
+  if(m2>0)mats.push({outerP:m1>0?inflate(m2):holeF,innerP:win,color:P.mat2Color});
+  const bevel=P.bevelOn?{outerP:inflate(P.bevelW),innerP:win}:null;
+  const rc=P.rabbetClear;let rabbet=norm([[cx-pw/2-rc,cy-ph/2-rc],[cx+pw/2+rc,cy-ph/2-rc],[cx+pw/2+rc,cy+ph/2+rc],[cx-pw/2-rc,cy+ph/2+rc]]);
+  if(side<0||top<0||bottom<0)warn.push('The border is negative: the outer size is smaller than the opening plus mats. Increase the outer size or reduce the mats.');
+  else if(Math.min(side,top,bottom)<3)warn.push('The border is very thin (under 3 mm) and may be fragile when cut or printed.');
+  const step=Math.max(1,Math.floor(holeF.length/96));
+  for(let i=0;i<holeF.length;i+=step){if(!inPoly(holeF[i][0],holeF[i][1],outer)){warn.push('The opening pokes through the outer edge. Increase the border or pick a different shape combination.');break;}}
+  if(rabbet.some(([x,y])=>!inPoly(x,y,outerBase))){
+    const e=3+(P.outerEdge!=='plain'?P.outerEdgeDepth:0);
+    rabbet=clipConvex(translate(shapePts(P.outerShape,W-2*e,H-2*e,P.outerR-e),W/2,H/2),rabbet);
+    warn.push('The photo corners reach past the outer edge, so the photo pocket (STL / spacer piece) is trimmed to keep a 3 mm wall. Trim the photo corners to match, or increase the border.');
+  }
+  if((P.outerEdge!=='plain'&&selfCross(outer))||(P.winEdge!=='plain'&&selfCross(holeF)))warn.push('The edge pattern folds over itself on this shape. Reduce the edge depth or use a larger edge repeat so cut and print files stay clean.');
+  // hanging holes
+  const holes=[];
+  if(P.holes!=='none'){
+    const yTop=cy-hfh/2,hy0=bbox(outer).y0;const yy=(yTop+Math.max(0,hy0))/2;
+    const xs=P.holes==='one'?[cx]:[cx-P.holeSpacing/2,cx+P.holeSpacing/2];
+    for(const x of xs){
+      const r=P.holeD/2;let ok=true;
+      for(let a=0;a<8;a++){const px=x+r*1.6*Math.cos(a*Math.PI/4),py=yy+r*1.6*Math.sin(a*Math.PI/4);if(!inPoly(px,py,outer)||inPoly(px,py,rabbet)||inPoly(px,py,holeF)){ok=false;break;}}
+      if(ok)holes.push({x,y:yy,r});
+    }
+    if(holes.length<xs.length)warn.push('Some hanging holes do not fit in the top border and were left out. Try a smaller diameter or spacing.');
+  }
+  return{W,H,cx,cy,pw,ph,ww,wh,hfw,hfh,side,top,bottom,mt,ed,outerBase,outer,win,holeF,inflate,mats,bevel,rabbet,holes,warn};
+}
+
+/* ---------- pattern / decoration shapes ---------- */
+// shape: {k:'p',pts,closed,mode:'fill'|'stroke',col,o,lw,dash} or {k:'c',x,y,r,...}
+function genPattern(P,G){
+  const t=P.pattern;if(t==='none')return[];
+  const s=Math.max(1.5,P.patScale),w=clamp(P.patWeight,0.02,0.98);
+  const R=Math.hypot(G.W,G.H)/2+Math.hypot(P.patOffX,P.patOffY)+s*3;
+  const n=Math.ceil(R/s)+1,out=[];
+  const F=(pts,c=1,o=1)=>out.push({k:'p',pts,closed:true,mode:'fill',c,o});
+  const Ln=(pts,c=1,closed=false)=>out.push({k:'p',pts,closed,mode:'stroke',c,o:1});
+  const Ci=(x,y,r,c=1,mode='fill')=>out.push({k:'c',x,y,r,c,mode,o:1});
+  const rect=(x,y,a,b)=>[[x,y],[x+a,y],[x+a,y+b],[x,y+b]];
+  const scaleAbout=(pts,k)=>{let mx=0,my=0;for(const p of pts){mx+=p[0];my+=p[1];}mx/=pts.length;my/=pts.length;return pts.map(([x,y])=>[mx+(x-mx)*k,my+(y-my)*k]);};
+  const offGrid=(fn,sx=s,sy=s*0.866)=>{const ni=Math.ceil(R/sx)+1,nj=Math.ceil(R/sy)+1;for(let j=-nj;j<=nj;j++)for(let i=-ni;i<=ni;i++)fn(i*sx+((j&1)?sx/2:0),j*sy,i,j);};
+  switch(t){
+    case 'stripes':for(let i=-n;i<=n;i++)F(rect(i*s-s*w/2,-R,s*w,2*R));break;
+    case 'pinstripe':for(let i=-n;i<=n;i++){Ln([[i*s,-R],[i*s,R]]);Ln([[i*s+s/2,-R],[i*s+s/2,R]],2);}break;
+    case 'grid':for(let i=-n;i<=n;i++){Ln([[i*s,-R],[i*s,R]]);Ln([[-R,i*s],[R,i*s]]);}break;
+    case 'checker':{const k=Math.min(1,w*2);for(let j=-n;j<=n;j++)for(let i=-n;i<=n;i++)if((i+j)&1)F(scaleAbout(rect(i*s,j*s,s,s),k));break;}
+    case 'gingham':case 'plaid':{
+      for(let i=-n;i<=n;i++){F(rect(-R,i*s,2*R,s*w),1,0.5);F(rect(i*s,-R,s*w,2*R),1,0.5);}
+      if(t==='plaid')for(let i=-n;i<=n;i++){const q=i*s+s*(0.5+w/2);Ln([[q,-R],[q,R]],2);Ln([[-R,q],[R,q]],2);}
+      break;}
+    case 'dots':for(let j=-n;j<=n;j++)for(let i=-n;i<=n;i++)Ci(i*s,j*s,s*w*0.5);break;
+    case 'polka':offGrid((x,y)=>Ci(x,y,s*w*0.5));break;
+    case 'chevron':case 'zigzag':{
+      const amp=s*0.5,m=Math.ceil(R/(s/2))+2;
+      const row=y0=>{const p=[];for(let k=-m;k<=m;k++)p.push([k*s/2,y0+((k&1)?-amp/2:amp/2)]);return p;};
+      for(let j=-n;j<=n;j++){const top=row(j*s);if(t==='zigzag')Ln(top);else F([...top,...top.map(([x,y])=>[x,y+s*w]).reverse()]);}
+      break;}
+    case 'waves':{const amp=s*w*0.6;for(let j=-n;j<=n;j++){const p=[];for(let x=-R;x<=R;x+=s/10)p.push([x,j*s+amp*Math.sin(x/s*Math.PI)]);Ln(p);}break;}
+    case 'diamonds':{const h=s*1.4,k=Math.min(1,w*2),ni=Math.ceil(R/(s/2))+1,nj=Math.ceil(R/(h/2))+1;
+      for(let j=-nj;j<=nj;j++)for(let i=-ni;i<=ni;i++){if((i+j)&1)continue;const x=i*s/2,y=j*h/2;F([[x,y-h/2*k],[x+s/2*k,y],[x,y+h/2*k],[x-s/2*k,y]],(i&1)?2:1);}break;}
+    case 'honeycomb':{const r=s/2,dx=1.5*r,dy=Math.sqrt(3)*r,ni=Math.ceil(R/dx)+1,nj=Math.ceil(R/dy)+1,k=Math.min(1,0.5+w);
+      for(let i=-ni;i<=ni;i++)for(let j=-nj;j<=nj;j++){const x=i*dx,y=j*dy+((i&1)?dy/2:0),p=[];for(let a=0;a<6;a++)p.push([x+r*k*Math.cos(a*Math.PI/3),y+r*k*Math.sin(a*Math.PI/3)]);Ln(p,1,true);}break;}
+    case 'triangles':{const h=s*0.866,k=Math.min(1,w*2),nj=Math.ceil(R/h)+1;
+      for(let j=-nj;j<=nj;j++)for(let i=-n;i<=n;i++){const x0=i*s+((j&1)?s/2:0),y0=j*h;F(scaleAbout([[x0,y0+h],[x0+s/2,y0],[x0+s,y0+h]],k),1);F(scaleAbout([[x0+s/2,y0],[x0+1.5*s,y0],[x0+s,y0+h]],k),2);}break;}
+    case 'stars':offGrid((x,y)=>F(starPts(x,y,s*w*0.75,s*w*0.75*0.42)));break;
+    case 'hearts':{const hu=heartUnit(40),z=s*w*1.1;offGrid((x,y)=>F(hu.map(([a,b])=>[x+a*z,y+b*z])));break;}
+    case 'flowers':offGrid((x,y)=>{const pr=s*w*0.24;for(let a=0;a<5;a++){const an=a/5*2*Math.PI-Math.PI/2;Ci(x+Math.cos(an)*pr*1.15,y+Math.sin(an)*pr*1.15,pr);}Ci(x,y,pr*0.75,2);});break;
+    case 'scales':{const r=s/2,nj=Math.ceil(R/r)+2;for(let j=-nj;j<=nj;j++)for(let i=-n;i<=n;i++){const x=i*s+((j&1)?r:0),y=j*r,p=[];for(let a=0;a<=24;a++){const an=Math.PI*a/24;p.push([x+r*Math.cos(an),y+r*Math.sin(an)]);}Ln(p);}break;}
+    case 'bricks':{const h=s*Math.max(0.2,w),nj=Math.ceil(R/h)+1;for(let j=-nj;j<=nj;j++){Ln([[-R,j*h],[R,j*h]]);for(let i=-n;i<=n;i++){const x=i*s+((j&1)?s/2:0);Ln([[x,j*h],[x,(j+1)*h]]);}}break;}
+    case 'herringbone':{const st=s*Math.max(0.1,w)*0.8;for(let i=-n;i<=n;i++){const x0=i*s,x1=x0+s;Ln([[x0,-R],[x0,R]]);for(let y=-R-s;y<=R+s;y+=st){if(i&1)Ln([[x0,y+s],[x1,y]]);else Ln([[x0,y],[x1,y+s]]);}}break;}
+    case 'meander':{const u=s/5,rowH=8*u,nj=Math.ceil(R/rowH)+1,ni=Math.ceil(R/(5*u))+1;const unit=[[0,5],[0,0],[4,0],[4,3],[2,3],[2,2],[3,2],[3,1],[1,1],[1,4],[5,4]];
+      for(let j=-nj;j<=nj;j++){const y0=j*rowH,p=[];for(let i=-ni;i<=ni;i++)for(const[a,b]of unit)p.push([(i*5+a)*u,y0+b*u]);Ln(p);Ln([[-R,y0-u],[R,y0-u]]);Ln([[-R,y0+6*u],[R,y0+6*u]]);}break;}
+    case 'basket':{for(let j=-n;j<=n;j++)for(let i=-n;i<=n;i++){const x=i*s,y=j*s,q=s/3,g=q*(1-Math.min(0.95,w*1.6))/2;for(let k=0;k<3;k++){if((i+j)&1)F(rect(x,y+k*q+g,s,q-2*g));else F(rect(x+k*q+g,y,q-2*g,s));}}break;}
+    case 'circles':{const r=s/2*clamp(w*2,0.2,1.6);for(let j=-n;j<=n;j++)for(let i=-n;i<=n;i++){Ci(i*s,j*s,r,1,'stroke');Ci(i*s+s/2,j*s+s/2,r,1,'stroke');}break;}
+    case 'sunburst':{const N=Math.max(12,Math.round(2*Math.PI*R/s/2)*2),da=2*Math.PI/N;for(let k=0;k<N;k+=2){const a0=k*da,a1=a0+da*Math.min(1.9,w*2);F([[0,0],[R*1.5*Math.cos(a0),R*1.5*Math.sin(a0)],[R*1.5*Math.cos(a1),R*1.5*Math.sin(a1)]]);}break;}
+    case 'rings':for(let k=1;k<=Math.ceil(R/s);k++)Ci(0,0,k*s,1,'stroke');break;
+    case 'crosses':{const a=s*w*1.2,b=a*0.32;offGrid((x,y)=>{F(rect(x-a/2,y-b/2,a,b));F(rect(x-b/2,y-a/2,b,a));},s,s);break;}
+    case 'confetti':{const r=rng(P.patSeed|0),cnt=Math.min(6000,Math.round(4*R*R/(s*s)));
+      for(let q=0;q<cnt;q++){const x=(r()*2-1)*R,y=(r()*2-1)*R,z=s*w*(0.35+0.65*r()),c=r()<0.5?1:2,kind=r(),rot=r()*Math.PI;
+        if(kind<0.4)Ci(x,y,z/2,c);else{const m=kind<0.75?4:3,p=[];for(let a=0;a<m;a++){const an=rot+a*2*Math.PI/m;p.push([x+z*0.6*Math.cos(an),y+z*0.6*Math.sin(an)]);}F(p,c);}}break;}
+    case 'woodgrain':{const sp=s*0.22,nj=Math.ceil(R/sp)+2;for(let j=-nj;j<=nj;j++){const p=[],ph=j*0.61,ph2=j*1.37;for(let x=-R;x<=R;x+=s/6)p.push([x,j*sp+sp*w*2.2*Math.sin(x/(s*2.6)+ph)+sp*w*1.1*Math.sin(x/(s*0.9)+ph2)]);Ln(p);}break;}
+  }
+  const a=P.patRot*Math.PI/180,ca=Math.cos(a),sa=Math.sin(a),ox=G.cx+P.patOffX,oy=G.cy+P.patOffY;
+  const T=([x,y])=>[x*ca-y*sa+ox,x*sa+y*ca+oy];
+  return out.map(sh=>{const colr=sh.c===2?P.patColor2:P.patColor,base={mode:sh.mode,col:colr,o:P.patOpacity*sh.o,lw:P.patLine};
+    if(sh.k==='c'){const[x,y]=T([sh.x,sh.y]);return{...base,k:'c',x,y,r:sh.r};}
+    return{...base,k:'p',closed:sh.closed,pts:sh.pts.map(T)};});
+}
+function genLines(P,G){
+  const out=[];if(P.linesWhere==='none')return out;
+  const base={k:'p',closed:true,mode:'stroke',col:P.linesColor,o:1,lw:P.linesWidth,dash:P.linesDash};
+  for(let i=0;i<P.linesCount;i++){
+    const d=P.linesInset+i*P.linesGap;
+    if(P.linesWhere!=='inner'){const e=d+(P.outerEdge!=='plain'?P.outerEdgeDepth:0);if(G.W-2*e>2&&G.H-2*e>2)out.push({...base,pts:translate(shapePts(P.outerShape,G.W-2*e,G.H-2*e,P.outerR-e),G.W/2,G.H/2)});}
+    if(P.linesWhere!=='outer')out.push({...base,pts:G.inflate(G.mt+G.ed+d)});
+  }
+  return out;
+}
+function genOrnaments(P,G){
+  const out=[];if(P.ornament==='none')return out;
+  const z=P.ornSize,cl=P.ornColor,F=(pts)=>out.push({k:'p',pts,closed:true,mode:'fill',col:cl,o:1});
+  const C=(x,y,r,colr=cl)=>out.push({k:'c',x,y,r,mode:'fill',col:colr,o:1});
+  const spots=[];
+  for(const[sx,sy]of[[-1,-1],[1,-1],[1,1],[-1,1]]){
+    const hx=G.cx+sx*G.hfw/2,hy=G.cy+sy*G.hfh/2;
+    if(P.ornament==='bracket'){const g=Math.max(1.5,z*0.22),L=z,kx=hx+sx*g,ky=hy+sy*g;out.push({k:'p',pts:[[kx-sx*L,ky],[kx,ky],[kx,ky-sy*L]],closed:false,mode:'stroke',col:cl,o:1,lw:P.ornLine});continue;}
+    let dx=hx-G.cx,dy=hy-G.cy;const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;const t=rayHit(G.outerBase,hx,hy,dx,dy);
+    if(isFinite(t))spots.push([hx+dx*t/2,hy+dy*t/2]);
+  }
+  if(P.ornPlaces==='all'&&P.ornament!=='bracket'){
+    for(const[dx,dy]of[[0,-1],[1,0],[0,1],[-1,0]]){
+      if(P.capText&&((dy===1&&P.capPos==='bottom')||(dy===-1&&P.capPos==='top')))continue;
+      const hx=G.cx+dx*G.hfw/2,hy=G.cy+dy*G.hfh/2,t=rayHit(G.outerBase,hx,hy,dx,dy);if(isFinite(t))spots.push([hx+dx*t/2,hy+dy*t/2]);
+    }
+  }
+  for(const[x,y]of spots){
+    switch(P.ornament){
+      case 'circle':C(x,y,z/2);break;
+      case 'diamond':F([[x,y-z/2],[x+z*0.36,y],[x,y+z/2],[x-z*0.36,y]]);break;
+      case 'star':F(starPts(x,y,z/2,z/2*0.42));break;
+      case 'heart':F(heartUnit(60).map(([a,b])=>[x+a*z,y+b*z]));break;
+      case 'square':F([[x,y-z/2],[x+z/2,y],[x,y+z/2],[x-z/2,y]].map(([a,b])=>[x+(a-x)*0.85,y+(b-y)*0.85]));break;
+      case 'flower':{const pr=z*0.2;for(let a=0;a<6;a++){const an=a/6*2*Math.PI;C(x+Math.cos(an)*pr*1.45,y+Math.sin(an)*pr*1.45,pr);}C(x,y,pr*0.9,P.frameColor);C(x,y,pr*0.5);break;}
+    }
+  }
+  return out;
+}
+
+/* ---------- SVG ---------- */
+const pd=p=>'M'+p.map(([x,y])=>f2(x)+' '+f2(y)).join('L')+'Z';
+function shapeD(sh){if(sh.k==='c'){const{x,y,r}=sh;return`M${f2(x-r)} ${f2(y)}a${f2(r)} ${f2(r)} 0 1 0 ${f2(2*r)} 0a${f2(r)} ${f2(r)} 0 1 0 ${f2(-2*r)} 0Z`;}return'M'+sh.pts.map(([x,y])=>f2(x)+' '+f2(y)).join('L')+(sh.closed?'Z':'');}
+function shapesSVG(shapes){
+  const groups=new Map();
+  for(const sh of shapes){const key=[sh.mode,sh.col,f2(sh.o),sh.lw||0,sh.dash||''].join('|');if(!groups.has(key))groups.set(key,[]);groups.get(key).push(sh);}
+  let s='';
+  for(const[key,arr]of groups){const[mode,colr,o,lw,dash]=key.split('|');const d=arr.map(shapeD).join('');
+    if(mode==='fill')s+=`<path d="${d}" fill="${colr}"${+o<1?` fill-opacity="${o}"`:''}/>`;
+    else{const w=+lw;const da=dash==='dashed'?` stroke-dasharray="${f2(w*5)} ${f2(w*3.5)}"`:dash==='dotted'?` stroke-dasharray="0.01 ${f2(Math.max(w*2.4,0.8))}"`:'';
+      s+=`<path d="${d}" fill="none" stroke="${colr}"${+o<1?` stroke-opacity="${o}"`:''} stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"${da}/>`;}
+  }
+  return s;
+}
+const FILTERS={gray:'0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0 0 0 1 0',sepia:'0.393 0.769 0.189 0 0 0.349 0.686 0.168 0 0 0.272 0.534 0.131 0 0 0 0 0 1 0',vintage:'0.6 0.45 0.12 0 0.03 0.25 0.65 0.1 0 0.02 0.2 0.35 0.45 0 0 0 0 0 1 0',bright:'1.15 0.05 0 0 0.02 0 1.08 0 0 0.01 0 0 0.95 0 0 0 0 0 1 0'};
+
+function captionPos(P,G){const holeTop=G.cy-G.hfh/2,holeBot=G.cy+G.hfh/2;return{x:G.cx,y:(P.capPos==='top'?holeTop/2:(holeBot+G.H)/2)+P.capOffset};}
+function fontLabel(v){const f=FONTS.find(x=>x[0]===v);return f?f[1]:'';}
+
+function buildSVG(P,G,o={}){
+  const m=o.preview?Math.max(G.W,G.H)*0.12:0;
+  const vb=[-m,-m,G.W+2*m,G.H+2*m];
+  const size=o.px?`width="${o.px[0]}" height="${o.px[1]}"`:o.preview?'':`width="${f2(G.W)}mm" height="${f2(G.H)}mm"`;
+  const body=pd(G.outer)+pd(G.holeF);
+  let defs=`<clipPath id="fc"><path clip-rule="evenodd" d="${body}"/></clipPath><clipPath id="wc"><path d="${pd(G.win)}"/></clipPath>`;
+  let fill=P.frameColor;
+  if(P.fillType==='linear'){defs+=`<linearGradient id="fg" gradientTransform="rotate(${P.gradAngle} .5 .5)"><stop offset="0" stop-color="${P.frameColor}"/><stop offset="1" stop-color="${P.frameColor2}"/></linearGradient>`;fill='url(#fg)';}
+  else if(P.fillType==='radial'){defs+=`<radialGradient id="fg" cx=".5" cy=".5" r=".65"><stop offset="0" stop-color="${P.frameColor}"/><stop offset="1" stop-color="${P.frameColor2}"/></radialGradient>`;fill='url(#fg)';}
+  const k=Math.max(G.W,G.H);
+  if(P.shadow)defs+=`<filter id="sh" x="-15%" y="-15%" width="130%" height="130%"><feDropShadow dx="0" dy="${f2(k*0.004)}" stdDeviation="${f2(k*0.006)}" flood-color="#000" flood-opacity=".38"/></filter>`;
+  if(P.photoFilter!=='none')defs+=`<filter id="pf"><feColorMatrix type="matrix" values="${FILTERS[P.photoFilter]}"/></filter>`;
+  defs+=`<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9dcf2"/><stop offset="1" stop-color="#fbeedb"/></linearGradient>`;
+  let s=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="${vb.map(f2).join(' ')}" ${size}>`;
+  if(!o.preview&&P.capText&&GOOGLE_FONTS.has(fontLabel(P.capFont))&&!o.noCaption)s+=`<style>@import url('${esc($('#gfonts').href)}');</style>`;
+  s+=`<defs>${defs}</defs>`;
+  if(o.bg)s+=`<rect x="${f2(vb[0])}" y="${f2(vb[1])}" width="${f2(vb[2])}" height="${f2(vb[3])}" fill="${o.bg}"/>`;
+  // photo
+  const{pw,ph,cx,cy}=G;
+  s+=`<g clip-path="url(#wc)">`;
+  if(o.photoHref){
+    const iw=pw*P.photoZoom,ih=ph*P.photoZoom;
+    s+=`<rect x="${f2(cx-pw)}" y="${f2(cy-ph)}" width="${f2(pw*2)}" height="${f2(ph*2)}" fill="#ddd"/>`;
+    s+=`<image href="${o.photoHref}" xlink:href="${o.photoHref}" x="${f2(cx-iw/2+P.photoX)}" y="${f2(cy-ih/2+P.photoY)}" width="${f2(iw)}" height="${f2(ih)}" preserveAspectRatio="xMidYMid ${P.photoFit==='fit'?'meet':'slice'}"${P.photoFilter!=='none'?' filter="url(#pf)"':''}/>`;
+  }else{
+    const x0=cx-pw/2,y0=cy-ph/2;
+    s+=`<rect x="${f2(x0)}" y="${f2(y0)}" width="${f2(pw)}" height="${f2(ph)}" fill="url(#sky)"/>`;
+    s+=`<circle cx="${f2(x0+pw*0.7)}" cy="${f2(y0+ph*0.3)}" r="${f2(Math.min(pw,ph)*0.09)}" fill="#ffd27a"/>`;
+    s+=`<path d="M${f2(x0)} ${f2(y0+ph*0.72)}L${f2(x0+pw*0.3)} ${f2(y0+ph*0.48)}L${f2(x0+pw*0.5)} ${f2(y0+ph*0.64)}L${f2(x0+pw*0.68)} ${f2(y0+ph*0.5)}L${f2(x0+pw)} ${f2(y0+ph*0.74)}V${f2(y0+ph)}H${f2(x0)}Z" fill="#8bb08f"/>`;
+    s+=`<path d="M${f2(x0)} ${f2(y0+ph*0.84)}Q${f2(x0+pw*0.4)} ${f2(y0+ph*0.7)} ${f2(x0+pw)} ${f2(y0+ph*0.86)}V${f2(y0+ph)}H${f2(x0)}Z" fill="#5f8a6a"/>`;
+  }
+  s+=`</g>`;
+  // mats and bevel
+  for(const mt of G.mats)s+=`<path fill-rule="evenodd" d="${pd(mt.outerP)}${pd(mt.innerP)}" fill="${mt.color}"/>`;
+  if(G.bevel)s+=`<path fill-rule="evenodd" d="${pd(G.bevel.outerP)}${pd(G.bevel.innerP)}" fill="${P.bevelColor}"/>`;
+  // frame body
+  s+=`<path fill-rule="evenodd" d="${body}" fill="${fill}"${P.shadow?' filter="url(#sh)"':''}/>`;
+  const deco=[...genPattern(P,G),...genLines(P,G),...genOrnaments(P,G)];
+  if(deco.length)s+=`<g clip-path="url(#fc)">${shapesSVG(deco)}</g>`;
+  // caption
+  if(P.capText&&!o.noCaption){
+    const c=captionPos(P,G),st=P.capStyle;
+    s+=`<text x="${f2(c.x)}" y="${f2(c.y)}" text-anchor="middle" dominant-baseline="central" font-family="${esc(P.capFont)}" font-size="${f2(P.capSize)}" letter-spacing="${f2(P.capSpacing)}" fill="${P.capColor}"${st.includes('bold')?' font-weight="700"':''}${st.includes('italic')?' font-style="italic"':''}>${esc(P.capText)}</text>`;
+  }
+  if(o.preview){
+    const sw=k*0.0025;
+    if(o.guides){
+      s+=`<rect x="${f2(cx-pw/2)}" y="${f2(cy-ph/2)}" width="${f2(pw)}" height="${f2(ph)}" fill="none" stroke="#e4572e" stroke-width="${f2(sw)}" stroke-dasharray="${f2(sw*4)} ${f2(sw*3)}" opacity=".75"/>`;
+      for(const h of G.holes)s+=`<circle cx="${f2(h.x)}" cy="${f2(h.y)}" r="${f2(h.r)}" fill="none" stroke="#e4572e" stroke-width="${f2(sw)}" stroke-dasharray="${f2(sw*2)} ${f2(sw*2)}" opacity=".8"/>`;
+    }
+    s+=`<path class="win-hit" d="${pd(G.win)}" fill="transparent"/>`;
+    if(o.dims){
+      const fs=m*0.2,y=-m*0.45,x=-m*0.45,col='currentColor';
+      const tick=(x1,y1,x2,y2)=>`<path d="M${f2(x1)} ${f2(y1)}L${f2(x2)} ${f2(y2)}" stroke="${col}" stroke-width="${f2(sw)}"/>`;
+      s+=`<g fill="${col}" font-family="system-ui,sans-serif" font-size="${f2(fs)}">`;
+      s+=tick(0,y,G.W,y)+tick(0,y-fs*0.4,0,y+fs*0.4)+tick(G.W,y-fs*0.4,G.W,y+fs*0.4);
+      s+=`<rect x="${f2(G.W/2-fs*3.4)}" y="${f2(y-fs*0.7)}" width="${f2(fs*6.8)}" height="${f2(fs*1.4)}" style="fill:var(--stagebg)"/>`;
+      s+=`<text x="${f2(G.W/2)}" y="${f2(y)}" text-anchor="middle" dominant-baseline="central">${fmtLen(G.W)}</text>`;
+      s+=tick(x,0,x,G.H)+tick(x-fs*0.4,0,x+fs*0.4,0)+tick(x-fs*0.4,G.H,x+fs*0.4,G.H);
+      s+=`<rect x="${f2(x-fs*0.7)}" y="${f2(G.H/2-fs*3.4)}" width="${f2(fs*1.4)}" height="${f2(fs*6.8)}" style="fill:var(--stagebg)"/>`;
+      s+=`<text transform="translate(${f2(x)} ${f2(G.H/2)}) rotate(-90)" text-anchor="middle" dominant-baseline="central">${fmtLen(G.H)}</text>`;
+      s+=`</g>`;
+    }
+  }
+  s+=`</svg>`;
+  if(o.idp)s=s.replace(/id="(fc|wc|fg|sh|pf|sky)"/g,`id="${o.idp}$1"`).replace(/url\(#(fc|wc|fg|sh|pf|sky)\)/g,`url(#${o.idp}$1)`);
+  return s;
+}
+function fmtLen(mm,unitsOnly){return P.units==='in'?`${(mm/MM_IN).toFixed(2)} in`:`${(Math.round(mm*10)/10)} mm`;}
+
+/* ---------- controls ---------- */
+const CTRL={};
+const disp=(f,v)=>f.type==='len'&&P.units==='in'?v/MM_IN:v;
+const undisp=(f,v)=>f.type==='len'&&P.units==='in'?v*MM_IN:v;
+const dstep=f=>f.type==='len'&&P.units==='in'?(f.step>=1?0.05:0.01):f.step;
+const dround=(f,v)=>{const st=dstep(f);const dec=st<0.1?(st<0.01?3:2):st<1?(st<0.25?2:1):0;return +(+v).toFixed(f.type==='len'?(P.units==='in'?2:dec):dec);};
+function labelOf(f){return typeof f.label==='function'?f.label(P):f.label;}
+function makeRow(f){
+  const el=document.createElement('div');el.className='row';
+  const lab=document.createElement('label');lab.className='lbl';
+  const unit=f.type==='len'?`<span>${P.units}</span>`:'';
+  let set=()=>{},labelEl=null;
+  if(f.type==='len'||f.type==='num'){
+    lab.innerHTML=`<span class="t"></span>${unit}`;labelEl=lab.querySelector('.t');
+    const wrap=document.createElement('div');wrap.className='pair';
+    const r=document.createElement('input');r.type='range';const nI=document.createElement('input');nI.type='number';
+    r.min=nI.min=dround(f,disp(f,f.min));r.max=nI.max=dround(f,disp(f,f.max));r.step=nI.step=dstep(f);
+    const id='c_'+f.id;nI.id=id;lab.htmlFor=id;
+    r.addEventListener('input',()=>setParam(f.id,undisp(f,+r.value)));
+    nI.addEventListener('input',()=>{const v=parseFloat(nI.value);if(!isNaN(v))setParam(f.id,undisp(f,v));});
+    nI.addEventListener('change',()=>{set(P[f.id]);});
+    wrap.append(r,nI);el.append(lab,wrap);
+    set=v=>{const dv=dround(f,disp(f,v));r.value=dv;if(document.activeElement!==nI)nI.value=dv;};
+  }else if(f.type==='sel'){
+    lab.innerHTML=`<span class="t"></span>`;labelEl=lab.querySelector('.t');
+    const s=document.createElement('select');s.className='inp';s.id='c_'+f.id;lab.htmlFor=s.id;
+    for(const[v,t]of f.opts){const op=document.createElement('option');op.value=v;op.textContent=t;s.appendChild(op);}
+    s.addEventListener('change',()=>setParam(f.id,s.value));el.append(lab,s);set=v=>{s.value=v;};
+  }else if(f.type==='col'){
+    lab.innerHTML=`<span class="t"></span>`;labelEl=lab.querySelector('.t');
+    const w=document.createElement('div');w.className='colrow';const c=document.createElement('input');c.type='color';const t=document.createElement('input');t.type='text';t.spellcheck=false;
+    c.addEventListener('input',()=>setParam(f.id,c.value));
+    t.addEventListener('input',()=>{if(/^#[0-9a-f]{6}$/i.test(t.value.trim()))setParam(f.id,t.value.trim().toLowerCase());});
+    w.append(c,t);el.append(lab,w);set=v=>{c.value=v;if(document.activeElement!==t)t.value=v;};
+  }else if(f.type==='chk'){
+    const l=document.createElement('label');l.className='chk';const c=document.createElement('input');c.type='checkbox';const sp=document.createElement('span');l.append(c,sp);labelEl=sp;
+    c.addEventListener('change',()=>setParam(f.id,c.checked));el.append(l);set=v=>{c.checked=!!v;};
+  }else if(f.type==='txt'){
+    lab.innerHTML=`<span class="t"></span>`;labelEl=lab.querySelector('.t');
+    const t=document.createElement('input');t.type='text';t.placeholder='e.g. Our first trip';t.id='c_'+f.id;lab.htmlFor=t.id;
+    t.addEventListener('input',()=>setParam(f.id,t.value));el.append(lab,t);set=v=>{if(document.activeElement!==t)t.value=v;};
+  }else if(f.type==='photo'){
+    el.innerHTML=`<div class="photo-btns"><button class="btn small" id="btnPhoto">Choose photo…</button><button class="btn small" id="btnPhotoClear">Remove</button><button class="btn small" id="btnPhotoCenter">Re-centre</button></div><div class="tips" id="photoName">No photo yet, showing a placeholder. You can also drop an image on the preview.</div>`;
+    el.querySelector('#btnPhoto').onclick=()=>$('#filePhoto').click();
+    el.querySelector('#btnPhotoClear').onclick=()=>{if(photo){URL.revokeObjectURL(photo.url);photo=null;updatePhotoName();schedule();}};
+    el.querySelector('#btnPhotoCenter').onclick=()=>{P.photoX=0;P.photoY=0;P.photoZoom=1;syncControls();schedule();};
+  }
+  return{el,set,labelEl};
+}
+function buildControls(){
+  const root=$('#controls');root.innerHTML='';
+  for(const sec of SECTIONS){
+    const d=document.createElement('details');d.className='sec';d.open=openState[sec.title]??!!sec.open;
+    d.addEventListener('toggle',()=>{openState[sec.title]=d.open;});
+    const sm=document.createElement('summary');sm.textContent=sec.title;const b=document.createElement('div');b.className='sec-body';d.append(sm,b);
+    for(const f of sec.fields){const r=makeRow(f);b.appendChild(r.el);CTRL[f.id]={f,...r};}
+    root.appendChild(d);
+  }
+  syncControls();updatePhotoName();
+}
+function syncControls(){
+  for(const id in CTRL){const c=CTRL[id];if(c.f.show)c.el.hidden=!c.f.show(P);if(c.labelEl)c.labelEl.textContent=labelOf(c.f);if(c.f.def!==undefined)c.set(P[id]);}
+}
+function setParam(id,v){
+  const f=FIELDS[id];
+  if(f&&(f.type==='len'||f.type==='num')&&typeof v==='number'){v=clamp(v,f.min,f.max);}
+  P[id]=v;
+  if(activeStyle){activeStyle='';markGallery();}
+  if(id==='photoPreset'){const pr=PHOTO_PRESETS.find(p=>p[0]===v);if(pr&&pr[2]){P.photoW=pr[2];P.photoH=pr[3];}}
+  if(id==='photoW'||id==='photoH')P.photoPreset=matchPreset();
+  if(id==='units'){buildControls();}
+  if(id==='sizeMode'&&v==='outer'&&G){P.outerW=f2(G.W);P.outerH=f2(G.H);}
+  syncControls();schedule();
+}
+function matchPreset(){const pr=PHOTO_PRESETS.find(p=>p[2]&&((Math.abs(p[2]-P.photoW)<0.2&&Math.abs(p[3]-P.photoH)<0.2)||(Math.abs(p[3]-P.photoW)<0.2&&Math.abs(p[2]-P.photoH)<0.2)));return pr?pr[0]:'custom';}
+function updatePhotoName(){const el=$('#photoName');if(el)el.textContent=photo?`${photo.name} (${photo.w}×${photo.h}px). Drag it in the preview to reposition.`:'No photo yet, showing a placeholder. You can also drop an image on the preview.';}
+
+/* ---------- render ---------- */
+let raf=0,saveT=0;
+function schedule(){if(!raf)raf=requestAnimationFrame(()=>{raf=0;render();});}
+function render(){
+  G=computeGeo(P);
+  const wrap=$('#canvasWrap');
+  const bg=prefs.bg;
+  $('#view').style.background=bg||'';
+  wrap.style.setProperty('--stagebg',bg||getComputedStyle(document.documentElement).getPropertyValue('--stage'));
+  wrap.innerHTML=buildSVG(P,G,{preview:true,photoHref:photo?photo.url:null,dims:prefs.dims,guides:prefs.guides});
+  const svg=wrap.firstChild;
+  const vbv=svg.viewBox.baseVal;viewBox=[vbv.x,vbv.y,vbv.width,vbv.height];
+  if(bg){const lum=parseInt(bg.slice(1,3),16)*0.3+parseInt(bg.slice(3,5),16)*0.59+parseInt(bg.slice(5,7),16)*0.11;svg.style.color=lum<128?'#ddd':'#555';}
+  sizeSVG();bindDrag(svg);
+  info();
+  clearTimeout(render._g);render._g=setTimeout(()=>renderGallery(false),250);
+  clearTimeout(saveT);saveT=setTimeout(()=>lsSet('pfg-settings-v1',JSON.stringify(P)),400);
+}
+function sizeSVG(){
+  const svg=$('#canvasWrap svg');if(!svg)return;const v=$('#view');
+  const aw=v.clientWidth-32,ah=v.clientHeight-32;const sc=Math.max(0.05,Math.min(aw/viewBox[2],ah/viewBox[3]))*zoom;
+  svg.style.width=f2(viewBox[2]*sc)+'px';svg.style.height=f2(viewBox[3]*sc)+'px';
+  $('#zVal').textContent=zoom===1?'Fit':Math.round(zoom*100)+'%';
+}
+function info(){
+  const g=G,el=$('#info');
+  const cut=perim(g.outer)+perim(g.holeF);
+  el.innerHTML=`<span>Outer <b>${fmtLen(g.W)} × ${fmtLen(g.H)}</b></span><span>Visible opening <b>${fmtLen(g.ww)} × ${fmtLen(g.wh)}</b></span><span>Photo <b>${fmtLen(g.pw)} × ${fmtLen(g.ph)}</b></span><span>Borders (side / top / bottom) <b>${fmtLen(g.side)} / ${fmtLen(g.top)} / ${fmtLen(g.bottom)}</b></span><span>Front cut length <b>${fmtLen(cut)}</b></span>`+g.warn.map(w=>`<div class="warn">${esc(w)}</div>`).join('');
+}
+function bindDrag(svg){
+  const hit=svg.querySelector('.win-hit');if(!hit)return;
+  svg.classList.toggle('can-drag',!!photo);
+  if(!photo)return;
+  hit.addEventListener('pointerdown',e=>{
+    e.preventDefault();const sc=viewBox[2]/svg.getBoundingClientRect().width;
+    const sx=e.clientX,sy=e.clientY,ox=P.photoX,oy=P.photoY;svg.classList.add('dragging');
+    const mv=ev=>{P.photoX=f2(ox+(ev.clientX-sx)*sc);P.photoY=f2(oy+(ev.clientY-sy)*sc);CTRL.photoX.set(P.photoX);CTRL.photoY.set(P.photoY);schedule();};
+    const up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);const s2=$('#canvasWrap svg');if(s2)s2.classList.remove('dragging');};
+    window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);
+  });
+}
+
+/* ---------- photo loading ---------- */
+function loadPhotoFile(file){
+  if(!file||!file.type.startsWith('image/'))return toast('That file is not an image.');
+  const url=URL.createObjectURL(file);const img=new Image();
+  img.onload=()=>{if(photo)URL.revokeObjectURL(photo.url);photo={url,file,w:img.naturalWidth,h:img.naturalHeight,name:file.name,data:null};
+    const r=img.naturalWidth/img.naturalHeight;if(r>1.05&&P.orient==='portrait'&&P.photoW!==P.photoH)P.orient='landscape';else if(r<0.95&&P.orient==='landscape')P.orient='portrait';
+    P.photoX=0;P.photoY=0;P.photoZoom=1;syncControls();updatePhotoName();schedule();toast('Photo added');};
+  img.onerror=()=>toast('Could not read that image.');img.src=url;
+}
+function photoData(){
+  if(!photo)return Promise.resolve(null);if(photo.data)return Promise.resolve(photo.data);
+  return new Promise(res=>{const fr=new FileReader();fr.onload=()=>{photo.data=fr.result;res(fr.result);};fr.onerror=()=>res(null);fr.readAsDataURL(photo.file);});
+}
+
+/* ---------- export: SVG / PNG / print ---------- */
+function baseName(){return`photo-frame-${Math.round(G.W)}x${Math.round(G.H)}mm`;}
+async function exportSVG(){const href=await photoData();download(baseName()+'.svg',buildSVG(P,G,{photoHref:href}),'image/svg+xml');}
+async function exportPNG(){
+  const href=await photoData();const dpi=+P.pngDpi;let k=dpi/MM_IN;
+  const maxPx=14000;if(Math.max(G.W,G.H)*k>maxPx){k=maxPx/Math.max(G.W,G.H);toast('Image capped at 14000 px on the long side');}
+  const cw=Math.round(G.W*k),ch=Math.round(G.H*k);
+  const svg=buildSVG(P,G,{photoHref:href,noCaption:true,px:[cw,ch]});
+  const img=new Image();const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));
+  try{
+    await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url;});
+    const cv=document.createElement('canvas');cv.width=cw;cv.height=ch;const ctx=cv.getContext('2d');ctx.drawImage(img,0,0,cw,ch);
+    if(P.capText){
+      try{await document.fonts.load(`${P.capStyle} ${Math.round(P.capSize*k)}px ${P.capFont}`,P.capText);}catch(e){}
+      const c=captionPos(P,G);ctx.fillStyle=P.capColor;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.font=`${P.capStyle==='normal'?'':P.capStyle} ${P.capSize*k}px ${P.capFont}`;
+      if('letterSpacing' in ctx)ctx.letterSpacing=`${P.capSpacing*k}px`;
+      ctx.fillText(P.capText,c.x*k,c.y*k);
+    }
+    const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
+    download(baseName()+`-${dpi}dpi.png`,blob);
+  }catch(e){toast('PNG export failed in this browser. Try SVG instead.');console.error(e);}
+  finally{URL.revokeObjectURL(url);}
+}
+async function printFrame(){
+  const href=await photoData();
+  const svg=buildSVG(P,G,{photoHref:href});
+  const fr=document.createElement('iframe');fr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(fr);
+  const d=fr.contentDocument;
+  d.open();d.write(`<!doctype html><html><head><link rel="stylesheet" href="${esc($('#gfonts').href)}"><style>@page{size:${f2(G.W)}mm ${f2(G.H)}mm;margin:0}html,body{margin:0}svg{display:block}</style></head><body>${svg}</body></html>`);d.close();
+  setTimeout(()=>{fr.contentWindow.focus();fr.contentWindow.print();setTimeout(()=>fr.remove(),2000);},700);
+}
+
+/* ---------- export: DXF ---------- */
+function simplify(p,tol=0.004){
+  if(p.length<4)return p;let out=p.slice(),changed=true;
+  while(changed&&out.length>3){changed=false;const r=[];for(let i=0;i<out.length;i++){const a=r.length?r[r.length-1]:out[out.length-1],b=out[i],c=out[(i+1)%out.length];
+    const ab=Math.hypot(c[0]-a[0],c[1]-a[1]);const cr=Math.abs((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]));
+    if(ab>1e-9&&cr/ab<tol&&Math.hypot(b[0]-a[0],b[1]-a[1])>1e-9){changed=true;continue;}
+    if(Math.hypot(b[0]-a[0],b[1]-a[1])<1e-6){changed=true;continue;}r.push(b);}out=r;}
+  return out;
+}
+function regionMask(G,polys){
+  const k=Math.min(4,Math.sqrt(5e6/(G.W*G.H)));const w=Math.ceil(G.W*k)+2,h=Math.ceil(G.H*k)+2;
+  const cv=document.createElement('canvas');cv.width=w;cv.height=h;const ctx=cv.getContext('2d');ctx.scale(k,k);
+  ctx.beginPath();for(const p of polys){p.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();}ctx.fill('evenodd');
+  const data=ctx.getImageData(0,0,w,h).data;
+  return(x,y)=>{const ix=Math.floor(x*k),iy=Math.floor(y*k);if(ix<0||iy<0||ix>=w||iy>=h)return false;return data[(iy*w+ix)*4+3]>200;};
+}
+function clipShapes(shapes,inside){
+  const out=[];
+  for(const sh of shapes){
+    if(sh.k==='c'){let all=true;for(let a=0;a<16&&all;a++)all=inside(sh.x+sh.r*Math.cos(a*Math.PI/8),sh.y+sh.r*Math.sin(a*Math.PI/8));
+      if(all){out.push({type:'circle',x:sh.x,y:sh.y,r:sh.r});continue;}
+      const p=[];for(let a=0;a<48;a++)p.push([sh.x+sh.r*Math.cos(a*Math.PI/24),sh.y+sh.r*Math.sin(a*Math.PI/24)]);sh={k:'p',pts:p,closed:true};}
+    const pts=sh.closed?[...sh.pts,sh.pts[0]]:sh.pts;
+    const dense=[];for(let i=0;i<pts.length;i++){if(i===0){dense.push(pts[0]);continue;}const a=pts[i-1],b=pts[i],L=Math.hypot(b[0]-a[0],b[1]-a[1]),m=Math.max(1,Math.ceil(L/0.5));for(let j=1;j<=m;j++)dense.push([a[0]+(b[0]-a[0])*j/m,a[1]+(b[1]-a[1])*j/m]);}
+    const flags=dense.map(([x,y])=>inside(x,y));
+    if(flags.every(Boolean)){out.push({type:'poly',pts:sh.pts,closed:!!sh.closed});continue;}
+    let run=[];const flush=()=>{if(run.length>1)out.push({type:'poly',pts:simplify2(run),closed:false});run=[];};
+    dense.forEach((q,i)=>{if(flags[i])run.push(q);else flush();});flush();
+  }
+  return out;
+}
+function simplify2(run){if(run.length<3)return run;const o=[run[0]];for(let i=1;i<run.length-1;i++){const a=o[o.length-1],b=run[i],c=run[i+1];const cr=Math.abs((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]));const ab=Math.hypot(c[0]-a[0],c[1]-a[1])||1;if(cr/ab>0.01)o.push(b);}o.push(run[run.length-1]);return o;}
+function dxfString(ents){
+  const L=[];const add=(...a)=>{for(const x of a)L.push(String(x));};
+  const layers=[['CUT',1],['ENGRAVE',5],['GUIDE',8]];
+  add(0,'SECTION',2,'HEADER',9,'$ACADVER',1,'AC1009',9,'$INSUNITS',70,4,0,'ENDSEC');
+  add(0,'SECTION',2,'TABLES',0,'TABLE',2,'LAYER',70,layers.length);
+  for(const[n,c]of layers)add(0,'LAYER',2,n,70,0,62,c,6,'CONTINUOUS');
+  add(0,'ENDTAB',0,'ENDSEC',0,'SECTION',2,'ENTITIES');
+  const n4=v=>(Math.round(v*10000)/10000).toString();
+  for(const e of ents){
+    if(e.type==='circle')add(0,'CIRCLE',8,e.layer,10,n4(e.x),20,n4(e.y),30,0,40,n4(e.r));
+    else{add(0,'POLYLINE',8,e.layer,66,1,70,e.closed?1:0,10,0,20,0,30,0);for(const[x,y]of e.pts)add(0,'VERTEX',8,e.layer,10,n4(x),20,n4(y),30,0);add(0,'SEQEND',8,e.layer);}
+  }
+  add(0,'ENDSEC',0,'EOF');return L.join('\n');
+}
+function exportDXF(){
+  const ents=[];let ox=0;const gap=10;
+  const place=(list,layer)=>{for(const e of list){if(e.type==='circle')ents.push({...e,layer,x:e.x+ox,y:G.H-e.y});else ents.push({...e,layer,pts:e.pts.map(([x,y])=>[x+ox,G.H-y])});}};
+  const cut=p=>({type:'poly',pts:simplify(p),closed:true});
+  const piece=(holesList,engrave)=>{place([cut(G.outer),...holesList],'CUT');if(engrave)place(engrave,'ENGRAVE');ox+=G.W+gap;};
+  let pieces=0;
+  if(P.dxfFront){let eng=null;if(P.dxfEngrave){const deco=[...genPattern(P,G),...genLines(P,G),...genOrnaments(P,G)];eng=clipShapes(deco,regionMask(G,[G.outer,G.holeF]));}piece([cut(G.holeF)],eng);pieces++;}
+  if(P.dxfMats&&G.mats.length){for(const mt of G.mats){piece([cut(mt.innerP)]);pieces++;}}
+  if(P.dxfSpacer){piece([cut(G.rabbet)]);pieces++;}
+  if(P.dxfBack){piece(G.holes.map(h=>({type:'circle',x:h.x,y:h.y,r:h.r})));pieces++;}
+  if(!pieces)return toast('Pick at least one DXF piece under Fabrication & export.');
+  download(baseName()+'.dxf',dxfString(ents),'application/dxf');
+  toast(`DXF saved with ${pieces} piece${pieces>1?'s':''}`);
+}
+
+/* ---------- export: STL ---------- */
+function cross(o,a,b){return(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);}
+// Polygon triangulation: compact port of mapbox/earcut v2 (ISC licence, (c) Mapbox)
+function earcut(data,holeIndices){
+  const hasHoles=holeIndices&&holeIndices.length,outerLen=hasHoles?holeIndices[0]*2:data.length;
+  let outerNode=ecList(data,0,outerLen,true);const tris=[];
+  if(!outerNode||outerNode.next===outerNode.prev)return tris;
+  if(hasHoles)outerNode=ecHoles(data,holeIndices,outerNode);
+  ecLinked(outerNode,tris,0);return tris;
+}
+function ecList(data,start,end,clockwise){let last;
+  if(clockwise===(ecSigned(data,start,end)>0)){for(let i=start;i<end;i+=2)last=ecInsert(i,data[i],data[i+1],last);}
+  else{for(let i=end-2;i>=start;i-=2)last=ecInsert(i,data[i],data[i+1],last);}
+  if(last&&ecEq(last,last.next)){ecRemove(last);last=last.next;}return last;}
+function ecFilter(start,end){if(!start)return start;if(!end)end=start;let p=start,again;
+  do{again=false;if(!p.steiner&&(ecEq(p,p.next)||ecArea(p.prev,p,p.next)===0)){ecRemove(p);p=end=p.prev;if(p===p.next)break;again=true;}else p=p.next;}while(again||p!==end);return end;}
+function ecLinked(ear,tris,pass){if(!ear)return;let stop=ear,prev,next;
+  while(ear.prev!==ear.next){prev=ear.prev;next=ear.next;
+    if(ecIsEar(ear)){tris.push(prev.i/2|0,ear.i/2|0,next.i/2|0);ecRemove(ear);ear=next.next;stop=next.next;continue;}
+    ear=next;
+    if(ear===stop){if(!pass)ecLinked(ecFilter(ear),tris,1);else if(pass===1){ear=ecCure(ecFilter(ear),tris);ecLinked(ear,tris,2);}else if(pass===2)ecSplit(ear,tris);break;}}}
+function ecIsEar(ear){const a=ear.prev,b=ear,c=ear.next;if(ecArea(a,b,c)>=0)return false;
+  const x0=Math.min(a.x,b.x,c.x),y0=Math.min(a.y,b.y,c.y),x1=Math.max(a.x,b.x,c.x),y1=Math.max(a.y,b.y,c.y);let p=c.next;
+  while(p!==a){if(p.x>=x0&&p.x<=x1&&p.y>=y0&&p.y<=y1&&ecPIT(a.x,a.y,b.x,b.y,c.x,c.y,p.x,p.y)&&ecArea(p.prev,p,p.next)>=0)return false;p=p.next;}return true;}
+function ecCure(start,tris){let p=start;
+  do{const a=p.prev,b=p.next.next;if(!ecEq(a,b)&&ecInter(a,p,p.next,b)&&ecLocIn(a,b)&&ecLocIn(b,a)){tris.push(a.i/2|0,p.i/2|0,b.i/2|0);ecRemove(p);ecRemove(p.next);p=start=b;}p=p.next;}while(p!==start);
+  return ecFilter(p);}
+function ecSplit(start,tris){let a=start;
+  do{let b=a.next.next;while(b!==a.prev){if(a.i!==b.i&&ecValidDiag(a,b)){let c=ecSplitPoly(a,b);a=ecFilter(a,a.next);c=ecFilter(c,c.next);ecLinked(a,tris,0);ecLinked(c,tris,0);return;}b=b.next;}a=a.next;}while(a!==start);}
+function ecHoles(data,holeIndices,outerNode){const q=[];
+  for(let i=0;i<holeIndices.length;i++){const start=holeIndices[i]*2,end=i<holeIndices.length-1?holeIndices[i+1]*2:data.length;const list=ecList(data,start,end,false);if(list===list.next)list.steiner=true;q.push(ecLeftmost(list));}
+  q.sort((a,b)=>a.x-b.x);for(const h of q)outerNode=ecHole(h,outerNode);return outerNode;}
+function ecHole(hole,outerNode){const br=ecBridge(hole,outerNode);if(!br)return outerNode;const brr=ecSplitPoly(br,hole);ecFilter(brr,brr.next);return ecFilter(br,br.next);}
+function ecBridge(hole,outerNode){let p=outerNode,qx=-Infinity,m;const hx=hole.x,hy=hole.y;
+  do{if(hy<=p.y&&hy>=p.next.y&&p.next.y!==p.y){const x=p.x+(hy-p.y)*(p.next.x-p.x)/(p.next.y-p.y);if(x<=hx&&x>qx){qx=x;m=p.x<p.next.x?p:p.next;if(x===hx)return m;}}p=p.next;}while(p!==outerNode);
+  if(!m)return null;const stop=m,mx=m.x,my=m.y;let tanMin=Infinity,tan;p=m;
+  do{if(hx>=p.x&&p.x>=mx&&hx!==p.x&&ecPIT(hy<my?hx:qx,hy,mx,my,hy<my?qx:hx,hy,p.x,p.y)){tan=Math.abs(hy-p.y)/(hx-p.x);
+      if(ecLocIn(p,hole)&&(tan<tanMin||(tan===tanMin&&(p.x>m.x||(p.x===m.x&&ecArea(m.prev,m,p.prev)<0&&ecArea(p.next,m,m.next)<0))))){m=p;tanMin=tan;}}p=p.next;}while(p!==stop);
+  return m;}
+function ecLeftmost(start){let p=start,l=start;do{if(p.x<l.x||(p.x===l.x&&p.y<l.y))l=p;p=p.next;}while(p!==start);return l;}
+function ecPIT(ax,ay,bx,by,cx,cy,px,py){return(cx-px)*(ay-py)>=(ax-px)*(cy-py)&&(ax-px)*(by-py)>=(bx-px)*(ay-py)&&(bx-px)*(cy-py)>=(cx-px)*(by-py);}
+function ecValidDiag(a,b){return a.next.i!==b.i&&a.prev.i!==b.i&&!ecInterPoly(a,b)&&(ecLocIn(a,b)&&ecLocIn(b,a)&&ecMidIn(a,b)&&(ecArea(a.prev,a,b.prev)||ecArea(a,b.prev,b))||ecEq(a,b)&&ecArea(a.prev,a,a.next)>0&&ecArea(b.prev,b,b.next)>0);}
+function ecArea(p,q,r){return(q.y-p.y)*(r.x-q.x)-(q.x-p.x)*(r.y-q.y);}
+function ecEq(a,b){return a.x===b.x&&a.y===b.y;}
+const ecSign=v=>v>0?1:v<0?-1:0;
+function ecOnSeg(p,q,r){return q.x<=Math.max(p.x,r.x)&&q.x>=Math.min(p.x,r.x)&&q.y<=Math.max(p.y,r.y)&&q.y>=Math.min(p.y,r.y);}
+function ecInter(p1,q1,p2,q2){const o1=ecSign(ecArea(p1,q1,p2)),o2=ecSign(ecArea(p1,q1,q2)),o3=ecSign(ecArea(p2,q2,p1)),o4=ecSign(ecArea(p2,q2,q1));
+  if(o1!==o2&&o3!==o4)return true;if(o1===0&&ecOnSeg(p1,p2,q1))return true;if(o2===0&&ecOnSeg(p1,q2,q1))return true;if(o3===0&&ecOnSeg(p2,p1,q2))return true;if(o4===0&&ecOnSeg(p2,q1,q2))return true;return false;}
+function ecInterPoly(a,b){let p=a;do{if(p.i!==a.i&&p.next.i!==a.i&&p.i!==b.i&&p.next.i!==b.i&&ecInter(p,p.next,a,b))return true;p=p.next;}while(p!==a);return false;}
+function ecLocIn(a,b){return ecArea(a.prev,a,a.next)<0?ecArea(a,b,a.next)>=0&&ecArea(a,a.prev,b)>=0:ecArea(a,b,a.prev)<0||ecArea(a,a.next,b)<0;}
+function ecMidIn(a,b){let p=a,inside=false;const px=(a.x+b.x)/2,py=(a.y+b.y)/2;
+  do{if(((p.y>py)!==(p.next.y>py))&&p.next.y!==p.y&&(px<(p.next.x-p.x)*(py-p.y)/(p.next.y-p.y)+p.x))inside=!inside;p=p.next;}while(p!==a);return inside;}
+function ecSplitPoly(a,b){const a2={i:a.i,x:a.x,y:a.y},b2={i:b.i,x:b.x,y:b.y},an=a.next,bp=b.prev;
+  a.next=b;b.prev=a;a2.next=an;an.prev=a2;b2.next=a2;a2.prev=b2;bp.next=b2;b2.prev=bp;return b2;}
+function ecInsert(i,x,y,last){const p={i,x,y,prev:null,next:null,steiner:false};if(!last){p.prev=p;p.next=p;}else{p.next=last.next;p.prev=last;last.next.prev=p;last.next=p;}return p;}
+function ecRemove(p){p.next.prev=p.prev;p.prev.next=p.next;}
+function ecSigned(data,start,end){let sum=0;for(let i=start,j=end-2;i<end;i+=2){sum+=(data[j]-data[i])*(data[i+1]+data[j+1]);j=i;}return sum;}
+// triangles of outer-minus-holes, each returned counter-clockwise
+function triangulate(outer,holes){
+  const pts=[...outer],holeIdx=[];for(const h of holes){holeIdx.push(pts.length);pts.push(...h);}
+  const idx=earcut(pts.flat(),holeIdx),out=[];
+  for(let k=0;k<idx.length;k+=3){const a=pts[idx[k]],b=pts[idx[k+1]],c=pts[idx[k+2]];out.push(cross(a,b,c)>=0?[a,b,c]:[a,c,b]);}
+  return out;
+}
+function exportSTL(){
+  toast('Building STL…');
+  setTimeout(()=>{
+    const flip=p=>simplify(p.map(([x,y])=>[x,G.H-y]),0.01);
+    const ccw=p=>polyArea(p)>0?p:p.slice().reverse(),cw=p=>polyArea(p)<0?p:p.slice().reverse();
+    const tris=[];
+    const layer=(z0,z1,outerP,holesP)=>{
+      const o=ccw(flip(outerP)),hs=holesP.map(h=>cw(flip(h)));
+      for(const[a,b,c]of triangulate(o,hs)){tris.push([[a[0],a[1],z1],[b[0],b[1],z1],[c[0],c[1],z1]]);tris.push([[a[0],a[1],z0],[c[0],c[1],z0],[b[0],b[1],z0]]);}
+      for(const lp of[o,...hs])for(let i=0;i<lp.length;i++){const a=lp[i],b=lp[(i+1)%lp.length];tris.push([[a[0],a[1],z0],[b[0],b[1],z0],[b[0],b[1],z1]]);tris.push([[a[0],a[1],z0],[b[0],b[1],z1],[a[0],a[1],z1]]);}
+    };
+    const circ=h=>{const p=[];for(let a=0;a<40;a++)p.push([h.x+h.r*Math.cos(a/40*2*Math.PI),h.y+h.r*Math.sin(a/40*2*Math.PI)]);return p;};
+    let z=0;
+    layer(z,z+P.frontT,G.outer,[G.holeF]);z+=P.frontT;
+    if(G.mats.length){layer(z,z+P.lipT,G.outer,[G.win]);z+=P.lipT;}
+    layer(z,z+P.rabbetT,G.outer,[G.rabbet,...G.holes.map(circ)]);z+=P.rabbetT;
+    const buf=new ArrayBuffer(84+tris.length*50),dv=new DataView(buf);
+    const hdr='Photo frame generator STL (mm), front face on z=0';for(let i=0;i<hdr.length;i++)dv.setUint8(i,hdr.charCodeAt(i));
+    dv.setUint32(80,tris.length,true);let off=84;
+    for(const[a,b,c]of tris){const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;const l=Math.hypot(nx,ny,nz)||1;
+      for(const v of[nx/l,ny/l,nz/l,...a,...b,...c]){dv.setFloat32(off,v,true);off+=4;}dv.setUint16(off,0,true);off+=2;}
+    download(baseName()+'.stl',new Blob([buf],{type:'model/stl'}));
+    toast(`STL saved: ${tris.length.toLocaleString()} triangles, ${f2(z)} mm deep`);
+  },30);
+}
+
+/* ---------- settings: save / load / share / presets / random ---------- */
+function applySettings(obj){P={...DEFAULTS};for(const k in obj)if(k in DEFAULTS)P[k]=obj[k];buildControls();schedule();}
+function encodeHash(){const diff={};for(const k in P)if(P[k]!==DEFAULTS[k])diff[k]=P[k];return btoa(unescape(encodeURIComponent(JSON.stringify(diff))));}
+function readHash(){const m=location.hash.match(/s=([^&]+)/);if(!m)return null;try{return JSON.parse(decodeURIComponent(escape(atob(m[1]))));}catch(e){return null;}}
+const PALETTES=[['#284b63','#ffffff','#f2c14e','#f6f2e9'],['#1c1c1c','#c9a227','#e9d8a6','#fbfaf6'],['#f6d5dc','#ffffff','#d97a93','#ffffff'],['#2a9d8f','#e9c46a','#f4a261','#fdf6e3'],['#3d2b56','#e0c36c','#f2e8cf','#efe6d4'],['#fff6dc','#ff6b6b','#2ec4b6','#ffffff'],['#9a6434','#2f1b0b','#d8a979','#f3efe6'],['#e5e1d8','#6b705c','#a5a58d','#ffffff'],['#0b3954','#bfd7ea','#ff5a5f','#f7f7f7'],['#7d1d3f','#f7c1bb','#ffd166','#fff8f0']];
+function randomize(){
+  const r=Math.random,pick=a=>a[Math.floor(r()*a.length)];const pal=pick(PALETTES);
+  const ps=PATTERNS.filter(p=>p[0]!=='none').map(p=>p[0]);
+  Object.assign(P,{frameColor:pal[0],patColor:pal[1],patColor2:pal[2],mat1Color:pal[3],linesColor:pal[2],ornColor:pal[2],capColor:pal[1],
+    pattern:r()<0.12?'none':pick(ps),patOpacity:f2(0.2+r()*0.6),patScale:Math.round(6+r()*14),patWeight:f2(0.25+r()*0.4),patRot:pick([0,0,45,90,30]),patSeed:Math.ceil(r()*999),
+    outerShape:pick(['rect','rect','rounded','rounded','octagon','ticket','arch','stadium','oval']),outerR:Math.round(6+r()*20),
+    outerEdge:r()<0.55?'plain':pick(EDGES.slice(1)).at(0),outerEdgeSize:Math.round(8+r()*16),outerEdgeDepth:f2(2+r()*4),
+    winShape:pick(['rect','rect','rounded','oval','arch','octagon','circle','heart','stadium']),winR:Math.round(4+r()*14),
+    winEdge:r()<0.75?'plain':pick(['scallop','wave','zigzag']),
+    mat1On:r()<0.5,mat2On:r()<0.35,linesWhere:pick(['none','inner','outer','both']),linesDash:pick(['solid','dashed','dotted']),
+    ornament:r()<0.6?'none':pick(ORNAMENTS.slice(1)).at(0),fillType:pick(['solid','solid','linear','radial']),frameColor2:pal[0]});
+  buildControls();schedule();
+}
+let activeStyle='',galleryKey='';
+function presetParams(name){const keep={units:P.units,photoPreset:P.photoPreset,photoW:P.photoW,photoH:P.photoH,orient:P.orient,sizeMode:P.sizeMode,outerW:P.outerW,outerH:P.outerH};return{...DEFAULTS,...keep,...PRESETS[name]};}
+function applyPreset(name){if(!PRESETS[name])return;P=presetParams(name);buildControls();schedule();activeStyle=name;markGallery();toast(`Style: ${name}`);}
+function initPresets(){
+  const s=$('#presetSel');s.innerHTML='<option value="">Styles…</option>'+Object.keys(PRESETS).map(k=>`<option>${esc(k)}</option>`).join('');
+  s.onchange=()=>{applyPreset(s.value);s.value='';};
+  const g=$('#gallery');g.innerHTML='';
+  Object.keys(PRESETS).forEach((name,i)=>{const b=document.createElement('button');b.className='tile';b.type='button';b.dataset.style=name;b.title=`Apply the ${name} style`;
+    b.innerHTML=`<div class="thumb"></div><span>${esc(name)}</span>`;b.onclick=()=>applyPreset(name);g.appendChild(b);});
+  renderGallery(true);
+}
+function markGallery(){document.querySelectorAll('#gallery .tile').forEach(t=>t.classList.toggle('on',t.dataset.style===activeStyle));}
+// thumbnails follow the current photo size and photo, so they only redraw when those change
+function renderGallery(force){
+  const key=[P.photoW,P.photoH,P.orient,P.sizeMode,P.outerW,P.outerH,photo?photo.url:''].join('|');
+  if(!force&&key===galleryKey)return;galleryKey=key;
+  document.querySelectorAll('#gallery .tile').forEach((t,i)=>{const PP=presetParams(t.dataset.style);
+    try{t.querySelector('.thumb').innerHTML=buildSVG(PP,computeGeo(PP),{photoHref:photo?photo.url:null,idp:'g'+i+'_'});}catch(e){console.error(e);}});
+  markGallery();
+}
+
+/* ---------- wiring ---------- */
+function init(){
+  const fromHash=readHash();let saved=null;try{saved=JSON.parse(lsGet('pfg-settings-v1')||'null');}catch(e){}
+  const start=fromHash||saved;if(start)for(const k in start)if(k in DEFAULTS)P[k]=start[k];
+  try{const pr=JSON.parse(lsGet('pfg-prefs')||'null');if(pr)Object.assign(prefs,pr);}catch(e){}
+  $('#tDims').checked=prefs.dims;$('#tGuides').checked=prefs.guides;$('#tBg').value=prefs.bg;
+  const savePrefs=()=>{lsSet('pfg-prefs',JSON.stringify(prefs));schedule();};
+  $('#tDims').onchange=e=>{prefs.dims=e.target.checked;savePrefs();};
+  $('#tGuides').onchange=e=>{prefs.guides=e.target.checked;savePrefs();};
+  $('#tBg').onchange=e=>{prefs.bg=e.target.value;savePrefs();};
+  buildControls();initPresets();
+  $('#btnRandom').onclick=randomize;
+  $('#btnReset').onclick=()=>{applySettings({});toast('Reset to defaults');};
+  document.querySelectorAll('[data-exp]').forEach(b=>b.onclick=()=>({svg:exportSVG,png:exportPNG,dxf:exportDXF,stl:exportSTL,print:printFrame})[b.dataset.exp]());
+  $('#btnSave').onclick=()=>download('photo-frame-settings.json',JSON.stringify(P,null,2),'application/json');
+  $('#btnLoad').onclick=()=>$('#fileSettings').click();
+  $('#fileSettings').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{applySettings(JSON.parse(t));toast('Settings loaded');}catch(err){toast('That file is not a settings file.');}});e.target.value='';};
+  $('#btnLink').onclick=()=>{const url=location.href.split('#')[0]+'#s='+encodeHash();history.replaceState(null,'',url);(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast('Link copied (photo not included)'),()=>toast('Link is in the address bar'));};
+  $('#filePhoto').onchange=e=>{loadPhotoFile(e.target.files[0]);e.target.value='';};
+  const v=$('#view');
+  v.addEventListener('dragover',e=>{e.preventDefault();v.classList.add('drop');});
+  v.addEventListener('dragleave',()=>v.classList.remove('drop'));
+  v.addEventListener('drop',e=>{e.preventDefault();v.classList.remove('drop');loadPhotoFile(e.dataTransfer.files[0]);});
+  $('#zIn').onclick=()=>{zoom=Math.min(8,zoom*1.25);sizeSVG();};
+  $('#zOut').onclick=()=>{zoom=Math.max(0.2,zoom/1.25);sizeSVG();};
+  $('#zFit').onclick=()=>{zoom=1;sizeSVG();};
+  window.addEventListener('resize',sizeSVG);
+  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',schedule);
+  render();
+}
+init();
+</script>
+</body>
+</html>

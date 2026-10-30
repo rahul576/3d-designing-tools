@@ -11,6 +11,7 @@ Each tool in this repository targets a common pain point in 3D design work, such
 Each tool has its own folder with a short README describing what it does and how to run it.
 
 - [Tray Generator](tray-generator/) — parametric stackable trays and boxes with lids, exported as STL/3MF. [Open it online](https://rahul576.github.io/3d-designing-tools/tray-generator/).
+- [Photo Frame Generator](photo-frame-generator/) — custom-size photo frames with shapes, decorative edges, patterns and a thumbnail style gallery, exported as SVG/PNG/DXF/STL. [Open it online](https://rahul576.github.io/3d-designing-tools/photo-frame-generator/).
 
 ## Home page
 

@@ -190,7 +190,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
       </div>
       <div class="stats">
         <div><b id="toolCount">1</b>tool available</div>
-        <div><b>STL · 3MF</b>export formats</div>
+        <div><b>STL · 3MF · SVG · DXF</b>export formats</div>
         <div><b>0 KB</b>uploaded</div>
       </div>
     </div>
@@ -265,6 +265,29 @@ const TOOLS = [
     imageCaption: "Flush-rim stacking in v7: the groove between stacked trays is gone.",
     links: [{ label: "Read the guide", href: "tray-generator/README.txt" }],
     meta: { "Runs": "Offline in the browser", "Export": "STL, 3MF", "Undo": "Ctrl+Z" }
+  },
+  {
+    id: "photo-frame-generator",
+    name: "Photo Frame Generator",
+    folder: "photo-frame-generator/",
+    color: "#e0703a",
+    icon: "frame",
+    version: "v3",
+    versions: ["v3", "v2", "v1"],
+    tagline: "Custom-size photo frames with shapes, decorative edges and 28 patterns, previewed live with your own photo.",
+    tags: ["Any size", "Laser / 3D print", "SVG / PNG / DXF / STL"],
+    features: [
+      "Pick from 19 frame styles shown as thumbnails with your photo",
+      "Any photo size in mm or inches, or a fixed outer size",
+      "Arch, oval, octagon, heart and more for frame and opening",
+      "Scalloped, pinked, wavy and postage-stamp edges",
+      "28 patterns, mats, ornaments and a caption in 11 fonts",
+      "Export SVG, PNG, laser DXF pieces or a printable STL"
+    ],
+    image: "photo-frame-generator/preview.png",
+    imageCaption: "v3 matches the Tray Generator look: style gallery, grid canvas and a Download menu.",
+    links: [{ label: "Read the guide", href: "photo-frame-generator/README.md" }],
+    meta: { "Runs": "Offline in the browser", "Export": "SVG, PNG, DXF, STL", "Photo": "Never uploaded" }
   }
   // Next tool goes here, e.g. { id: "my-tool", name: "My Tool", folder: "my-tool/", ... }
 ];
@@ -275,6 +298,7 @@ const ICONS = {
   plus: '<path d="M12 5v14M5 12h14"/>',
   cube: '<path d="M12 3 20 7.5v9L12 21l-8-4.5v-9Z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/>',
   check: '<path d="M20 6 9 17l-5-5"/>',
+  frame: '<rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="10" height="10" rx="1"/><path d="m7 15 3-3 2 2 2-2 3 3"/>',
   arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>'
 };
 const svg = (name, sw = 2) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ICONS.cube}</svg>`;
