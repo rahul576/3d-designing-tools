@@ -1,10 +1,10 @@
-# Photo Frame Generator (v2)
+# Photo Frame Generator (v3)
 
 Custom-size photo frames with a live preview: pick a ready-made style from the thumbnail gallery, or design your own shape, edge, pattern, mats, ornaments and caption. Export for printing on paper, laser cutting or 3D printing.
 
 **Live site:** https://rahul576.github.io/3d-designing-tools/photo-frame-generator/
 
-The app is a single offline HTML file. `index.html` is always the latest version; every version is kept under `versions/vN/index.html` (v1 to v2). Nothing is uploaded; your photo stays in the browser.
+The app is a single offline HTML file. `index.html` is always the latest version; every version is kept under `versions/vN/index.html` (v1 to v3). Nothing is uploaded; your photo stays in the browser.
 
 ## Features
 
@@ -20,5 +20,6 @@ The app is a single offline HTML file. `index.html` is always the latest version
 
 ## Versions
 
+- **v3:** restyled to match the Tray Generator (sidebar, grid canvas, preview toolbar, Download menu, dark mode toggle). All features unchanged.
 - **v2:** frame styles thumbnail gallery, 8 more styles (19 in total).
 - **v1:** first release.
