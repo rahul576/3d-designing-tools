@@ -1,0 +1,74 @@
+name: 3MF Viewer Mac app
+
+# Builds the 3MF Viewer Mac app on a macOS runner and publishes it as a GitHub release
+# (tag 3mf-viewer-mac-v<version>, version from 3mf-viewer/mac/Info.plist), then points the
+# Homebrew cask (Casks/3mf-viewer.rb) at it. A version that already has a release is skipped,
+# so bump CFBundleShortVersionString to publish a new build.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "3mf-viewer/mac/**"
+      - ".github/workflows/3mf-viewer-mac.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: 3mf-viewer-mac
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Read version
+        id: v
+        run: |
+          ver="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' 3mf-viewer/mac/Info.plist)"
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+          echo "tag=3mf-viewer-mac-v$ver" >> "$GITHUB_OUTPUT"
+          if gh release view "3mf-viewer-mac-v$ver" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release 3mf-viewer-mac-v$ver already exists, nothing to build."
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Build app
+        if: steps.v.outputs.exists != 'true'
+        run: bash 3mf-viewer/mac/build.sh --package "3MF-Viewer-${{ steps.v.outputs.version }}.zip"
+      - name: Publish release
+        if: steps.v.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.v.outputs.tag }}" "3MF-Viewer-${{ steps.v.outputs.version }}.zip" \
+            --target "$GITHUB_SHA" \
+            --title "3MF Viewer for Mac ${{ steps.v.outputs.version }}" \
+            --notes "Install with Homebrew:
+
+          \`\`\`
+          brew tap rahul576/3d-designing-tools https://github.com/rahul576/3d-designing-tools
+          brew install --cask 3mf-viewer
+          \`\`\`
+
+          Or download the zip, drag **3MF Viewer.app** to Applications, then right-click › Open the first time. Needs macOS 12 or later (Apple Silicon and Intel)."
+      - name: Update Homebrew cask
+        if: steps.v.outputs.exists != 'true'
+        run: |
+          sum="$(shasum -a 256 "3MF-Viewer-${{ steps.v.outputs.version }}.zip" | cut -d' ' -f1)"
+          sed -i '' -E \
+            -e "s/^  version \".*\"/  version \"${{ steps.v.outputs.version }}\"/" \
+            -e "s/^  sha256 .*/  sha256 \"$sum\"/" Casks/3mf-viewer.rb
+          git diff --quiet Casks/3mf-viewer.rb && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git commit -m "3MF Viewer cask: ${{ steps.v.outputs.version }}" Casks/3mf-viewer.rb
+          git pull --rebase origin main
+          git push origin HEAD:main
+          # Pushes made with this token don't start other workflows, so update the site branch too.
+          git push --force origin HEAD:refs/heads/gh-pages

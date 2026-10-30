@@ -1,0 +1,1078 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3MF Viewer v1</title>
+<meta name="description" content="Open 3MF and STL 3D print files in your browser and turn them in 3D with their filament colours. Nothing is uploaded.">
+<style>
+:root{
+  --bg-canvas:#eceef1; --grid:#cdd1d7; --grid-major:#a9afb8;
+  --panel:#ffffff; --panel-2:#f3f4f6; --line:#e3e5e8; --text:#1d2127; --muted:#6b7280;
+  --accent:#2b78c5; --accent-soft:#d6e7f8; --pill:#16181b; --pill-ink:#f5f5f5;
+  --code:#f3f4f6;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg-canvas:#202227; --grid:#3d4249; --grid-major:#575e68;
+    --panel:#17191c; --panel-2:#202327; --line:#2c3035; --text:#e8eaed; --muted:#9aa1ab; --accent-soft:#1d3a57;
+    --pill:#f1f2f4; --pill-ink:#16181b; --code:#202327;
+  }
+}
+:root[data-theme="dark"]{
+  --bg-canvas:#202227; --grid:#3d4249; --grid-major:#575e68;
+  --panel:#17191c; --panel-2:#202327; --line:#2c3035; --text:#e8eaed; --muted:#9aa1ab; --accent-soft:#1d3a57;
+  --pill:#f1f2f4; --pill-ink:#16181b; --code:#202327;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:var(--bg-canvas);color:var(--text);font:13px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+a{color:var(--accent)}
+.app{display:flex;height:100%}
+aside{width:316px;flex:none;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:6px;padding:14px 12px 10px 14px}
+.brand svg.logo{flex:none;margin-right:4px}
+.brand h1{font:600 14px var(--mono);letter-spacing:.06em;margin:0;flex:1}
+.brand h1 span{font-weight:400;color:var(--muted)}
+.brand a.home{color:var(--muted);font-size:12px;text-decoration:none;margin-right:2px}
+.brand a.home:hover{color:var(--text)}
+.icon-btn{border:0;background:transparent;color:var(--text);width:30px;height:30px;border-radius:8px;cursor:pointer;display:grid;place-items:center}
+.icon-btn:hover{background:var(--panel-2)}
+.openbox{margin:0 12px 12px;display:grid;gap:8px}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:8px;height:30px;padding:0 10px;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
+.btn:hover{background:var(--panel-2)}
+.btn.primary{background:#f08a24;border-color:#f08a24;color:#fff;font-weight:600;height:36px;font-size:13px}
+.btn.primary:hover{background:#d9761a}
+.btn.on{background:var(--accent-soft);border-color:var(--accent)}
+.btnrow{display:flex;gap:6px;flex-wrap:wrap}
+.btnrow .btn{flex:1}
+.tips{font-size:11.5px;color:var(--muted);line-height:1.5}
+.tips b{color:var(--text);font-weight:600}
+.sec{--acc:#2b78c5;border-top:1px solid var(--line);border-left:4px solid transparent}
+.sec summary{list-style:none;cursor:pointer;padding:10px 12px 10px 10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;user-select:none}
+.sec summary::-webkit-details-marker{display:none}
+.sec summary .chip{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--acc) 16%,var(--panel));color:var(--acc)}
+.sec summary .chip svg{width:15px;height:15px}
+.sec summary .sub{font-weight:400;font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+.sec summary::after{content:"";width:6px;height:6px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:rotate(45deg) translateY(-2px);flex:none;margin-left:6px}
+.sec summary:hover{background:color-mix(in srgb,var(--acc) 7%,var(--panel))}
+.sec[open]{border-left-color:var(--acc);background:color-mix(in srgb,var(--acc) 4%,var(--panel))}
+.sec[open] summary .chip{background:var(--acc);color:#fff}
+.sec[open] summary::after{transform:rotate(-135deg) translateY(-1px);border-color:var(--acc)}
+.sec-body{padding:4px 14px 14px 12px;display:grid;gap:10px}
+dl.info{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;margin:0;font-size:12px}
+dl.info dt{color:var(--muted)}
+dl.info dd{margin:0;font-family:var(--mono);font-size:11.5px;text-align:right;overflow-wrap:anywhere}
+.colors{display:grid;gap:4px}
+.colors label{display:grid;grid-template-columns:16px 22px 1fr auto;align-items:center;gap:8px;padding:4px 6px;border-radius:7px;cursor:pointer}
+.colors label:hover{background:var(--panel-2)}
+.colors input{accent-color:var(--accent);margin:0}
+.colors .sw{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+.colors .hex{font:11.5px var(--mono)}
+.colors .pct{font:11px var(--mono);color:var(--muted)}
+.thumbimg{width:100%;border-radius:8px;background:var(--panel-2);display:block}
+.cmd{position:relative;background:var(--code);border:1px solid var(--line);border-radius:8px;padding:8px 34px 8px 9px;font:11px/1.5 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}
+.cmd button{position:absolute;top:5px;right:5px;width:24px;height:24px;border:0;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;display:grid;place-items:center}
+.cmd button:hover{background:var(--panel);color:var(--text)}
+.cmd button svg{width:14px;height:14px}
+.step{font-size:12px;font-weight:600;margin-bottom:-4px}
+.side-foot{padding:12px 14px 16px;border-top:1px solid var(--line);margin-top:auto}
+/* stage */
+main{flex:1;position:relative;min-width:0}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab;background:var(--bg-canvas)}
+#gl:active{cursor:grabbing}
+main.drop::after{content:"";position:absolute;inset:10px;border:3px dashed var(--accent);border-radius:14px;pointer-events:none}
+.toolbar{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:2px;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08);z-index:2}
+.toolbar button{border:0;background:transparent;border-radius:7px;height:28px;padding:0 9px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px;color:var(--text)}
+.toolbar button:hover{background:var(--panel-2)}
+.toolbar button.on{background:var(--accent-soft);color:var(--accent)}
+.toolbar .sep{width:1px;background:var(--line);margin:4px 3px}
+.toolbar svg{width:15px;height:15px}
+.status{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:var(--pill);color:var(--pill-ink);border-radius:999px;padding:7px 14px;font:12px var(--mono);white-space:nowrap;z-index:2;max-width:calc(100% - 24px);overflow:hidden;text-overflow:ellipsis}
+.empty{position:absolute;inset:0;display:grid;place-items:center;z-index:1;pointer-events:none}
+.empty .card{pointer-events:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px 30px;text-align:center;max-width:380px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.empty h2{margin:10px 0 4px;font-size:17px}
+.empty p{margin:0 0 16px;color:var(--muted)}
+.empty .btnrow{justify-content:center}
+.empty .btnrow .btn{flex:none;height:34px;padding:0 14px}
+.busy{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--panel);padding:12px 18px;border-radius:10px;box-shadow:0 2px 14px rgba(0,0,0,.18);font-size:13px;z-index:3;display:flex;align-items:center;gap:10px;max-width:80%}
+.spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:sp 0.8s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+.err{color:#c0392b}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);max-width:460px;padding:20px 22px}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+dialog h3{margin:0 0 8px}
+dialog ul{padding-left:18px;margin:8px 0;line-height:1.6}
+kbd{font:11px var(--mono);background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+@media (max-width:760px){
+  html,body{overflow:auto;height:auto}
+  .app{flex-direction:column-reverse;height:auto}
+  aside{width:100%;border-right:0;border-top:1px solid var(--line)}
+  main{height:70vh;flex:none}
+  .toolbar{left:8px;right:8px;transform:none;overflow-x:auto}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand">
+    <svg class="logo" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f08a24" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2.5 20.5 7v10L12 21.5 3.5 17V7Z"/><path d="M3.5 7 12 11.5 20.5 7M12 11.5v10"/></svg>
+    <h1>3MF VIEWER <span>v1</span></h1>
+    <a class="home" href="../../../" title="All tools">Tools</a>
+    <button class="icon-btn" id="helpBtn" type="button" title="How to use" aria-label="How to use"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.5 9.3a2.6 2.6 0 0 1 5 .9c0 1.7-2.5 2.3-2.5 3.8"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg></button>
+    <button class="icon-btn" id="themeBtn" type="button" title="Dark mode" aria-label="Toggle dark mode"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button>
+  </div>
+  <div class="openbox">
+    <button class="btn primary" id="openBtn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>Open 3MF or STL file</button>
+    <div class="tips">Or drop a file anywhere on the page. Works with Bambu Studio, OrcaSlicer, PrusaSlicer, Cura and other 3MF files. The file is read in your browser and never uploaded.</div>
+    <input type="file" id="fileIn" accept=".3mf,.stl,model/3mf,model/stl" hidden>
+  </div>
+
+  <details class="sec" id="secModel" style="--acc:#2b78c5" open>
+    <summary><span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5 20.5 7v10L12 21.5 3.5 17V7Z"/></svg></span>Model<span class="sub" id="modelSub">No file</span></summary>
+    <div class="sec-body">
+      <dl class="info">
+        <dt>File</dt><dd id="iName">–</dd>
+        <dt>Size</dt><dd id="iSize">–</dd>
+        <dt>Triangles</dt><dd id="iTris">–</dd>
+        <dt>Objects</dt><dd id="iObjs">–</dd>
+        <dt>File size</dt><dd id="iBytes">–</dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="sec" id="secColors" style="--acc:#d0632b" open>
+    <summary><span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="9" r="4"/><circle cx="16" cy="9" r="4"/><circle cx="12" cy="15.5" r="4"/></svg></span>Filament colours<span class="sub" id="colorSub">–</span></summary>
+    <div class="sec-body">
+      <div class="colors" id="colorList"><div class="tips">Open a file to see its colours. Untick a colour to hide those parts.</div></div>
+    </div>
+  </details>
+
+  <details class="sec" id="secThumb" style="--acc:#7a5cc7" open hidden>
+    <summary><span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/></svg></span>Slicer picture</summary>
+    <div class="sec-body">
+      <img class="thumbimg" id="thumbImg" alt="Picture saved in the file by the slicer">
+      <div class="tips">The preview image the slicer saved inside the file.</div>
+    </div>
+  </details>
+
+  <details class="sec" id="secMac" style="--acc:#2f9e6b">
+    <summary><span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span>Mac app<span class="sub">Homebrew</span></summary>
+    <div class="sec-body">
+      <div class="tips">The same viewer as a Mac app: <b>Finder thumbnails</b> of your models in their colours, a 3D preview when you press <b>Space</b> (Quick Look), and a viewer window when you double-click a .3mf. macOS 12 or later, Apple Silicon and Intel.</div>
+      <div class="step">Install with Homebrew</div>
+      <div class="cmd" data-cmd><span>brew tap rahul576/3d-designing-tools https://github.com/rahul576/3d-designing-tools
+brew install --cask 3mf-viewer</span><button type="button" title="Copy" aria-label="Copy"></button></div>
+      <div class="tips">No Homebrew yet? Install it from <a href="https://brew.sh" target="_blank" rel="noopener">brew.sh</a> first.</div>
+      <div class="step">Update or remove</div>
+      <div class="cmd" data-cmd><span>brew upgrade --cask 3mf-viewer
+brew uninstall --cask 3mf-viewer</span><button type="button" title="Copy" aria-label="Copy"></button></div>
+      <div class="btnrow">
+        <a class="btn" href="https://github.com/rahul576/3d-designing-tools/releases?q=3mf-viewer-mac" target="_blank" rel="noopener">Download zip</a>
+        <a class="btn" href="https://github.com/rahul576/3d-designing-tools/tree/main/3mf-viewer#mac-app" target="_blank" rel="noopener">Other ways to install</a>
+      </div>
+    </div>
+  </details>
+
+  <div class="side-foot tips">Drag to turn · right-drag or Shift-drag to move · scroll or pinch to zoom · double-click to reset. Keys: <kbd>R</kbd> reset, <kbd>G</kbd> grid, <kbd>+</kbd>/<kbd>−</kbd> zoom.</div>
+</aside>
+
+<main id="stage">
+  <canvas id="gl"></canvas>
+  <div class="toolbar" id="toolbar" hidden>
+    <button type="button" data-view="iso" title="3D view (R)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5 20.5 7v10L12 21.5 3.5 17V7Z"/><path d="M3.5 7 12 11.5 20.5 7M12 11.5v10"/></svg>3D</button>
+    <button type="button" data-view="front" title="Front">Front</button>
+    <button type="button" data-view="back" title="Back">Back</button>
+    <button type="button" data-view="left" title="Left">Left</button>
+    <button type="button" data-view="right" title="Right">Right</button>
+    <button type="button" data-view="top" title="Top">Top</button>
+    <button type="button" data-view="bottom" title="Bottom">Bottom</button>
+    <span class="sep"></span>
+    <button type="button" id="gridBtn" class="on" title="Build plate grid, 10 mm squares (G)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>Grid</button>
+    <button type="button" id="pngBtn" title="Save this view as a PNG picture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>PNG</button>
+  </div>
+  <div class="empty" id="empty">
+    <div class="card">
+      <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#f08a24" stroke-width="1.4" stroke-linejoin="round"><path d="M12 2.5 20.5 7v10L12 21.5 3.5 17V7Z"/><path d="M3.5 7 12 11.5 20.5 7M12 11.5v10"/></svg>
+      <h2>Drop a 3MF file here</h2>
+      <p>See your print files in 3D with their filament colours, size in mm and triangle count.</p>
+      <div class="btnrow">
+        <button class="btn primary" id="openBtn2" type="button">Open file</button>
+        <button class="btn" id="sampleBtn" type="button">Try a sample</button>
+      </div>
+    </div>
+  </div>
+  <div class="busy" id="busy" hidden><span class="spin"></span><span id="busyText">Reading…</span></div>
+  <div class="status" id="status" hidden></div>
+</main>
+</div>
+
+<dialog id="help">
+  <h3>3MF Viewer</h3>
+  <div class="tips" style="font-size:13px">
+    Open a <b>.3mf</b> or <b>.stl</b> file with the Open button, or drop it on the page.
+    <ul>
+      <li>Colours come from the file: painted triangles, per-part filaments and colour groups, the way Bambu Studio, OrcaSlicer and PrusaSlicer save them.</li>
+      <li>The model sits on a 10 mm build-plate grid, centred like on a slicer plate. All plates and objects in the file are shown.</li>
+      <li>Untick a colour on the left to hide those parts and look inside.</li>
+      <li><b>PNG</b> saves the current view as a picture.</li>
+      <li>Nothing is uploaded. The file is read on your computer.</li>
+    </ul>
+    Mouse: drag to turn, right-drag or Shift-drag to move, scroll to zoom, double-click to reset. Touch: one finger turns, two fingers pinch and move.
+  </div>
+  <form method="dialog" style="text-align:right;margin-top:12px"><button class="btn">Close</button></form>
+</dialog>
+
+<!-- Runs in a Web Worker so big files don't freeze the page -->
+<script id="workerSrc" type="text/plain">
+"use strict";
+const FALLBACK = [0.72, 0.74, 0.77, 1];
+
+/* ---------- ZIP (stored + deflate, ZIP64) ---------- */
+function openZip(b) {
+  const dv = new DataView(b.buffer, b.byteOffset, b.byteLength);
+  const u16 = o => dv.getUint16(o, true), u32 = o => dv.getUint32(o, true);
+  const u64 = o => u32(o) + u32(o + 4) * 4294967296;
+  const n = b.length;
+  if (n < 22) return null;
+  let eocd = -1;
+  for (let i = n - 22, stop = Math.max(0, n - 22 - 65535); i >= stop; i--) {
+    if (b[i] === 0x50 && b[i + 1] === 0x4b && b[i + 2] === 5 && b[i + 3] === 6) { eocd = i; break; }
+  }
+  if (eocd < 0) return null;
+  let count = u16(eocd + 10), cd = u32(eocd + 16);
+  if ((cd === 0xFFFFFFFF || count === 0xFFFF) && eocd >= 20 && u32(eocd - 20) === 0x07064b50) {
+    const z = u64(eocd - 20 + 8);
+    if (z + 56 <= n && u32(z) === 0x06064b50) { count = u64(z + 32); cd = u64(z + 48); }
+  }
+  const entries = new Map(), names = [];
+  const td = new TextDecoder();
+  let p = cd;
+  for (let k = 0; k < count && p + 46 <= n && u32(p) === 0x02014b50; k++) {
+    const method = u16(p + 10);
+    let comp = u32(p + 20), size = u32(p + 24), off = u32(p + 42);
+    const nl = u16(p + 28), el = u16(p + 30), cl = u16(p + 32);
+    const name = td.decode(b.subarray(p + 46, p + 46 + nl));
+    let e = p + 46 + nl;
+    const eEnd = e + el;
+    while (e + 4 <= eEnd) {
+      const id = u16(e), sz = u16(e + 2);
+      if (id === 1) {
+        let q = e + 4; const lim = q + sz;
+        if (size === 0xFFFFFFFF && q + 8 <= lim) { size = u64(q); q += 8; }
+        if (comp === 0xFFFFFFFF && q + 8 <= lim) { comp = u64(q); q += 8; }
+        if (off === 0xFFFFFFFF && q + 8 <= lim) { off = u64(q); q += 8; }
+      }
+      e += 4 + sz;
+    }
+    if (!name.endsWith("/")) { entries.set(zipKey(name), { name, method, comp, size, off }); names.push(name); }
+    p = eEnd + cl;
+  }
+  if (!entries.size) return null;
+  return {
+    names,
+    has: path => entries.has(zipKey(path)),
+    entry: path => entries.get(zipKey(path)),
+    async data(path) {
+      const e = entries.get(zipKey(path));
+      if (!e || e.off + 30 > n || u32(e.off) !== 0x04034b50) return null;
+      const start = e.off + 30 + u16(e.off + 26) + u16(e.off + 28);
+      const src = b.subarray(start, Math.min(n, start + e.comp));
+      if (e.method === 0) return src;
+      if (e.method !== 8) return null;
+      const reader = new Blob([src]).stream().pipeThrough(new DecompressionStream("deflate-raw")).getReader();
+      let out = new Uint8Array(Math.max(e.size, 1024)), pos = 0;
+      try {
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (pos + value.length > out.length) { const g = new Uint8Array(Math.max(out.length * 2, pos + value.length)); g.set(out.subarray(0, pos)); out = g; }
+          out.set(value, pos); pos += value.length;
+        }
+      } catch (err) { if (!pos) return null; }   // keep what decoded if the stream ends oddly
+      return out.subarray(0, pos);
+    }
+  };
+}
+function zipKey(path) {
+  let s = path.replace(/^\/+/, "");
+  try { s = decodeURIComponent(s); } catch (e) {}
+  return s.toLowerCase();
+}
+
+/* ---------- Growable typed arrays ---------- */
+class Grow {
+  constructor(T, cap) { this.T = T; this.a = new T(cap || 1024); this.n = 0; }
+  push(v) { if (this.n === this.a.length) this.grow(1); this.a[this.n++] = v; }
+  push3(x, y, z) { if (this.n + 3 > this.a.length) this.grow(3); const a = this.a, n = this.n; a[n] = x; a[n + 1] = y; a[n + 2] = z; this.n = n + 3; }
+  grow(k) { const g = new this.T(Math.max(this.a.length * 2, this.n + k)); g.set(this.a.subarray(0, this.n)); this.a = g; }
+  done() { return this.a.subarray(0, this.n); }
+}
+
+/* ---------- Colours ---------- */
+function hexColor(s) {
+  if (!s) return null;
+  s = String(s).trim().replace(/^#/, "");
+  if (!/^[0-9a-f]{6}([0-9a-f]{2})?$/i.test(s)) return null;
+  const v = i => parseInt(s.substr(i, 2), 16) / 255;
+  return [v(0), v(2), v(4), s.length === 8 ? v(6) : 1];
+}
+const colorKey = c => c.map(x => Math.round(x * 255)).join(",");
+
+/* ---------- 3MF transforms (row vectors: p' = p * M) ---------- */
+const IDENT = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0];
+function parseXform(s) {
+  if (!s) return IDENT;
+  const v = s.trim().split(/\s+/).map(Number);
+  return v.length === 12 && v.every(isFinite) ? v : IDENT;
+}
+function thenX(a, b) {   // apply a first, then b
+  const o = new Array(12);
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) o[i * 3 + j] = a[i * 3] * b[j] + a[i * 3 + 1] * b[3 + j] + a[i * 3 + 2] * b[6 + j];
+  for (let j = 0; j < 3; j++) o[9 + j] = a[9] * b[j] + a[10] * b[3 + j] + a[11] * b[6 + j] + b[9 + j];
+  return o;
+}
+
+/* ---------- Byte-level XML helpers (model files can be hundreds of MB) ---------- */
+function latin(b, s, e) { let r = ""; for (let i = s; i < e; i++) r += String.fromCharCode(b[i]); return r; }
+const td8 = new TextDecoder();
+function num(b, i, e) {
+  let neg = false, v = 0;
+  if (b[i] === 45) { neg = true; i++; } else if (b[i] === 43) i++;
+  while (i < e) { const c = b[i] - 48; if (c < 0 || c > 9) break; v = v * 10 + c; i++; }
+  if (b[i] === 46) {
+    i++; let f = 0, sc = 1;
+    while (i < e) { const c = b[i] - 48; if (c < 0 || c > 9) break; if (sc < 1e15) { f = f * 10 + c; sc *= 10; } i++; }
+    v += f / sc;
+  }
+  if (b[i] === 101 || b[i] === 69) {
+    i++; let en = false, x = 0;
+    if (b[i] === 45) { en = true; i++; } else if (b[i] === 43) i++;
+    while (i < e) { const c = b[i] - 48; if (c < 0 || c > 9) break; x = x * 10 + c; i++; }
+    v *= Math.pow(10, en ? -x : x);
+  }
+  return neg ? -v : v;
+}
+// Attributes of one tag between s and e: fills A with [keyLocalStart, keyEnd, valStart, valEnd, ...]
+function attrs(b, s, e, A) {
+  let k = 0, i = s;
+  while (i < e) {
+    let c = b[i];
+    if (c === 32 || c === 9 || c === 10 || c === 13 || c === 47) { i++; continue; }
+    const ks = i; let kl = i;
+    while (i < e && b[i] !== 61 && b[i] !== 32) { if (b[i] === 58) kl = i + 1; i++; }
+    const ke = i;
+    while (i < e && b[i] !== 34 && b[i] !== 39) i++;
+    if (i >= e) break;
+    const q = b[i++], vs = i;
+    while (i < e && b[i] !== q) i++;
+    A[k++] = kl; A[k++] = ke; A[k++] = vs; A[k++] = i; i++;
+    if (ks === ke) break;
+  }
+  return k;
+}
+function keyIs(b, s, e, str) {
+  if (e - s !== str.length) return false;
+  for (let i = 0; i < str.length; i++) if (b[s + i] !== str.charCodeAt(i)) return false;
+  return true;
+}
+function attrObj(b, s, e, A) {
+  const k = attrs(b, s, e, A), o = {};
+  for (let i = 0; i < k; i += 4) o[latin(b, A[i], A[i + 1])] = unesc(td8.decode(b.subarray(A[i + 2], A[i + 3])));
+  return o;
+}
+const unesc = s => s.indexOf("&") < 0 ? s : s.replace(/&(lt|gt|amp|quot|apos);/g, (m, x) => ({ lt: "<", gt: ">", amp: "&", quot: '"', apos: "'" })[x]);
+
+// Generic tag walk for small files: onOpen(name, attrs, selfClosing), onClose(name)
+function walk(b, onOpen, onClose) {
+  const A = [];
+  let i = 0; const n = b.length;
+  for (;;) {
+    i = b.indexOf(60, i);
+    if (i < 0) break;
+    let j = i + 1;
+    if (b[j] === 33 || b[j] === 63) {
+      if (b[j + 1] === 45 && b[j + 2] === 45) { let k = i + 4; for (; k < n - 2; k++) if (b[k] === 45 && b[k + 1] === 45 && b[k + 2] === 62) break; i = k + 3; }
+      else { const g = b.indexOf(62, j); i = g < 0 ? n : g + 1; }
+      continue;
+    }
+    const close = b[j] === 47; if (close) j++;
+    const ns = j; let ls = j;
+    while (j < n) { const c = b[j]; if (c === 32 || c === 62 || c === 47 || c === 9 || c === 10 || c === 13) break; if (c === 58) ls = j + 1; j++; }
+    const g = b.indexOf(62, j); const end = g < 0 ? n : g;
+    const name = latin(b, ls, j);
+    if (close) onClose(name);
+    else { const self = b[end - 1] === 47; onOpen(name, attrObj(b, j, self ? end - 1 : end, A), self); if (self) onClose(name); }
+    i = end + 1;
+  }
+}
+
+/* Bambu / Prusa per-triangle paint ("paint_color" / "mmu_segmentation"):
+   returns the 1-based filament covering most of the triangle, 0 = unpainted. */
+const paintCache = new Map();
+function paintState(b, s, e) {
+  if (e - s <= 8) { const key = latin(b, s, e); const c = paintCache.get(key); if (c !== undefined) return c; const r = paintCalc(b, s, e); paintCache.set(key, r); return r; }
+  return paintCalc(b, s, e);
+}
+function paintCalc(b, s, e) {
+  let i = e - 1;
+  const counts = [];
+  const hex = c => c >= 48 && c <= 57 ? c - 48 : c >= 65 && c <= 70 ? c - 55 : c >= 97 && c <= 102 ? c - 87 : -1;
+  const next = () => { while (i >= s) { const h = hex(b[i--]); if (h >= 0) return h; } return -1; };
+  (function node(w) {
+    const nb = next(); if (nb < 0) return;
+    const split = nb & 3;
+    if (split > 0) { for (let k = 0; k <= split; k++) node(Math.floor(w / (split + 1))); }
+    else {
+      let st = nb >> 2;
+      if (st === 3) { const x = next(); if (x >= 0) st = x + 3; }
+      counts[st] = (counts[st] || 0) + Math.max(w, 1);
+    }
+  })(1 << 20);
+  let best = 0, bv = -1;
+  counts.forEach((v, k) => { if (v > bv) { bv = v; best = k; } });
+  return best;
+}
+
+/* ---------- Model file parser ---------- */
+function parseModel(b, filaments) {
+  const objects = new Map(), items = [], groups = new Map();
+  let obj = null, objID = null, groupID = null, groupColors = null;
+  const A = [];
+  const n = b.length;
+  let i = 0;
+  for (;;) {
+    i = b.indexOf(60, i);
+    if (i < 0) break;
+    let j = i + 1;
+    const c1 = b[j];
+    if (c1 === 33 || c1 === 63) {
+      if (b[j + 1] === 45 && b[j + 2] === 45) { let k = i + 4; for (; k < n - 2; k++) if (b[k] === 45 && b[k + 1] === 45 && b[k + 2] === 62) break; i = k + 3; }
+      else { const g = b.indexOf(62, j); i = g < 0 ? n : g + 1; }
+      continue;
+    }
+    const close = c1 === 47; if (close) j++;
+    let ls = j;
+    while (j < n) { const c = b[j]; if (c === 32 || c === 62 || c === 47 || c === 9 || c === 10 || c === 13) break; if (c === 58) ls = j + 1; j++; }
+    const len = j - ls, f = b[ls];
+    let end = b.indexOf(62, j); if (end < 0) end = n;
+    i = end + 1;
+    if (close) {
+      if (f === 111 && keyIs(b, ls, j, "object")) { if (obj && objID != null) objects.set(objID, finishObj(obj)); obj = null; objID = null; }
+      else if ((f === 98 && keyIs(b, ls, j, "basematerials")) || (f === 99 && keyIs(b, ls, j, "colorgroup"))) { if (groupID != null) groups.set(groupID, groupColors); groupID = null; }
+      continue;
+    }
+    // hot paths
+    if (len === 6 && f === 118 && obj && keyIs(b, ls, j, "vertex")) {
+      const k = attrs(b, j, end, A); let x = 0, y = 0, z = 0;
+      for (let q = 0; q < k; q += 4) {
+        if (A[q + 1] - A[q] !== 1) continue;
+        const c = b[A[q]];
+        if (c === 120) x = num(b, A[q + 2], A[q + 3]); else if (c === 121) y = num(b, A[q + 2], A[q + 3]); else if (c === 122) z = num(b, A[q + 2], A[q + 3]);
+      }
+      obj.v.push3(x, y, z);
+      continue;
+    }
+    if (len === 8 && f === 116 && obj && keyIs(b, ls, j, "triangle")) {
+      const k = attrs(b, j, end, A);
+      let v1 = -1, v2 = -1, v3 = -1, col = -1, pid = null, p1 = 0;
+      for (let q = 0; q < k; q += 4) {
+        const ks = A[q], ke = A[q + 1], vs = A[q + 2], ve = A[q + 3], kl = ke - ks;
+        if (kl === 2 && b[ks] === 118) { const d = b[ks + 1]; const v = num(b, vs, ve); if (d === 49) v1 = v; else if (d === 50) v2 = v; else if (d === 51) v3 = v; }
+        else if (kl === 2 && b[ks] === 112 && b[ks + 1] === 49) p1 = num(b, vs, ve);
+        else if (kl === 3 && keyIs(b, ks, ke, "pid")) pid = latin(b, vs, ve);
+        else if (col < 0 && ve > vs && ((kl === 11 && keyIs(b, ks, ke, "paint_color")) || (kl === 16 && keyIs(b, ks, ke, "mmu_segmentation")))) {
+          const st = paintState(b, vs, ve);
+          if (st > 0 && st <= filaments.length) col = intern(obj, filaments[st - 1]);
+        }
+      }
+      if (v1 < 0 || v2 < 0 || v3 < 0) continue;
+      if (col < 0 && pid != null) { const g = groups.get(pid); if (g && p1 >= 0 && p1 < g.length) col = intern(obj, g[p1]); }
+      obj.t.push3(v1, v2, v3); obj.tc.push(col);
+      continue;
+    }
+    const name = latin(b, ls, j);
+    if (name === "vertices" || name === "triangles" || name === "mesh") continue;
+    const a = attrObj(b, j, end, A);
+    switch (name) {
+      case "basematerials": case "colorgroup": groupID = a.id; groupColors = []; break;
+      case "base": if (groupColors) groupColors.push(hexColor(a.displaycolor) || FALLBACK); break;
+      case "color": if (groupID != null) groupColors.push(hexColor(a.color) || FALLBACK); break;
+      case "object": {
+        obj = { v: new Grow(Float32Array), t: new Grow(Int32Array), tc: new Grow(Int32Array), colors: [], ci: new Map(), def: null, comps: [], name: a.name || "" };
+        objID = a.id;
+        if (a.pid != null && groups.has(a.pid)) { const g = groups.get(a.pid), ix = +(a.pindex || 0); if (ix >= 0 && ix < g.length) obj.def = g[ix]; }
+        if (b[end - 1] === 47) { objects.set(objID, finishObj(obj)); obj = null; }
+        break;
+      }
+      case "component": if (obj && a.objectid != null) obj.comps.push({ path: a.path || null, id: a.objectid, x: parseXform(a.transform) }); break;
+      case "item": if (a.objectid != null) items.push({ id: a.objectid, x: parseXform(a.transform), path: a.path || null }); break;
+    }
+  }
+  return { objects, items };
+}
+function intern(o, c) { const k = colorKey(c); let i = o.ci.get(k); if (i === undefined) { i = o.colors.length; o.colors.push(c); o.ci.set(k, i); } return i; }
+function finishObj(o) { o.v = o.v.done(); o.t = o.t.done(); o.tc = o.tc.done(); return o; }
+
+/* ---------- Loader ---------- */
+async function load3MF(zip, progress) {
+  let filaments = [];
+  const objExt = {}, partExt = {};
+  const td = new TextDecoder();
+  // Bambu Studio / OrcaSlicer
+  const ps = await zip.data("Metadata/project_settings.config");
+  if (ps) { try { const j = JSON.parse(td.decode(ps)); filaments = (j.filament_colour || j.extruder_colour || []).map(h => hexColor(h) || FALLBACK); } catch (e) {} }
+  // PrusaSlicer
+  if (!filaments.length) {
+    const pc = await zip.data("Metadata/Slic3r_PE.config");
+    if (pc) {
+      let ext = [], fil = [];
+      for (const line of td.decode(pc).split("\n")) {
+        const m = line.match(/^[;\s]*(extruder_colour|filament_colour)\s*=\s*(.*)$/); if (!m) continue;
+        const vals = m[2].split(";").map(hexColor).filter(Boolean);
+        if (m[1] === "extruder_colour") ext = vals; else fil = vals;
+      }
+      filaments = ext.length && ext.length === fil.length ? ext : (fil.length ? fil : ext);
+    }
+  }
+  for (const p of ["Metadata/model_settings.config", "Metadata/Slic3r_PE_model.config"]) {
+    const d = await zip.data(p); if (!d) continue;
+    let cur = null, part = null;
+    walk(d, (name, a) => {
+      if (name === "object") cur = a.id;
+      else if (name === "part") part = a.id;
+      else if (name === "metadata" && a.key === "extruder" && cur != null) {
+        const e = parseInt(a.value, 10); if (!isFinite(e)) return;
+        if (part != null) { (partExt[cur] = partExt[cur] || {})[part] ??= e; }
+        else if (a.type == null || a.type === "object") objExt[cur] ??= e;
+      }
+    }, name => { if (name === "part") part = null; if (name === "object") { cur = null; part = null; } });
+  }
+  const filColor = e => e >= 1 && e <= filaments.length ? filaments[e - 1] : null;
+
+  const cache = new Map();
+  async function model(path) {
+    const key = "/" + path.replace(/^\/+/, "");
+    if (cache.has(key)) return cache.get(key);
+    const e = zip.entry(path);
+    progress("Unzipping " + path.split("/").pop() + (e && e.size > 4e6 ? " (" + Math.round(e.size / 1e6) + " MB)" : ""));
+    const d = await zip.data(path);
+    if (!d) { cache.set(key, null); return null; }
+    progress("Reading " + path.split("/").pop());
+    const m = parseModel(d, filaments);
+    cache.set(key, m);
+    return m;
+  }
+
+  // main model from _rels/.rels
+  let mainPath = null;
+  const rels = await zip.data("_rels/.rels");
+  if (rels) {
+    for (const chunk of td.decode(rels).split("<Relationship").slice(1)) {
+      if (!chunk.includes("3dmodel")) continue;
+      const m = chunk.match(/Target\s*=\s*["']([^"']+)["']/);
+      if (m && zip.has(m[1])) { mainPath = m[1]; break; }
+    }
+  }
+  if (!mainPath) mainPath = zip.has("3D/3dmodel.model") ? "3D/3dmodel.model"
+    : zip.names.find(s => /^3d\/.*\.model$/i.test(s)) || zip.names.find(s => /\.model$/i.test(s)) || null;
+
+  const out = new Out();
+  const main = mainPath ? await model(mainPath) : null;
+  let objectsShown = 0;
+  if (main) {
+    async function emit(file, id, x, inherited, top, depth) {
+      const o = file && file.objects.get(id);
+      if (depth > 16 || !o) return;
+      const base = o.def || inherited;
+      const v = o.v, t = o.t, tc = o.tc, nv = v.length / 3;
+      const tri = Math.min(t.length / 3, tc.length);
+      if (tri) {
+        const keyCols = o.colors.map(c => out.bucket(c));
+        const baseB = out.bucket(base || FALLBACK);
+        const m = x;
+        for (let k = 0; k < tri; k++) {
+          const a = t[k * 3], bb = t[k * 3 + 1], c = t[k * 3 + 2];
+          if (a < 0 || bb < 0 || c < 0 || a >= nv || bb >= nv || c >= nv) continue;
+          const ci = tc[k];
+          out.tri(ci >= 0 ? keyCols[ci] : baseB, m, v, a, bb, c);
+        }
+      }
+      for (const comp of o.comps) {
+        const f = comp.path ? await model(comp.path) : file;
+        const partCol = depth === 0 && partExt[top] ? filColor(partExt[top][comp.id]) : null;
+        await emit(f || file, comp.id, thenX(comp.x, x), partCol || base, top, depth + 1);
+      }
+    }
+    progress("Building the model");
+    for (const it of main.items) {
+      const file = it.path ? (await model(it.path)) || main : main;
+      await emit(file, it.id, it.x, filColor(objExt[it.id] ?? 1), it.id, 0);
+      objectsShown++;
+    }
+  }
+  const thumb = await findThumb(zip);
+  if (!out.tris && !thumb) throw new Error(main ? "No triangles were found in this file." : "No 3D model was found inside this file.");
+  return out.finish(objectsShown, thumb);
+}
+
+async function findThumb(zip) {
+  for (const p of ["Metadata/plate_1.png", "Auxiliaries/.thumbnails/thumbnail_3mf.png", "Auxiliaries/.thumbnails/thumbnail_middle.png",
+    "Metadata/thumbnail.png", "Thumbnails/thumbnail.png", "Metadata/plate_1_small.png"]) {
+    if (zip.has(p)) { const d = await zip.data(p); if (d) return d.slice(); }
+  }
+  const f = zip.names.slice().sort().find(s => /\.png$/i.test(s) && !/(pick|no_light|top)_\d/i.test(s));
+  if (f) { const d = await zip.data(f); if (d) return d.slice(); }
+  return null;
+}
+
+/* Collects triangles into one buffer per colour, then centres on X/Y and drops to Z = 0 like a slicer plate. */
+class Out {
+  constructor() { this.map = new Map(); this.list = []; this.tris = 0; this.lo = [Infinity, Infinity, Infinity]; this.hi = [-Infinity, -Infinity, -Infinity]; }
+  bucket(c) {
+    const k = colorKey(c); let bk = this.map.get(k);
+    if (!bk) { bk = { color: c, pos: new Grow(Float32Array, 9 * 1024), n: 0 }; this.map.set(k, bk); this.list.push(bk); }
+    return bk;
+  }
+  tri(bk, m, v, a, b, c) {
+    this.vert(bk.pos, m, v, a); this.vert(bk.pos, m, v, b); this.vert(bk.pos, m, v, c);
+    bk.n++; this.tris++;
+  }
+  vert(P, m, v, ix) {
+    const lo = this.lo, hi = this.hi;
+    const x = v[ix * 3], y = v[ix * 3 + 1], z = v[ix * 3 + 2];
+    const X = x * m[0] + y * m[3] + z * m[6] + m[9], Y = x * m[1] + y * m[4] + z * m[7] + m[10], Z = x * m[2] + y * m[5] + z * m[8] + m[11];
+    P.push3(X, Y, Z);
+    if (X < lo[0]) lo[0] = X; if (X > hi[0]) hi[0] = X;
+    if (Y < lo[1]) lo[1] = Y; if (Y > hi[1]) hi[1] = Y;
+    if (Z < lo[2]) lo[2] = Z; if (Z > hi[2]) hi[2] = Z;
+  }
+  finish(objects, thumb) {
+    const lo = this.lo, hi = this.hi;
+    const batches = [];
+    if (this.tris) {
+      const cx = (lo[0] + hi[0]) / 2, cy = (lo[1] + hi[1]) / 2, cz = lo[2];
+      for (const bk of this.list) {
+        if (!bk.n) continue;
+        const p = bk.pos.done();
+        for (let i = 0; i < p.length; i += 3) { p[i] -= cx; p[i + 1] -= cy; p[i + 2] -= cz; }
+        batches.push({ color: bk.color, positions: p, tris: bk.n });
+      }
+    }
+    return { batches, size: this.tris ? [hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]] : [0, 0, 0], tris: this.tris, objects, thumb };
+  }
+}
+
+/* ---------- STL ---------- */
+function loadSTL(b) {
+  const out = new Out(), bk = out.bucket(FALLBACK), dv = new DataView(b.buffer, b.byteOffset, b.byteLength);
+  const one = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const v = new Float32Array(9);
+  const isBinary = b.length >= 84 && 84 + dv.getUint32(80, true) * 50 === b.length;
+  if (isBinary) {
+    const n = dv.getUint32(80, true);
+    for (let t = 0; t < n; t++) {
+      const o = 84 + t * 50 + 12;
+      for (let k = 0; k < 9; k++) v[k] = dv.getFloat32(o + k * 4, true);
+      out.tri(bk, IDENT, v, 0, 1, 2);
+    }
+  } else {
+    const s = new TextDecoder().decode(b);
+    const re = /vertex\s+(\S+)\s+(\S+)\s+(\S+)/g; let m, k = 0;
+    while ((m = re.exec(s))) { v[k++] = +m[1]; v[k++] = +m[2]; v[k++] = +m[3]; if (k === 9) { out.tri(bk, IDENT, v, 0, 1, 2); k = 0; } }
+  }
+  if (!out.tris) throw new Error("No triangles were found in this STL file.");
+  return out.finish(1, null);
+}
+
+/* ---------- Sample: a twisted vase in four filament colours ---------- */
+function sample() {
+  const out = new Out();
+  const cols = ["#F08A24", "#F4EFE6", "#2E9C9A", "#2B2F36"].map(hexColor);
+  const H = 120, R = 34, rings = 96, seg = 120, v = new Float32Array(9);
+  const pt = (i, j) => {
+    const z = i / rings * H, th = j / seg * Math.PI * 2;
+    const prof = R * (0.78 + 0.32 * Math.sin(Math.PI * (0.15 + 0.85 * z / H)) - 0.12 * (z / H));
+    const r = prof * (1 + 0.1 * Math.cos(6 * th + z / H * 2.4));
+    return [r * Math.cos(th), r * Math.sin(th), z];
+  };
+  const tri = (bk, a, b, c) => { v.set(a, 0); v.set(b, 3); v.set(c, 6); out.tri(bk, IDENT, v, 0, 1, 2); };
+  const band = i => out.bucket(cols[i < 6 ? 3 : Math.floor((i - 6) / 18) % 3]);
+  for (let i = 0; i < rings; i++) for (let j = 0; j < seg; j++) {
+    const a = pt(i, j), b = pt(i, j + 1), c = pt(i + 1, j + 1), d = pt(i + 1, j), bk = band(i);
+    tri(bk, a, b, c); tri(bk, a, c, d);
+  }
+  const base = out.bucket(cols[3]);
+  for (let j = 0; j < seg; j++) tri(base, [0, 0, 0], pt(0, j + 1), pt(0, j));
+  return out.finish(1, null);
+}
+
+self.onmessage = async ev => {
+  const progress = text => self.postMessage({ progress: text });
+  try {
+    let res;
+    if (ev.data.sample) res = sample();
+    else {
+      progress("Reading the file");
+      const b = new Uint8Array(await ev.data.file.arrayBuffer());
+      const zip = b[0] === 0x50 && b[1] === 0x4b ? openZip(b) : null;
+      if (zip) res = await load3MF(zip, progress);
+      else if (/\.3mf$/i.test(ev.data.file.name)) throw new Error("This file couldn't be opened. It may be damaged or not a 3MF file.");
+      else res = loadSTL(b);
+    }
+    const transfer = res.batches.map(x => x.positions.buffer);
+    if (res.thumb) transfer.push(res.thumb.buffer);
+    self.postMessage({ result: res }, transfer);
+  } catch (err) {
+    self.postMessage({ error: (err && err.message) || String(err) });
+  }
+};
+</script>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const canvas = $("gl");
+const gl = canvas.getContext("webgl2", { antialias: true, preserveDrawingBuffer: false });
+
+/* ---------- Matrices (column-major) ---------- */
+function persp(fovy, aspect, near, far) {
+  const f = 1 / Math.tan(fovy / 2), nf = 1 / (near - far);
+  return [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0];
+}
+function lookAt(e, t, up) {
+  let zx = e[0] - t[0], zy = e[1] - t[1], zz = e[2] - t[2];
+  let l = Math.hypot(zx, zy, zz); zx /= l; zy /= l; zz /= l;
+  let xx = up[1] * zz - up[2] * zy, xy = up[2] * zx - up[0] * zz, xz = up[0] * zy - up[1] * zx;
+  l = Math.hypot(xx, xy, xz) || 1; xx /= l; xy /= l; xz /= l;
+  const yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
+  return [xx, yx, zx, 0, xy, yy, zy, 0, xz, yz, zz, 0,
+    -(xx * e[0] + xy * e[1] + xz * e[2]), -(yx * e[0] + yy * e[1] + yz * e[2]), -(zx * e[0] + zy * e[1] + zz * e[2]), 1];
+}
+function mul(a, b) {
+  const o = new Array(16);
+  for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) o[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
+  return o;
+}
+
+/* ---------- GL setup ---------- */
+let prog, gridProg, U = {}, GU = {};
+function shader(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+function program(vs, fs) { const p = gl.createProgram(); gl.attachShader(p, shader(gl.VERTEX_SHADER, vs)); gl.attachShader(p, shader(gl.FRAGMENT_SHADER, fs)); gl.bindAttribLocation(p, 0, "p"); gl.linkProgram(p); return p; }
+if (gl) {
+  // Flat shading from screen-space derivatives, so only positions are stored (big files stay small in memory).
+  prog = program(`#version 300 es
+in vec3 p; uniform mat4 uMVP, uMV; out vec3 vv;
+void main(){ vec4 q = vec4(p, 1.0); vv = (uMV * q).xyz; gl_Position = uMVP * q; }`,
+  `#version 300 es
+precision highp float;
+in vec3 vv; uniform vec4 uCol; uniform vec3 uKey, uFill; out vec4 o;
+void main(){
+  vec3 n = normalize(cross(dFdx(vv), dFdy(vv)));
+  vec3 v = normalize(-vv);
+  if (dot(n, v) < 0.0) n = -n;
+  float key = max(dot(n, uKey), 0.0), fill = max(dot(n, uFill), 0.0);
+  float spec = pow(max(dot(n, normalize(uKey + v)), 0.0), 40.0) * 0.16;
+  vec3 c = uCol.rgb * (0.34 + 0.56 * key + 0.22 * fill) + spec;
+  o = vec4(c, uCol.a);
+}`);
+  gridProg = program(`#version 300 es
+in vec3 p; uniform mat4 uMVP; void main(){ gl_Position = uMVP * vec4(p, 1.0); }`,
+  `#version 300 es
+precision mediump float; uniform vec4 uCol; out vec4 o; void main(){ o = uCol; }`);
+  for (const k of ["uMVP", "uMV", "uCol", "uKey", "uFill"]) U[k] = gl.getUniformLocation(prog, k);
+  for (const k of ["uMVP", "uCol"]) GU[k] = gl.getUniformLocation(gridProg, k);
+}
+
+const S = { model: null, gpu: [], grid: null, showGrid: true, cam: null, file: null, bytes: 0 };
+
+function upload(m) {
+  for (const g of S.gpu) gl.deleteBuffer(g.buf);
+  S.gpu = m.batches.map(b => {
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, b.positions, gl.STATIC_DRAW);
+    return { buf, count: b.positions.length / 3, color: b.color, visible: true, tris: b.tris };
+  });
+  for (const b of m.batches) b.positions = null;   // GPU has it now
+  buildGrid(Math.max(m.size[0], m.size[1]) * 0.75);
+}
+
+/* Build-plate grid on Z = 0: 10 mm squares, a stronger line every 50 mm. */
+function buildGrid(halfExtent) {
+  const step = 10, half = Math.max(Math.ceil(halfExtent / step) * step + step, 30);
+  const minor = [], major = [];
+  for (let v = -half; v <= half + 1e-3; v += step) {
+    const line = [v, -half, -0.05, v, half, -0.05, -half, v, -0.05, half, v, -0.05];
+    (Math.round(Math.abs(v) / step) % 5 === 0 ? major : minor).push(...line);
+  }
+  if (S.grid) { gl.deleteBuffer(S.grid.minor.buf); gl.deleteBuffer(S.grid.major.buf); }
+  const mk = a => { const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(a), gl.STATIC_DRAW); return { buf, count: a.length / 3 }; };
+  S.grid = { minor: mk(minor), major: mk(major) };
+}
+
+/* ---------- Camera: orbit around a target, Z up ---------- */
+const FOV = 35 * Math.PI / 180;
+function homeCam(view) {
+  const m = S.model, [sx, sy, sz] = m.size;
+  const radius = Math.max(0.5 * Math.hypot(sx, sy, sz), 1);
+  const dist = radius / Math.sin(FOV / 2) * 1.12;
+  const views = { iso: [-61, 29], front: [-90, 0], back: [90, 0], left: [180, 0], right: [0, 0], top: [-90, 89.9], bottom: [-90, -89.9] };
+  const [yaw, pitch] = views[view || "iso"];
+  S.cam = { target: [0, 0, sz / 2], yaw: yaw * Math.PI / 180, pitch: pitch * Math.PI / 180, dist, radius };
+  draw();
+}
+function eye(c) {
+  const cp = Math.cos(c.pitch);
+  return [c.target[0] + c.dist * cp * Math.cos(c.yaw), c.target[1] + c.dist * cp * Math.sin(c.yaw), c.target[2] + c.dist * Math.sin(c.pitch)];
+}
+function camBasis(c) {   // right and up vectors on screen, in model space
+  const f = [-Math.cos(c.pitch) * Math.cos(c.yaw), -Math.cos(c.pitch) * Math.sin(c.yaw), -Math.sin(c.pitch)];
+  let r = [f[1], -f[0], 0]; const l = Math.hypot(r[0], r[1]) || 1; r = [r[0] / l, r[1] / l, 0];
+  if (Math.abs(f[2]) > 0.999) r = [-Math.sin(c.yaw), Math.cos(c.yaw), 0];
+  const u = [r[1] * f[2] - r[2] * f[1], r[2] * f[0] - r[0] * f[2], r[0] * f[1] - r[1] * f[0]];
+  return { r, u };
+}
+
+let raf = 0;
+function draw() { if (!raf) raf = requestAnimationFrame(() => { raf = 0; render(); }); }
+function render() {
+  if (!gl) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.max(1, Math.round(canvas.clientWidth * dpr)), h = Math.max(1, Math.round(canvas.clientHeight * dpr));
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  gl.viewport(0, 0, w, h);
+  const css = getComputedStyle(document.documentElement);
+  const bg = rgb(css.getPropertyValue("--bg-canvas"));
+  gl.clearColor(bg[0], bg[1], bg[2], 1);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  if (!S.model || !S.cam) return;
+  const c = S.cam, e = eye(c);
+  const up = Math.abs(Math.sin(c.pitch)) > 0.999 ? [Math.cos(c.yaw) * -Math.sign(c.pitch), Math.sin(c.yaw) * -Math.sign(c.pitch), 0] : [0, 0, 1];
+  const view = lookAt(e, c.target, up);
+  const near = Math.max(c.dist - c.radius * 3, c.dist * 0.01, 0.01), far = c.dist + c.radius * 6 + 200;
+  const mvp = mul(persp(FOV, w / h, near, far), view);
+  gl.enable(gl.DEPTH_TEST);
+  gl.enableVertexAttribArray(0);
+
+  if (S.showGrid && S.grid) {
+    gl.useProgram(gridProg);
+    gl.uniformMatrix4fv(GU.uMVP, false, mvp);
+    for (const [g, k] of [[S.grid.minor, "--grid"], [S.grid.major, "--grid-major"]]) {
+      const col = rgb(css.getPropertyValue(k));
+      gl.uniform4f(GU.uCol, col[0], col[1], col[2], 1);
+      gl.bindBuffer(gl.ARRAY_BUFFER, g.buf); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+      gl.drawArrays(gl.LINES, 0, g.count);
+    }
+  }
+  gl.useProgram(prog);
+  gl.uniformMatrix4fv(U.uMVP, false, mvp);
+  gl.uniformMatrix4fv(U.uMV, false, view);
+  const k = norm([-0.35, 0.45, 1]);
+  gl.uniform3f(U.uKey, k[0], k[1], k[2]);
+  gl.uniform3f(U.uFill, view[8], view[9], view[10]);   // world +Z in view space
+  const pass = transparent => {
+    for (const g of S.gpu) {
+      if (!g.visible || (g.color[3] < 0.99) !== transparent) continue;
+      gl.uniform4f(U.uCol, g.color[0], g.color[1], g.color[2], Math.max(g.color[3], 0.2));
+      gl.bindBuffer(gl.ARRAY_BUFFER, g.buf); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+      gl.drawArrays(gl.TRIANGLES, 0, g.count);
+    }
+  };
+  pass(false);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
+  pass(true);
+  gl.disable(gl.BLEND); gl.depthMask(true);
+}
+const norm = v => { const l = Math.hypot(...v); return v.map(x => x / l); };
+function rgb(s) {
+  s = s.trim().replace("#", "");
+  if (s.length === 3) s = s.split("").map(c => c + c).join("");
+  const v = parseInt(s, 16);
+  return [(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255];
+}
+new ResizeObserver(draw).observe(canvas);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+
+/* ---------- Mouse / touch ---------- */
+const ptrs = new Map(); let lastPinch = null, panMode = false;
+canvas.addEventListener("contextmenu", e => e.preventDefault());
+canvas.addEventListener("pointerdown", e => {
+  if (!S.cam) return;
+  canvas.setPointerCapture(e.pointerId);
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  panMode = e.button === 2 || e.button === 1 || e.shiftKey;
+  lastPinch = null;
+});
+canvas.addEventListener("pointermove", e => {
+  const p = ptrs.get(e.pointerId); if (!p || !S.cam) return;
+  const dx = e.clientX - p.x, dy = e.clientY - p.y;
+  p.x = e.clientX; p.y = e.clientY;
+  const c = S.cam;
+  if (ptrs.size >= 2) {
+    const [a, b] = [...ptrs.values()];
+    const d = Math.hypot(a.x - b.x, a.y - b.y), mid = [(a.x + b.x) / 2, (a.y + b.y) / 2];
+    if (lastPinch) { zoom(Math.log(d / lastPinch.d)); pan(mid[0] - lastPinch.mid[0], mid[1] - lastPinch.mid[1]); }
+    lastPinch = { d, mid };
+    return;
+  }
+  if (panMode) pan(dx, dy);
+  else {
+    c.yaw -= dx * 0.008;
+    c.pitch = Math.max(-Math.PI / 2 + 1e-3, Math.min(Math.PI / 2 - 1e-3, c.pitch + dy * 0.008));
+    draw();
+  }
+});
+const endPtr = e => { ptrs.delete(e.pointerId); lastPinch = null; };
+canvas.addEventListener("pointerup", endPtr);
+canvas.addEventListener("pointercancel", endPtr);
+canvas.addEventListener("wheel", e => {
+  if (!S.cam) return; e.preventDefault();
+  const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+  zoom(-dy * 0.0015);
+}, { passive: false });
+canvas.addEventListener("dblclick", () => S.model && homeCam());
+function pan(dx, dy) {
+  const c = S.cam, { r, u } = camBasis(c);
+  const k = 2 * c.dist * Math.tan(FOV / 2) / Math.max(canvas.clientHeight, 1);
+  for (let i = 0; i < 3; i++) c.target[i] += (-dx * r[i] + dy * u[i]) * k;
+  draw();
+}
+function zoom(amount) {
+  const c = S.cam; if (!c) return;
+  c.dist = Math.min(Math.max(c.dist * Math.exp(-amount), c.radius * 0.05), c.radius * 60);
+  draw();
+}
+addEventListener("keydown", e => {
+  if (!S.model || e.metaKey || e.ctrlKey || e.altKey || /input|textarea/i.test(e.target.tagName)) return;
+  if (e.key === "r" || e.key === "R") homeCam();
+  else if (e.key === "g" || e.key === "G") toggleGrid();
+  else if (e.key === "+" || e.key === "=") zoom(0.25);
+  else if (e.key === "-" || e.key === "_") zoom(-0.25);
+});
+
+/* ---------- Loading ---------- */
+let worker = null;
+function startWorker() {
+  if (worker) worker.terminate();
+  worker = new Worker(URL.createObjectURL(new Blob([$("workerSrc").textContent], { type: "text/javascript" })));
+  return worker;
+}
+function busy(text) { $("busy").hidden = !text; if (text) $("busyText").textContent = text; }
+function load(msg, label, bytes) {
+  if (!gl) { showError("This browser can't show 3D (WebGL 2 is turned off or not supported)."); return; }
+  if (!msg.sample && typeof DecompressionStream === "undefined") { showError("This browser is too old to open 3MF files. Please use a current Chrome, Edge, Safari or Firefox."); return; }
+  const w = startWorker();
+  busy("Reading " + label + "…");
+  w.onmessage = ev => {
+    const d = ev.data;
+    if (d.progress) { busy(d.progress + "…"); return; }
+    busy(null); w.terminate(); worker = null;
+    if (d.error) { showError(d.error); return; }
+    show(d.result, label, bytes);
+  };
+  w.onerror = ev => { busy(null); showError("Couldn't read this file" + (ev.message ? ": " + ev.message : ".")); };
+  w.postMessage(msg);
+}
+function openFile(f) { if (f) load({ file: f }, f.name, f.size); }
+function showError(text) {
+  const st = $("status"); st.hidden = false; st.innerHTML = '<span class="err">' + esc(text) + "</span>";
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const fmtN = n => n.toLocaleString("en-US");
+const fmtBytes = n => n < 1024 ? n + " B" : n < 1048576 ? (n / 1024).toFixed(0) + " KB" : (n / 1048576).toFixed(1) + " MB";
+const hex = c => "#" + c.slice(0, 3).map(x => Math.round(x * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
+
+function show(m, label, bytes) {
+  S.model = m; S.file = label; S.bytes = bytes;
+  upload(m);
+  $("empty").hidden = true;
+  $("toolbar").hidden = !m.tris;
+  const [sx, sy, sz] = m.size;
+  const sizeText = m.tris ? `${sx.toFixed(1)} × ${sy.toFixed(1)} × ${sz.toFixed(1)} mm` : "–";
+  $("iName").textContent = label;
+  $("iSize").textContent = sizeText;
+  $("iTris").textContent = fmtN(m.tris);
+  $("iObjs").textContent = m.objects ? fmtN(m.objects) : "–";
+  $("iBytes").textContent = bytes ? fmtBytes(bytes) : "–";
+  $("modelSub").textContent = label;
+  document.title = label + " · 3MF Viewer";
+
+  const list = $("colorList");
+  list.innerHTML = S.gpu.map((g, i) => `<label title="Show or hide the ${hex(g.color)} parts"><input type="checkbox" data-i="${i}" checked><span class="sw" style="background:${hex(g.color)}"></span><span class="hex">${hex(g.color)}</span><span class="pct">${(g.tris / m.tris * 100).toFixed(g.tris / m.tris < 0.1 ? 1 : 0)}%</span></label>`).join("")
+    || '<div class="tips">No geometry in this file.</div>';
+  $("colorSub").textContent = S.gpu.length ? S.gpu.length + (S.gpu.length === 1 ? " colour" : " colours") : "–";
+
+  const ti = $("thumbImg");
+  if (ti.src.startsWith("blob:")) URL.revokeObjectURL(ti.src);
+  if (m.thumb) { ti.src = URL.createObjectURL(new Blob([m.thumb], { type: "image/png" })); $("secThumb").hidden = false; }
+  else { ti.removeAttribute("src"); $("secThumb").hidden = true; }
+
+  const st = $("status");
+  if (m.tris) {
+    st.hidden = false;
+    st.textContent = [sizeText, fmtN(m.tris) + " triangles", S.gpu.length > 1 ? S.gpu.length + " colours" : "", bytes ? fmtBytes(bytes) : ""].filter(Boolean).join("   ·   ");
+    homeCam();
+  } else {
+    st.hidden = false; st.textContent = "This file has no 3D model, only the slicer picture (left).";
+    S.cam = null; draw();
+  }
+}
+
+$("colorList").addEventListener("change", e => {
+  const i = e.target.dataset.i; if (i == null) return;
+  S.gpu[+i].visible = e.target.checked; draw();
+});
+$("toolbar").addEventListener("click", e => {
+  const b = e.target.closest("[data-view]"); if (b && S.model) homeCam(b.dataset.view);
+});
+function toggleGrid() { S.showGrid = !S.showGrid; $("gridBtn").classList.toggle("on", S.showGrid); draw(); }
+$("gridBtn").addEventListener("click", toggleGrid);
+$("pngBtn").addEventListener("click", () => {
+  render();
+  canvas.toBlob(b => {
+    if (!b) return;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(b);
+    a.download = (S.file || "model").replace(/\.(3mf|stl)$/i, "") + ".png";
+    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }, "image/png");
+});
+
+for (const id of ["openBtn", "openBtn2"]) $(id).addEventListener("click", () => $("fileIn").click());
+$("fileIn").addEventListener("change", e => { openFile(e.target.files[0]); e.target.value = ""; });
+$("sampleBtn").addEventListener("click", () => load({ sample: true }, "Sample vase", 0));
+const stage = $("stage");
+let dragDepth = 0;
+addEventListener("dragenter", e => { if (e.dataTransfer && [...e.dataTransfer.types].includes("Files")) { e.preventDefault(); dragDepth++; stage.classList.add("drop"); } });
+addEventListener("dragleave", () => { if (--dragDepth <= 0) { dragDepth = 0; stage.classList.remove("drop"); } });
+addEventListener("dragover", e => e.preventDefault());
+addEventListener("drop", e => { e.preventDefault(); dragDepth = 0; stage.classList.remove("drop"); openFile(e.dataTransfer.files[0]); });
+
+/* Copy buttons on the Homebrew commands */
+const copyIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>';
+const okIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>';
+document.querySelectorAll("[data-cmd]").forEach(box => {
+  const btn = box.querySelector("button"); btn.innerHTML = copyIcon;
+  btn.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(box.querySelector("span").textContent); btn.innerHTML = okIcon; setTimeout(() => btn.innerHTML = copyIcon, 1400); } catch (e) {}
+  });
+});
+
+$("helpBtn").addEventListener("click", () => $("help").showModal());
+const themeBtn = $("themeBtn");
+try { const saved = localStorage.getItem("theme"); if (saved) document.documentElement.dataset.theme = saved; } catch (e) {}
+themeBtn.addEventListener("click", () => {
+  const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  const next = dark ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("theme", next); } catch (e) {}
+  draw();
+});
+if (!gl) showError("This browser can't show 3D (WebGL 2 is turned off or not supported).");
+if (/[?&]sample\b/.test(location.search)) load({ sample: true }, "Sample vase", 0);
+draw();
+</script>
+</body>
+</html>

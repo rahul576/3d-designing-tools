@@ -12,6 +12,7 @@ Each tool has its own folder with a short README describing what it does and how
 
 - [Tray Generator](tray-generator/) — parametric stackable trays and boxes with lids, exported as STL/3MF. [Open it online](https://rahul576.github.io/3d-designing-tools/tray-generator/).
 - [Photo Frame Generator](photo-frame-generator/) — 3D printable photo and collage frames in up to four filament colours, with a slide-in photo slot, a real-world preview, a turnable 3D view, wall hangers and a snap-on back, exported as multicolour or single colour 3MF/STL. [Open it online](https://rahul576.github.io/3d-designing-tools/photo-frame-generator/).
+- [3MF Viewer](3mf-viewer/) — view 3MF and STL print files in 3D in their filament colours, in the browser or as a Mac app with Finder thumbnails and Quick Look. [Open it online](https://rahul576.github.io/3d-designing-tools/3mf-viewer/). Mac app: `brew tap rahul576/3d-designing-tools https://github.com/rahul576/3d-designing-tools && brew install --cask 3mf-viewer`.
 
 ## Home page
 
@@ -25,6 +26,15 @@ Work goes straight to `main` (the site is not public yet, so no pull requests). 
 
 - each tool version gets a tag `<tool>-vN` (for example `photo-frame-generator-v2`) on the last commit that changed `<tool>/versions/vN/`, so every old version stays reachable;
 - the `latest` tag is moved to the newest commit.
+
+## Homebrew tap
+
+This repository is also a Homebrew tap. Casks live in `Casks/`:
+
+```sh
+brew tap rahul576/3d-designing-tools https://github.com/rahul576/3d-designing-tools
+brew install --cask 3mf-viewer
+```
 
 ## Adding a new tool
 
