@@ -1,25 +1,29 @@
-# Photo Frame Generator (v3)
+# Photo Frame Generator (v4)
 
-Custom-size photo frames with a live preview: pick a ready-made style from the thumbnail gallery, or design your own shape, edge, pattern, mats, ornaments and caption. Export for printing on paper, laser cutting or 3D printing.
+Design a photo frame or a photo collage frame for your 3D printer, see it at true size on a wall or shelf, and download files ready for your slicer.
 
 **Live site:** https://rahul576.github.io/3d-designing-tools/photo-frame-generator/
 
-The app is a single offline HTML file. `index.html` is always the latest version; every version is kept under `versions/vN/index.html` (v1 to v3). Nothing is uploaded; your photo stays in the browser.
+The app is a single offline HTML file. `index.html` is always the latest version; every version is kept under `versions/vN/index.html` (v1 to v4). Nothing is uploaded; your photos stay in the browser.
 
 ## Features
 
-- **Frame styles gallery:** 19 ready-made styles shown as thumbnail buttons that use your own photo and size. Click one to apply it, then tweak anything.
-- **Sizes:** 20 photo presets (wallet to 12×18 in, A6 to A3, Instax, Polaroid) or any custom size, in mm or inches. Build out from the photo plus borders, or set a fixed outer size.
-- **Shapes:** rectangle, rounded, pill, oval, circle, arch, gothic arch, octagon, notched corners, hexagon; the opening also offers heart and diamond.
-- **Edges:** scalloped, pinked, wavy, postage stamp or castle, on the outer edge and the opening.
-- **Patterns:** 28 patterns (stripes, gingham, plaid, polka, chevron, honeycomb, stars, hearts, flowers, herringbone, Greek key, sunburst, confetti, wood grain and more) with colour, opacity, size, density, line width, rotation and offset.
-- **Finish:** two mats, bevel line, solid or gradient colour, soft shadow, decorative lines, corner ornaments and a caption in 11 fonts.
-- **Your photo:** upload or drop an image, drag to position, zoom, black & white / sepia / vintage effects.
-- **Export:** SVG and PNG (up to 600 DPI) at real size, DXF for laser cutting (front, mats, spacer and back pieces; pattern on an ENGRAVE layer), STL for 3D printing (prints face down, with a photo pocket and hanging-hole recesses), and print at actual size.
-- Settings are remembered in the browser and can be saved to a file or shared as a link.
+- **Single photo or collage:** switch at the top of the left panel. The collage tab has 20 layouts (grids, big photo plus small ones, photo booth strip, mosaic, family tree) and lets you choose many photos at once. Click an opening in the preview to select it, then click a photo to put it there; drag to move it, zoom per opening.
+- **Sample photos:** four drawn kid photos to try styles with, or upload your own (or drop it on the preview).
+- **Real world view:** the frame at true size on a living room wall, a kids room wall or a shelf, with wall colour choice, shadow, depth and raised colours.
+- **Back view:** the printed back with the photo pocket, snap pins and hanger, seen from behind.
+- **Filament colours:** up to four colours, shown as round buttons next to the frame. Click one to pick a common PLA colour or any colour; + adds a colour. Every part (frame, mats, pattern, lines, ornaments, caption) picks one of these colours.
+- **Few filament changes:** with *Raised colours* (default) the frame prints face up and each extra colour stands one step higher, so a single-nozzle printer needs just one pause per extra colour. *Flat colours* prints the front face down with the colours in the first few layers, for an AMS or multi-material unit.
+- **Hanging:** two keyhole slots or one on the back, a loop on top, two string holes, a desk stand leg, or nothing.
+- **Back plate:** a separate back with a photo pocket and snap pins, so you can open the frame to change the photo.
+- **Frame styles:** the 19 styles from v3, converted to at most four filament colours, with lines and text widened so they print.
+- **Shapes, edges and patterns:** 10 outer shapes, 12 opening shapes, scalloped/pinked/wavy/stamp/castle edges, 28 patterns, mats, stitched lines, ornaments and a caption in 11 fonts.
+- **Export:** multicolour 3MF (each colour a separate part with its colour set), single colour 3MF or STL (decorations become raised texture), and the photo or collage sheet as a real-size 300 DPI PNG. After a 3D export the app shows how to print and assemble the frame, including the exact filament-change heights.
+- **Hover help:** every button and setting has a tooltip; the ? button in the header explains the whole flow.
 
 ## Versions
 
-- **v3:** restyled to match the Tray Generator (sidebar, grid canvas, preview toolbar, Download menu, dark mode toggle). All features unchanged.
+- **v4:** made for 3D printing. Collage tab with 20 layouts and multi-photo selection, sample kid photos, real world and back views, up to four filament colours with floating colour buttons, raised or flat colour printing with few filament changes, multicolour and single colour 3MF, back plate with photo pocket and snap pins, keyhole / loop / string / stand hanging, tooltips everywhere, colour-coded left panel with the open section highlighted. Removed options that do not apply to a printed frame: pattern opacity, gradients, drop shadow, photo effects, laser DXF, SVG and paper printing.
+- **v3:** restyled to match the Tray Generator (sidebar, grid canvas, preview toolbar, Download menu, dark mode toggle).
 - **v2:** frame styles thumbnail gallery, 8 more styles (19 in total).
 - **v1:** first release.
