@@ -24,7 +24,7 @@ for (; n < 500; n++) {
   const p = { W: 20 + rnd() * 230, D: 20 + rnd() * 230, H: 3 + rnd() * 70, t: 0.4 + rnd() * 2.2, f: rnd() * 8, hp: rnd() * 80,
     layout: randTree(0), stack: rnd() < 0.5, s: rnd() * 7, flush: rnd() < 0.7,
     lid: { style: ['inset', 'cap', 'stack'][Math.floor(rnd() * 3)], c: 0.1 + rnd() * 0.5, L: 1 + rnd() * 10 },
-    pattern: rnd() < 0.7 ? { type: G.PATTERNS[Math.floor(rnd() * 4)], size: 2 + rnd() * 14, density: 10 + rnd() * 70 } : null };
+    pattern: rnd() < 0.7 ? { type: G.PATTERNS[Math.floor(rnd() * 4)], size: 2 + rnd() * 14, density: 10 + rnd() * 70, inner: rnd() < 0.5 } : null };
   const m = G.build(p); leaves += m.params.leaves.length;
   const lid = G.buildLid(p, m);
   const holes = m.patternInfo ? m.patternInfo.holes : 0; totalHoles += holes;

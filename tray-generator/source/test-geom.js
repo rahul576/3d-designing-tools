@@ -147,6 +147,12 @@ const cases = [
   { name: 'slots stack+lid', W: 80, D: 160, H: 30, t: 0.8, f: 1, hp: 26, nx: 1, ny: 2, stack: true, pattern: { type: 'slots', size: 4, density: 50 }, lid: { style: 'stack' } },
   { name: 'hex nested+cap', W: 150, D: 120, H: 30, t: 1.2, f: 2, hp: 30, layout: nested, pattern: { type: 'hex', size: 8, density: 70 }, lid: { style: 'cap', c: 0.25, L: 6 } },
   { name: 'hex inset lid', W: 100, D: 100, H: 40, t: 0.8, f: 2, hp: 30, layout: aligned, pattern: { type: 'hex', size: 10, density: 60 }, lid: { style: 'inset', c: 0.2, L: 6 } },
+  // v8: pattern on the inner walls (partitions) too
+  { name: 'hex inner', W: 80, D: 160, H: 30, t: 0.8, f: 1, hp: 25, nx: 1, ny: 2, pattern: { type: 'hex', size: 6, density: 50, inner: true } },
+  { name: 'circle inner 3x3', W: 120, D: 120, H: 30, t: 0.8, f: 1, hp: 28, nx: 3, ny: 3, pattern: { type: 'circle', size: 4, density: 40, inner: true } },
+  { name: 'diamond inner T stack', W: 120, D: 90, H: 25, t: 0.8, f: 1.5, hp: 20, layout: tShape, stack: true, pattern: { type: 'diamond', size: 5, density: 50, inner: true } },
+  { name: 'slots inner nested+cap', W: 150, D: 120, H: 30, t: 1.2, f: 2, hp: 30, layout: nested, pattern: { type: 'slots', size: 4, density: 50, inner: true }, lid: { style: 'cap', c: 0.25, L: 6 } },
+  { name: 'hex inner near-aligned', W: 100, D: 100, H: 20, t: 0.8, f: 1, hp: 15, layout: nearAligned, stack: true, pattern: { type: 'hex', size: 3, density: 50, inner: true }, lid: { style: 'stack' } },
 ];
 let all = true;
 for (const c of cases) all = run(c) && all;

@@ -129,7 +129,7 @@
       else if (pt.type === 'circle') bar = size * (Math.sqrt(Math.min(0.9, PI / (2 * Math.sqrt(3))) / dens) - 1);
       else if (pt.type === 'diamond') bar = size * (1 / Math.sqrt(dens) - 1) / SQ2;
       else bar = size * (1 / dens - 1);
-      q.pat = { type: pt.type, size, bar: Math.max(bmin, bar), barLimited: bar < bmin };
+      q.pat = { type: pt.type, size, bar: Math.max(bmin, bar), barLimited: bar < bmin, inner: !!pt.inner };
     } else q.pat = null;
     q.warnings = warn;
     return q;
@@ -376,6 +376,83 @@
     return { holes: holeCount, openArea, savedVolume: openArea * t, panelArea, holeHeight };
   }
 
+  // cut the pattern through the partitions too (v8): each divider is two flat faces t apart
+  // (one per neighbouring compartment). Every stretch where one compartment faces another
+  // becomes a sub-panel on both faces with the same holes, joined by hole tubes.
+  function applyDividerPattern(M, q, cells, levels) {
+    const { t, f, pat, hp } = q, z1 = levels.length > 1 ? levels[1] : t;
+    const bord = clamp(pat.bar, Math.max(1.5, 1.5 * t), 3), mTop = Math.max(2, bord);
+    const outSign = [1, 1, -1, -1];
+    const horiz = s => s === 0 || s === 2;
+    const plane = (C, s) => s === 0 ? C.r[2] : s === 1 ? C.r[1] : s === 2 ? C.r[3] : C.r[0];
+    const span = (C, s) => horiz(s) ? [C.c[0], C.c[1]] : [C.c[2], C.c[3]];
+    const flat = (C, s) => horiz(s) ? [C.r[0] + f, C.r[1] - f] : [C.r[2] + f, C.r[3] - f];
+    const P = (s, w, u, z) => horiz(s) ? [u, w, z] : [w, u, z];
+    const faces = new Map();
+    const face = (i, s) => {
+      const k = i * 4 + s;
+      if (!faces.has(k)) { const C = cells[i], fl = flat(C, s); faces.set(k, { s, w: plane(C, s), ua: fl[0], ub: fl[1], subs: [], holed: false }); }
+      return faces.get(k);
+    };
+    const pairs = [];
+    for (let i = 0; i < cells.length; i++) for (const s of [1, 2]) {
+      const A = cells[i], o = (s + 2) % 4;
+      if (A.o[s]) continue;
+      for (let j = 0; j < cells.length; j++) {
+        const B = cells[j];
+        if (B.o[o] || Math.abs(plane(B, o) - plane(A, s) - t) > 1e-6) continue;
+        const sa = span(A, s), sb = span(B, o), lo = Math.max(sa[0], sb[0]), hi = Math.min(sa[1], sb[1]);
+        if (hi - lo < 1e-6) continue;
+        const fa = face(i, s), fb = face(j, o);
+        const ra = [clamp(lo, fa.ua, fa.ub), clamp(hi, fa.ua, fa.ub)], rb = [clamp(lo, fb.ua, fb.ub), clamp(hi, fb.ua, fb.ub)];
+        const zn = { U0: Math.max(ra[0], rb[0]) + bord, U1: Math.min(ra[1], rb[1]) - bord, Z0: z1 + bord, Z1: hp - mTop };
+        const holes = patternHoles(pat, zn.U0, zn.U1, zn.Z0, zn.Z1);
+        const sub = h => ({ zn, holes: h ? holes : [] });
+        if (ra[1] - ra[0] > 1e-6) fa.subs.push(Object.assign(sub(holes.length), { u0: ra[0], u1: ra[1] }));
+        if (rb[1] - rb[0] > 1e-6) fb.subs.push(Object.assign(sub(holes.length), { u0: rb[0], u1: rb[1] }));
+        if (holes.length) { fa.holed = fb.holed = true; pairs.push({ s, wa: fa.w, wb: fb.w, zn, holes, area: (ra[1] - ra[0]) * (hp - z1) }); }
+      }
+    }
+    let holeCount = 0, openArea = 0, panelArea = 0, holeHeight = 0;
+    const rebuild = [...faces.values()].filter(F => F.holed);
+    if (!rebuild.length) return { holes: 0, openArea: 0, savedVolume: 0, panelArea: 0, holeHeight: 0 };
+    const inFace = (F, v) => Math.abs((horiz(F.s) ? v[1] : v[0]) - F.w) < 1e-7 && (horiz(F.s) ? v[0] : v[1]) >= F.ua - 1e-7 && (horiz(F.s) ? v[0] : v[1]) <= F.ub + 1e-7 && v[2] >= z1 - 1e-7 && v[2] <= hp + 1e-7;
+    M.removeIf((a, b, c) => rebuild.some(F => inFace(F, a) && inFace(F, b) && inFace(F, c)));
+    const augOf = new Map();
+    for (const F of rebuild) {
+      const sign = -outSign[F.s];
+      for (const S of F.subs) {
+        let tris;
+        if (S.holes.length) { const r = panelMesh({ ua: S.u0, ub: S.u1, za: z1, zb: hp, leftZ: [], rightZ: [] }, S.zn, S.holes); tris = r.tris; if (!augOf.has(S.zn)) augOf.set(S.zn, r.holes); }
+        else tris = [[[S.u0, z1], [S.u1, z1], [S.u1, hp]], [[S.u0, z1], [S.u1, hp], [S.u0, hp]]];
+        for (let [a, b, c] of tris) {
+          const ar = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+          if (ar < 0) [b, c] = [c, b];
+          if (sign < 0) [b, c] = [c, b];
+          M.tri(P(F.s, F.w, a[0], a[1]), P(F.s, F.w, b[0], b[1]), P(F.s, F.w, c[0], c[1]));
+        }
+      }
+    }
+    for (const pr of pairs) {      // hole tubes through the divider
+      panelArea += pr.area;
+      for (const hh of augOf.get(pr.zn)) {
+        let cu = 0, cz = 0; for (const p of hh) { cu += p[0]; cz += p[1]; } cu /= hh.length; cz /= hh.length;
+        for (let i = 0; i < hh.length; i++) {
+          const a = hh[i], b = hh[(i + 1) % hh.length];
+          const A = P(pr.s, pr.wa, a[0], a[1]), B = P(pr.s, pr.wa, b[0], b[1]), A2 = P(pr.s, pr.wb, a[0], a[1]), B2 = P(pr.s, pr.wb, b[0], b[1]);
+          const C3 = P(pr.s, pr.wa, cu, cz), mid = P(pr.s, pr.wa, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2);
+          const u = [B[0] - A[0], B[1] - A[1], B[2] - A[2]], v = [B2[0] - A[0], B2[1] - A[1], B2[2] - A[2]];
+          const n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+          const d = n[0] * (C3[0] - mid[0]) + n[1] * (C3[1] - mid[1]) + n[2] * (C3[2] - mid[2]);
+          if (d > 0) { M.tri(A, B, B2); M.tri(A, B2, A2); } else { M.tri(A, B2, B); M.tri(A, A2, B2); }
+        }
+        holeCount++; openArea += Math.abs(polyArea(hh));
+        { let lo = Infinity, hi = -Infinity; for (const p of hh) { lo = Math.min(lo, p[1]); hi = Math.max(hi, p[1]); } holeHeight += hi - lo; }
+      }
+    }
+    return { holes: holeCount, openArea, savedVolume: openArea * t, panelArea, holeHeight };
+  }
+
   /* ---------------- tray ---------------- */
   function build(params) {
     const q = resolve(params);
@@ -465,6 +542,11 @@
       }
     }
     const patternInfo = q.pat ? applyPattern(M, q, cells, levels) : null;
+    if (patternInfo && q.pat.inner && !q.single) {
+      const d = applyDividerPattern(M, q, cells, levels);
+      for (const k of ['holes', 'openArea', 'savedVolume', 'panelArea', 'holeHeight']) patternInfo[k] += d[k];
+      patternInfo.innerHoles = d.holes;
+    }
     if (q.pat && patternInfo && !patternInfo.holes) q.warnings.push('wall pattern does not fit – make holes smaller or the tray taller');
     if (q.pat && q.pat.barLimited) q.warnings.push(`pattern density limited so bars stay ≥ ${r2(q.pat.bar)} mm`);
     const m = M.finish();

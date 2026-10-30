@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tray Generator v7</title>
+<title>Tray Generator v8</title>
 <style>
 :root{
   --bg-canvas:#cfd1d4; --grid:#b9bcc0; --grid-major:#a9adb2;
@@ -154,7 +154,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 <aside>
   <div class="brand">
     <svg width="34" height="24" viewBox="0 0 34 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M2 9 17 2l15 7-15 7z"/><path d="M2 9v5l15 7 15-7V9"/><path d="M9.5 5.5 24.5 12.5"/></svg>
-    <h1>Tray <span style="font-weight:400;color:var(--muted)">v7</span></h1>
+    <h1>Tray <span style="font-weight:400;color:var(--muted)">v8</span></h1>
     <button class="icon-btn" id="undo" title="Undo (Ctrl+Z)" aria-label="Undo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
     <button class="icon-btn" id="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button>
   </div>
@@ -207,6 +207,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
         <div class="slider"><input type="range" min="2" max="20" step="0.5" aria-label="Hole size"><input type="number" min="2" max="40" step="0.5" aria-label="Hole size value"></div></div>
       <div class="field" data-f="pd"><label>Density <small>(% open)</small> <span class="help" title="How much of the wall is cut away. Higher = lighter, but bars between holes never go below 1.5× the wall thickness.">?</span></label>
         <div class="slider"><input type="range" min="10" max="80" step="1" aria-label="Pattern density"><input type="number" min="10" max="80" step="1" aria-label="Pattern density value"></div></div>
+      <label class="hint" style="display:flex;gap:6px;align-items:center;margin-top:8px;color:var(--text);cursor:pointer"><input type="checkbox" id="patInner"> Inner walls too <span class="help" title="Also cut the pattern through the partitions between compartments, not just the outer walls. Saves more filament; small items can pass between compartments.">?</span></label>
       <div class="patinfo" id="patInfo"></div>
     </div>
   </div>
@@ -311,7 +312,7 @@ const fmt = v => String(Math.round(v * 100) / 100);
 const clone = o => JSON.parse(JSON.stringify(o));
 
 /* ---------------- state + history ---------------- */
-const DEF = { W: 80, D: 160, H: 20, t: 0.8, f: 1, hp: 18, stack: false, s: 2.4, flush: true, layout: G.gridTree(1, 2), lid: { style: 'none', c: 0.2, L: 4 }, pattern: { type: 'none', size: 6, density: 50 } };
+const DEF = { W: 80, D: 160, H: 20, t: 0.8, f: 1, hp: 18, stack: false, s: 2.4, flush: true, layout: G.gridTree(1, 2), lid: { style: 'none', c: 0.2, L: 4 }, pattern: { type: 'none', size: 6, density: 50, inner: false } };
 let state = clone(DEF);
 try {
   const v2 = JSON.parse(localStorage.getItem('tray-gen-v2') || 'null');
@@ -363,6 +364,7 @@ $$('.stepper').forEach(el => {
 $('#unstack').onclick = () => { state.stack = false; if (state.lid.style === 'stack') state.lid.style = 'inset'; syncUI(); rebuild(); commit(); };
 $('#stackbtn').onclick = () => { state.stack = true; syncUI(); rebuild(); commit(); };
 $('#flush').onchange = e => { state.flush = e.target.checked; syncUI(); rebuild(); commit(); };
+$('#patInner').onchange = e => { state.pattern.inner = e.target.checked; syncUI(); rebuild(); commit(); };
 $$('[data-lid]').forEach(b => b.onclick = () => { state.lid.style = b.dataset.lid; syncUI(); rebuild(); commit(); });
 $$('[data-pat]').forEach(b => b.onclick = () => { state.pattern.type = b.dataset.pat; syncUI(); rebuild(); commit(); });
 $('#price').value = prefs.price; $('#cur').value = prefs.cur;
@@ -409,6 +411,7 @@ function syncUI() {
   $('#lidFields').hidden = state.lid.style === 'none' || state.lid.style === 'stack';
   $$('[data-pat]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.pat === state.pattern.type)));
   $('#patFields').hidden = state.pattern.type === 'none';
+  $('#patInner').checked = !!state.pattern.inner;
   $('#optLidL').classList.toggle('off', state.lid.style === 'none');
   $('#optStackL').classList.toggle('off', !state.stack);
   for (const p of $$('.pill:not(.cpill)')) { const inp = p.querySelector('input'); if (document.activeElement !== inp) inp.value = fmt(state[p.dataset.k]); }
@@ -758,7 +761,8 @@ function updateStats() {
   if (pi && pi.holes) {
     const gs = pi.savedVolume / 1000 * density, pct = gs / (gt + gs) * 100;
     rows.push(['Pattern saves', `${gs.toFixed(1)} g · ${money(gs)}`]);
-    $('#patInfo').innerHTML = `<b>${pi.holes}</b> holes · ${(pi.openArea / Math.max(1, pi.panelArea) * 100).toFixed(0)}% of wall open · saves <b>${gs.toFixed(1)} g</b> (${pct.toFixed(0)}% of tray) = <b>${money(gs)}</b>`;
+    $('#patInfo').innerHTML = `<b>${pi.holes}</b> holes · ${(pi.openArea / Math.max(1, pi.panelArea) * 100).toFixed(0)}% of wall open · saves <b>${gs.toFixed(1)} g</b> (${pct.toFixed(0)}% of tray) = <b>${money(gs)}</b>` +
+      (state.pattern.inner ? (pi.innerHoles ? ` · ${pi.innerHoles} in inner walls` : mesh.params.single ? ' · no inner walls in this tray' : ' · inner walls too low for the pattern') : '');
   } else $('#patInfo').textContent = state.pattern.type === 'none' ? '' : 'Pattern does not fit – try smaller holes or a taller tray.';
   $('#stats').innerHTML = rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join('');
 }

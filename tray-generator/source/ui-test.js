@@ -21,7 +21,7 @@ function stlCheck(path) {
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('pageerror', e => errors.push(String(e)));
   await page.route('**/*', r => r.request().url().startsWith('file:') ? r.continue() : (errors.push('NETWORK ' + r.request().url()), r.abort()));
-  await page.goto('file://' + __dirname + '/tray-generator-v7.html');
+  await page.goto('file://' + __dirname + '/tray-generator-v8.html');
   await page.waitForTimeout(700);
   await page.screenshot({ path: 'u1-default.png' });
   const T = () => page.evaluate(() => ({ leaves: window.__tray.mesh.params.leaves.map(l => [l.path, l.r.map(v => Math.round(v * 10) / 10)]), sel: window.__tray.selection, layout: window.__tray.state.layout }));
@@ -214,6 +214,14 @@ function stlCheck(path) {
   await page.waitForTimeout(400);
   const h2 = await page.evaluate(() => window.__tray.mesh.patternInfo.holes);
   ok(h2 < h1, `bigger hole size -> fewer holes (${h1} -> ${h2})`);
+  // v8) pattern on the inner walls too
+  await page.evaluate(() => { const r = document.querySelector('.field[data-f="ps"] input[type=range]'); r.value = 4; r.dispatchEvent(new Event('input')); r.dispatchEvent(new Event('change')); });
+  await page.waitForTimeout(400);
+  const hOut = await page.evaluate(() => window.__tray.mesh.patternInfo.holes);
+  await page.check('#patInner'); await page.waitForTimeout(500);
+  const pin = await page.evaluate(() => ({ holes: window.__tray.mesh.patternInfo.holes, inner: window.__tray.mesh.patternInfo.innerHoles, info: document.querySelector('#patInfo').textContent }));
+  ok(pin.inner > 0 && pin.holes === hOut + pin.inner && /inner walls/.test(pin.info), `"Inner walls too" adds ${pin.inner} holes through the partitions: ${pin.info}`);
+  await page.screenshot({ path: 'v8-inner.png' });
 
   // 6) downloads
   await page.click('[data-lid="cap"]'); await page.waitForTimeout(150);

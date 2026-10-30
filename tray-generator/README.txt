@@ -1,4 +1,4 @@
-TRAY GENERATOR v7  —  parametric, stackable, lightweight trays for 3D printing
+TRAY GENERATOR v8  —  parametric, stackable, lightweight trays for 3D printing
 ==========================================================================
 
 Open  index.html  (the latest version) in any browser (Chrome, Edge, Firefox, Safari).
@@ -52,6 +52,12 @@ Sidebar
     Shows holes, grams saved and money saved. Bars between holes are never
     thinner than 1.5 x the wall thickness. Hex, diamond and lines have pointed
     tops and print without supports.
+  * NEW in v8 – "Inner walls too" (under Wall pattern): the pattern is also cut
+    through the partitions between compartments, not only the outer walls.
+    Off by default. Each stretch where one compartment faces another gets its
+    own centred holes, with the same solid border as the outer walls. The info
+    line shows how many holes are in the inner walls. Note: small items can
+    then pass between compartments. See inner-walls-pattern.png.
   * Lid: inset (plugs inside), cap (slips over the walls), or stacking
     (a shallow tray, so you can keep stacking). Clearance + skirt depth.
   * Estimate: weight per material, filament price per kg -> cost.
@@ -81,13 +87,14 @@ FOLDERS
 -------
   index.html               the latest version of the app (single file, everything built in)
   stacking-before-after.png  close-up of the stacking joint, v6 vs v7
-  versions/vN/index.html   every version, unchanged (v2 to v7; v7 = latest)
+  inner-walls-pattern.png    v8: wall pattern on the inner walls too
+  versions/vN/index.html   every version, unchanged (v2 to v8; v8 = latest)
   python/                  the first Python box+lid generator and its tests
                            (python parametric_box.py --size 50 --height 30 --stackable)
   source/                  the source the app is built from, plus tests:
                              tray-geom.js     geometry engine (also runs in Node)
                              template.html    the app UI
-                             build.js         node build.js -> tray-generator-v7.html
+                             build.js         node build.js -> tray-generator-v8.html
                              test-geom.js     geometry, stacking and lid-fit tests
                              fuzz.js          random-layout / pattern / lid fuzz test
                              ui-test.js       browser test (needs Playwright)
