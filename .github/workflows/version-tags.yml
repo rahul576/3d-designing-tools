@@ -1,0 +1,43 @@
+name: Version tags
+
+# Every push to main:
+#  - tags each tool version as <tool>-vN on the last commit that changed <tool>/versions/vN/
+#    (existing tags are left alone, so old versions keep pointing at their own commit)
+#  - moves the `latest` tag to the newest commit on main
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: version-tags
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Tag tool versions
+        run: |
+          git fetch --tags --force
+          for dir in */versions/v*/; do
+            tool="${dir%%/*}"
+            ver="$(basename "$dir")"
+            tag="$tool-$ver"
+            if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then continue; fi
+            sha="$(git log -1 --format=%H -- "$dir")"
+            [ -n "$sha" ] || continue
+            echo "Tagging $tag at $sha"
+            git tag "$tag" "$sha"
+            git push origin "refs/tags/$tag"
+          done
+      - name: Move latest tag
+        run: |
+          git tag -f latest "$GITHUB_SHA"
+          git push -f origin refs/tags/latest

@@ -19,9 +19,16 @@ The root `index.html` is the home page (https://rahul576.github.io/3d-designing-
 
 The site is published from the `gh-pages` branch. A GitHub Actions workflow (`.github/workflows/sync-gh-pages.yml`) resets `gh-pages` to `main` on every push to `main`, so merged changes go live automatically.
 
+## Versions and tags
+
+Work goes straight to `main` (the site is not public yet, so no pull requests). A GitHub Actions workflow (`.github/workflows/version-tags.yml`) runs on every push to `main`:
+
+- each tool version gets a tag `<tool>-vN` (for example `photo-frame-generator-v2`) on the last commit that changed `<tool>/versions/vN/`, so every old version stays reachable;
+- the `latest` tag is moved to the newest commit.
+
 ## Adding a new tool
 
 1. Put the tool in its own top-level folder (for example `my-tool/`) with an `index.html` and a README.
 2. Add one entry for it to the `TOOLS` list in the root `index.html`. Its tab and overview card appear automatically.
 3. Add it to the Tools list above.
-4. Open a pull request.
+4. Commit and push to `main`; tags are created automatically.
