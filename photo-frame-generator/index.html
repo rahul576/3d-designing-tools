@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Photo Frame Generator v4</title>
+<title>Photo Frame Generator v5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link id="gfonts" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@600&family=Great+Vibes&family=Lobster&family=Pacifico&family=Playfair+Display:ital,wght@0,600;1,600&family=Roboto+Slab:wght@500&family=Special+Elite&display=swap" rel="stylesheet">
@@ -112,6 +112,9 @@ main{flex:1;position:relative;min-width:0}
   background-image:linear-gradient(var(--grid-major) 1px,transparent 1px),linear-gradient(90deg,var(--grid-major) 1px,transparent 1px),linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
   background-size:100px 100px,100px 100px,20px 20px,20px 20px}
 #view.real{background:#1f2124}
+#gl3d{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab;background:var(--bg-canvas)}
+#gl3d:active{cursor:grabbing}
+#gl3dMsg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--panel);padding:10px 16px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.18);font-size:13px;z-index:2;max-width:80%;text-align:center}
 #view.drop{outline:3px dashed var(--accent);outline-offset:-10px}
 #canvasWrap{min-width:100%;min-height:100%;display:flex;align-items:center;justify-content:center;padding:70px 90px 110px 24px}
 #canvasWrap svg{display:block;flex:none;color:var(--muted)}
@@ -185,7 +188,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
   <aside>
     <div class="brand">
       <svg class="logo" width="30" height="24" viewBox="0 0 30 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="26" height="20" rx="1.5"/><rect x="7" y="6.5" width="16" height="11" rx=".5"/><path d="m7 15 4-4 3 3 2.5-2.5L23 17"/></svg>
-      <h1>Frame <span>v4</span></h1>
+      <h1>Frame <span>v5</span></h1>
       <button class="icon-btn" id="btnRandom" data-tip="Surprise me: pick a random frame style and colours. Click again for another one." aria-label="Random style"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="16" cy="16" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="16" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="16" r="1.2" fill="currentColor"/></svg></button>
       <button class="icon-btn" id="btnHelp" data-tip="How it works: designing, printing and assembling the frame" aria-label="Help"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.7"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg></button>
       <button class="icon-btn" id="themeBtn" data-tip="Switch between light and dark mode" aria-label="Toggle dark mode"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button>
@@ -210,9 +213,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
   </aside>
   <main>
     <div id="view"><div id="canvasWrap"></div></div>
+    <canvas id="gl3d" hidden></canvas>
+    <div id="gl3dMsg" hidden></div>
     <div class="tabs" role="toolbar" aria-label="Preview">
       <button id="vFront" data-tip="Design view: the front of the frame on a measuring grid">Design</button>
       <button id="vReal" data-tip="Real world view: see the frame at true size on a wall or shelf">Real world</button>
+      <button id="v3d" data-tip="3D view: the real printed pieces in their filament colours. Drag to turn it, scroll to zoom, right-drag to move, double-click to reset">3D</button>
       <button id="vBack" data-tip="Back view: the printed back with the photo pocket, snap pins and hanger, as seen from behind">Back</button>
       <span class="sep"></span>
       <button id="zOut" data-tip="Zoom out" aria-label="Zoom out">−</button>
@@ -223,6 +229,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
       <span id="designOpts" style="display:flex;gap:2px">
         <label data-tip="Show the outer width and height"><input type="checkbox" id="tDims" checked>Size</label>
         <label data-tip="Show the photo edge (red dashes) that hides under the frame"><input type="checkbox" id="tGuides" checked>Guides</label>
+      </span>
+      <span id="opts3d" style="display:flex;gap:2px">
+        <select id="t3dLayout" data-tip="Assembled shows the finished frame with your photo; As printed shows every piece the way it sits on the print bed" aria-label="3D layout"><option value="assembled">Assembled</option><option value="printed">As printed</option></select>
       </span>
       <span id="realOpts" style="display:flex;gap:2px">
         <select id="tScene" data-tip="Choose where to see the frame" aria-label="Scene"><option value="wall">Living room wall</option><option value="kids">Kids room wall</option><option value="shelf">Shelf / desk</option></select>
@@ -1379,8 +1388,10 @@ function renderColorBar(){
   bar.innerHTML=h;
 }
 function positionColorBar(){
-  const bar=$('#colorBar'),svg=$('#canvasWrap svg'),main=$('main');if(!svg)return;
-  const mr=main.getBoundingClientRect(),sr=svg.getBoundingClientRect(),bw=bar.offsetWidth||56,bh=bar.offsetHeight||200;
+  const bar=$('#colorBar'),svg=$('#canvasWrap svg'),main=$('main');
+  const mr=main.getBoundingClientRect(),bw=bar.offsetWidth||56,bh=bar.offsetHeight||200;
+  if(view==='3d'||!svg){bar.style.left=(mr.width-bw-18)+'px';bar.style.top=Math.max(70,(mr.height-bh)/2)+'px';const pop=$('#colorPop');if(!pop.hidden){pop.style.left=Math.max(8,mr.width-bw-18-258)+'px';pop.style.top=Math.max(70,(mr.height-bh)/2)+'px';}return;}
+  const sr=svg.getBoundingClientRect();
   let fb=frameBoxInView;const sc=sr.width/viewBox[2];
   const right=sr.left+(fb[0]+fb[2]-viewBox[0])*sc,midY=sr.top+(fb[1]+fb[3]/2-viewBox[1])*sc;
   let left=right-mr.left+16;left=clamp(left,12,mr.width-bw-12);
@@ -1427,18 +1438,22 @@ function render(){
   const v=$('#view'),wrap=$('#canvasWrap');
   v.classList.toggle('real',view==='real');
   wrap.style.setProperty('--stagebg',getComputedStyle(document.documentElement).getPropertyValue('--bg-canvas'));
-  if(view==='real'){wrap.innerHTML=buildScene(P,G,prefs.scene,prefs.wall);}
+  const is3d=view==='3d';$('#gl3d').hidden=!is3d;wrap.hidden=is3d;
+  if(is3d){wrap.innerHTML='';}
+  else if(view==='real'){wrap.innerHTML=buildScene(P,G,prefs.scene,prefs.wall);}
   else if(view==='back'){wrap.innerHTML=buildBackSVG(P,G);frameBoxInView=[0,G.y0,G.W,G.H-G.y0];}
   else{wrap.innerHTML=buildSVG(P,G,{preview:true,photos:windowPhotos(P,G),dims:prefs.dims,guides:prefs.guides,hit:true,sel:G.coll?selCell:null});frameBoxInView=[0,G.y0,G.W,G.H-G.y0];}
   const svg=wrap.firstChild;
-  const vbv=svg.viewBox.baseVal;viewBox=[vbv.x,vbv.y,vbv.width,vbv.height];
-  for(const[id,on]of[['vFront',view==='front'],['vReal',view==='real'],['vBack',view==='back']])$('#'+id).classList.toggle('on',on);
-  $('#designOpts').hidden=view!=='front';$('#realOpts').hidden=view!=='real';
-  renderColorBar();sizeSVG();bindDrag(svg);info();secSubs();
+  if(svg){const vbv=svg.viewBox.baseVal;viewBox=[vbv.x,vbv.y,vbv.width,vbv.height];}
+  for(const[id,on]of[['vFront',view==='front'],['vReal',view==='real'],['v3d',is3d],['vBack',view==='back']])$('#'+id).classList.toggle('on',on);
+  $('#designOpts').hidden=view!=='front';$('#realOpts').hidden=view!=='real';$('#opts3d').hidden=!is3d;
+  renderColorBar();sizeSVG();if(svg)bindDrag(svg);info();secSubs();
+  if(is3d)queue3D();else $('#gl3dMsg').hidden=true;
   clearTimeout(render._g);render._g=setTimeout(()=>renderGallery(false),250);
   clearTimeout(saveT);saveT=setTimeout(()=>{lsSet('pfg-v4',JSON.stringify(P));},400);
 }
 function sizeSVG(){
+  if(view==='3d'){$('#zVal').textContent='3D';positionColorBar();draw3D();return;}
   const svg=$('#canvasWrap svg');if(!svg)return;const v=$('#view');
   const narrow=innerWidth<=820,aw=v.clientWidth-(narrow?90:130),ah=v.clientHeight-(narrow?126:180);const sc=Math.max(0.05,Math.min(aw/viewBox[2],ah/viewBox[3]))*zoom;
   svg.style.width=f2(viewBox[2]*sc)+'px';svg.style.height=f2(viewBox[3]*sc)+'px';
@@ -1481,8 +1496,8 @@ function drawShape(c,sh){
   if(sh.mode==='fill')c.fill();
   else{c.lineWidth=sh.lw;c.lineCap='round';c.lineJoin='round';c.setLineDash(dashArr(sh.dash,sh.lw)||[]);c.stroke();c.setLineDash([]);}
 }
-async function rasterFront(P,G){
-  const k=clamp(Math.sqrt(6e6/(G.W*G.H)),2,10),pad=2;
+async function rasterFront(P,G,kMax=10,budget=6e6){
+  const k=clamp(Math.sqrt(budget/(G.W*G.H)),2,kMax),pad=2;
   const w=Math.ceil(G.W*k)+2*pad,h=Math.ceil(G.H*k)+2*pad;
   const cv=document.createElement('canvas');cv.width=w;cv.height=h;
   const ctx=cv.getContext('2d',{willReadFrequently:true});
@@ -1636,7 +1651,7 @@ function backParts(P,G){
 /* ---------- file writers ---------- */
 function stlBlob(tris){
   const n=tris.length/3,buf=new ArrayBuffer(84+n*50),dv=new DataView(buf);
-  const hdr='Photo frame generator v4 STL (mm)';for(let i=0;i<hdr.length;i++)dv.setUint8(i,hdr.charCodeAt(i));
+  const hdr='Photo frame generator v5 STL (mm)';for(let i=0;i<hdr.length;i++)dv.setUint8(i,hdr.charCodeAt(i));
   dv.setUint32(80,n,true);let off=84;
   for(let t=0;t<tris.length;t+=3){const a=tris[t],b=tris[t+1],c=tris[t+2];const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;const l=Math.hypot(nx,ny,nz)||1;
     for(const v of[nx/l,ny/l,nz/l,...a,...b,...c]){dv.setFloat32(off,v,true);off+=4;}dv.setUint16(off,0,true);off+=2;}
@@ -1668,7 +1683,7 @@ function meshXML(id,name,tris,pindex){
 }
 function build3MF(objects,multi){
   const slots=multi?[...new Set(objects.flatMap(o=>o.parts.map(p=>p.slot)))].sort():[];
-  const x=[`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">Photo frame</metadata><metadata name="Application">Photo Frame Generator v4</metadata><resources>`];
+  const x=[`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">Photo frame</metadata><metadata name="Application">Photo Frame Generator v5</metadata><resources>`];
   if(multi)x.push(`<basematerials id="1">${slots.map(s=>`<base name="Colour ${s}" displaycolor="${P['fil'+s].toUpperCase()}FF"/>`).join('')}</basematerials>`);
   let id=2;const build=[];
   for(const o of objects){
@@ -1742,7 +1757,7 @@ function showHelp(){
   $('#modalCard').innerHTML=`<button class="btn small close" id="mClose">Close</button><h2>Photo Frame Generator</h2>
   <p>Design a frame for your 3D printer, see it on a wall at true size, and download files for your slicer.</p>
   <h3>1. Design</h3><ul><li>Start from a <b>Frame style</b>, or use <b>Single photo</b> / <b>Collage</b> at the top of the left panel.</li><li>Pick a sample kid photo or upload your own. In a collage, choose many photos at once; click an opening in the preview to choose which photo goes there.</li><li>The round buttons to the right of the frame are your <b>filament colours</b>. Click one to change it, or + to add a colour.</li></ul>
-  <h3>2. Check</h3><ul><li><b>Real world</b> shows the frame at true size on a wall or shelf. <b>Back</b> shows the photo pocket, snap pins and hanger.</li><li>Yellow notes at the bottom left warn about anything that may not print well.</li></ul>
+  <h3>2. Check</h3><ul><li><b>3D</b> shows the real printed pieces in their colours; drag to turn them. <b>Real world</b> shows the frame at true size on a wall or shelf. <b>Back</b> shows the photo pocket, snap pins and hanger.</li><li>Yellow notes at the bottom left warn about anything that may not print well.</li></ul>
   <h3>3. Print</h3><ul><li><b>Raised colours</b> (default) work on any printer: the frame prints face up and each extra colour stands a little higher, so you change filament only once per colour.</li><li><b>Flat colours</b> print face down for a smooth front, for printers with an AMS or multi-material unit.</li><li>The multicolour 3MF has one part per colour. The single colour 3MF and STL turn the decorations into raised texture.</li></ul>
   <p class="tips">Hover over any button for a short explanation.</p>`;
   $('#modal').hidden=false;$('#mClose').onclick=()=>{$('#modal').hidden=true;};
@@ -1805,6 +1820,113 @@ function initTips(){
   document.addEventListener('focusout',hide);document.addEventListener('pointerdown',hide,true);document.addEventListener('scroll',hide,true);
 }
 
+/* ---------- 3D view (WebGL): the real printed pieces, built with the same code as the 3MF ---------- */
+const V3D={theta:-Math.PI/2,phi:0.75,dist:400,target:[0,0,0],r:100,gl:null,mesh:null,tex:null,quad:null,items:[],key:'',seq:0,timer:0,fitKey:''};
+function init3D(){
+  const cv=$('#gl3d');let gl=null;
+  try{gl=cv.getContext('webgl',{antialias:true,preserveDrawingBuffer:true})||cv.getContext('experimental-webgl');}catch(e){}
+  $('#t3dLayout').onchange=()=>{V3D.key='';V3D.fitKey='';queue3D(0);};
+  if(!gl)return;
+  V3D.gl=gl;
+  const prog=(vs,fs)=>{const p=gl.createProgram();for(const[t,src]of[[gl.VERTEX_SHADER,vs],[gl.FRAGMENT_SHADER,fs]]){const sh=gl.createShader(t);gl.shaderSource(sh,src);gl.compileShader(sh);if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(sh));gl.attachShader(p,sh);}
+    gl.linkProgram(p);const u={},n=gl.getProgramParameter(p,gl.ACTIVE_UNIFORMS);for(let i=0;i<n;i++){const nm=gl.getActiveUniform(p,i).name;u[nm]=gl.getUniformLocation(p,nm);}
+    return{p,u,aPos:gl.getAttribLocation(p,'aPos'),aNor:gl.getAttribLocation(p,'aNor'),aUV:gl.getAttribLocation(p,'aUV')};};
+  V3D.mesh=prog(`attribute vec3 aPos;attribute vec3 aNor;uniform mat4 uVP;varying vec3 vN;varying vec3 vW;void main(){vN=aNor;vW=aPos;gl_Position=uVP*vec4(aPos,1.0);}`,
+    `precision highp float;varying vec3 vN;varying vec3 vW;uniform vec3 uColor;uniform vec3 uEye;void main(){vec3 n=normalize(vN);if(!gl_FrontFacing)n=-n;vec3 V=normalize(uEye-vW);
+     vec3 L1=normalize(vec3(-0.4,-0.6,0.9));vec3 L2=normalize(vec3(0.7,0.4,0.5));float d=max(dot(n,L1),0.0)*0.55+max(dot(n,L2),0.0)*0.2;float hemi=0.5+0.5*n.z;
+     vec3 c=uColor*(0.38+0.18*hemi+d);float sp=pow(max(dot(reflect(-L1,n),V),0.0),40.0)*0.08;gl_FragColor=vec4(c+sp,1.0);}`);
+  V3D.texp=prog(`attribute vec3 aPos;attribute vec2 aUV;uniform mat4 uVP;varying vec2 vUV;void main(){vUV=aUV;gl_Position=uVP*vec4(aPos,1.0);}`,
+    `precision mediump float;varying vec2 vUV;uniform sampler2D uTex;void main(){gl_FragColor=vec4(texture2D(uTex,vUV).rgb*0.97,1.0);}`);
+  // orbit, pan and zoom
+  const ptr=new Map();let pan=false,pinch=0,d0=0;
+  cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,[e.clientX,e.clientY]);pan=e.button===2||e.button===1||e.shiftKey;
+    if(ptr.size===2){const[a,b]=[...ptr.values()];pinch=Math.hypot(a[0]-b[0],a[1]-b[1]);d0=V3D.dist;}});
+  cv.addEventListener('pointermove',e=>{if(!ptr.has(e.pointerId))return;const pv=ptr.get(e.pointerId),dx=e.clientX-pv[0],dy=e.clientY-pv[1];ptr.set(e.pointerId,[e.clientX,e.clientY]);
+    if(ptr.size===2){const[a,b]=[...ptr.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(pinch>0)V3D.dist=Math.max(10,d0*pinch/d);}
+    else if(!pan){V3D.theta-=dx*0.008;V3D.phi=clamp(V3D.phi+dy*0.008,-1.5,1.55);}
+    else{const s=V3D.dist*0.0016,ct=Math.cos(V3D.theta),st=Math.sin(V3D.theta),sp=Math.sin(V3D.phi),cp=Math.cos(V3D.phi),right=[-st,ct,0],up=[-sp*ct,-sp*st,cp];for(let i=0;i<3;i++)V3D.target[i]+=(-dx*right[i]+dy*up[i])*s;}
+    draw3D();});
+  const end=e=>{ptr.delete(e.pointerId);pinch=0;};cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+  cv.addEventListener('wheel',e=>{e.preventDefault();V3D.dist=Math.max(10,V3D.dist*Math.exp(e.deltaY*0.0012));draw3D();},{passive:false});
+  cv.addEventListener('contextmenu',e=>e.preventDefault());
+  cv.addEventListener('dblclick',()=>{fit3D(true);draw3D();});
+}
+function msg3D(t){const m=$('#gl3dMsg');m.textContent=t||'';m.hidden=!t;}
+function queue3D(delay=350){
+  if(!V3D.gl){msg3D('This browser cannot show 3D (WebGL is turned off or not supported). The other views and the downloads still work.');return;}
+  const lay=$('#t3dLayout').value,key=JSON.stringify(P)+'|'+lay+'|'+(isCollage(P)?CELLS.map(c=>[c.pid,c.x,c.y,c.z].join()).join(';'):curPid);
+  if(key===V3D.key){draw3D();return;}
+  clearTimeout(V3D.timer);if(!V3D.items.length)msg3D('Building the 3D model…');
+  V3D.timer=setTimeout(()=>build3D(key,lay),V3D.items.length?delay:30);
+}
+async function build3D(key,lay){
+  const seq=++V3D.seq,gl=V3D.gl;
+  try{
+    const PP={...P},GG=G,M=await rasterFront(PP,GG,4,1.6e6);if(seq!==V3D.seq)return;
+    const F=frontParts(PP,GG,M,'multi'),Bk=backParts(PP,GG),{fT,bT,pD}=heights(PP),asm=lay==='assembled';
+    const items=[],col=s=>hex2rgb(PP['fil'+s]).map(v=>v/255);
+    const add=(tris,c,tf)=>{if(!tris.length)return;const n=tris.length,pos=new Float32Array(n*3),nor=new Float32Array(n*3);
+      for(let t=0;t<n;t+=3){const a=tf(tris[t]),b=tf(tris[t+1]),c2=tf(tris[t+2]);const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c2[0]-a[0],vy=c2[1]-a[1],vz=c2[2]-a[2];
+        let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;const l=Math.hypot(nx,ny,nz)||1;nx/=l;ny/=l;nz/=l;
+        [a,b,c2].forEach((v,k)=>{const o=(t+k)*3;pos[o]=v[0];pos[o+1]=v[1];pos[o+2]=v[2];nor[o]=nx;nor[o+1]=ny;nor[o+2]=nz;});}
+      const pb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,pb);gl.bufferData(gl.ARRAY_BUFFER,pos,gl.STATIC_DRAW);
+      const nb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,nb);gl.bufferData(gl.ARRAY_BUFFER,nor,gl.STATIC_DRAW);
+      items.push({pb,nb,n,color:c,pos});};
+    // assembled: stand the frame up with its front towards the viewer (-y)
+    const up=v=>[v[0],-v[2],v[1]],id=v=>v,front=v=>up(F.flat?[GG.W-v[0],v[1],fT-v[2]]:v),backAsm=v=>up([v[0]-(GG.W+15),v[1],v[2]-(bT+pD)]);
+    for(const p of F.parts)add(p.tris,col(p.slot),asm?front:id);
+    for(const p of Bk){if(asm&&p.leg)continue;add(p.tris,col(p.slot),asm?backAsm:id);}
+    // the photo, sitting in the pocket behind the windows
+    let quad=null,tex=null;
+    if(asm){const A=GG.photoArea,kk=Math.min(4,2048/Math.max(A.w,A.h)),cv=document.createElement('canvas');cv.width=Math.max(2,Math.round(A.w*kk));cv.height=Math.max(2,Math.round(A.h*kk));
+      const c=cv.getContext('2d');c.fillStyle='#ddd';c.fillRect(0,0,cv.width,cv.height);const ph=windowPhotos(PP,GG);
+      GG.wins.forEach((w,i)=>{const p=ph[i];if(!p||!p.ph.img.complete)return;const R=w.ph,b=placeImg(R,p.ph.w,p.ph.h,p.z,p.x,p.y,p.fit);
+        c.save();c.beginPath();c.rect((R.x-A.x)*kk,(R.y-A.y)*kk,R.w*kk,R.h*kk);c.clip();try{c.drawImage(p.ph.img,(b.x-A.x)*kk,(b.y-A.y)*kk,b.w*kk,b.h*kk);}catch(e){}c.restore();});
+      tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,cv);
+      for(const[k2,v]of[[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,k2,v);
+      const z=-0.25,x0=A.x,x1=A.x+A.w,y0=GG.H-A.y,y1=GG.H-A.y-A.h;
+      const q=(x,y,u,v)=>[...up([x,y,z]),u,v],d=new Float32Array([...q(x0,y0,0,0),...q(x1,y0,1,0),...q(x1,y1,1,1),...q(x0,y0,0,0),...q(x1,y1,1,1),...q(x0,y1,0,1)]);
+      quad=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,quad);gl.bufferData(gl.ARRAY_BUFFER,d,gl.STATIC_DRAW);}
+    for(const it of V3D.items){gl.deleteBuffer(it.pb);gl.deleteBuffer(it.nb);}if(V3D.quad)gl.deleteBuffer(V3D.quad);if(V3D.tex)gl.deleteTexture(V3D.tex);
+    V3D.items=items;V3D.quad=quad;V3D.tex=tex;V3D.key=key;
+    let lo=[1e9,1e9,1e9],hi=[-1e9,-1e9,-1e9];for(const it of items)for(let i=0;i<it.pos.length;i+=3)for(let k=0;k<3;k++){lo[k]=Math.min(lo[k],it.pos[i+k]);hi[k]=Math.max(hi[k],it.pos[i+k]);}
+    for(const it of items)it.pos=null;
+    V3D.box=[lo,hi];const fk=lay+'|'+lo.map(Math.round)+'|'+hi.map(Math.round);
+    if(fk!==V3D.fitKey){fit3D(!V3D.fitKey||V3D.fitKey.split('|')[0]!==lay);V3D.fitKey=fk;}
+    msg3D('');draw3D();
+  }catch(e){console.error(e);msg3D('The 3D view could not be built: '+e.message);}
+}
+function fit3D(resetAngles){
+  if(!V3D.box)return;const[lo,hi]=V3D.box,cv=$('#gl3d');
+  V3D.target=[(lo[0]+hi[0])/2,(lo[1]+hi[1])/2,(lo[2]+hi[2])/2];
+  const r=Math.hypot(hi[0]-lo[0],hi[1]-lo[1],hi[2]-lo[2])/2,asp=cv.clientWidth/Math.max(1,cv.clientHeight),half=0.35,hh=Math.atan(Math.tan(half)*asp);
+  V3D.dist=r/Math.sin(Math.min(half,hh))*1.05;V3D.r=r;
+  if(resetAngles){const a=$('#t3dLayout').value==='assembled';V3D.theta=a?-1.95:-Math.PI/2;V3D.phi=a?0.28:0.75;}
+}
+function draw3D(){
+  const gl=V3D.gl;if(!gl||view!=='3d')return;
+  const cv=$('#gl3d'),dpr=Math.min(2,devicePixelRatio||1),w=Math.round(cv.clientWidth*dpr),h=Math.round(cv.clientHeight*dpr);
+  if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
+  gl.viewport(0,0,w,h);const bg=hex2rgb(getComputedStyle(document.documentElement).getPropertyValue('--bg-canvas').trim()).map(v=>v/255);
+  gl.clearColor(bg[0],bg[1],bg[2],1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);
+  if(!V3D.items.length)return;
+  const c=Math.cos(V3D.phi),T=V3D.target,E=[T[0]+V3D.dist*c*Math.cos(V3D.theta),T[1]+V3D.dist*c*Math.sin(V3D.theta),T[2]+V3D.dist*Math.sin(V3D.phi)];
+  const up=Math.abs(Math.sin(V3D.phi))>0.999?[0,1,0]:[0,0,1];
+  const near=Math.max(0.5,V3D.dist-V3D.r*3),far=V3D.dist+V3D.r*3,VP=m4mul(m4persp(0.7,w/Math.max(1,h),near,far),m4look(E,T,up));
+  const M=V3D.mesh;gl.useProgram(M.p);gl.uniformMatrix4fv(M.u.uVP,false,VP);gl.uniform3fv(M.u.uEye,E);
+  gl.enableVertexAttribArray(M.aPos);gl.enableVertexAttribArray(M.aNor);
+  for(const it of V3D.items){gl.uniform3fv(M.u.uColor,it.color);gl.bindBuffer(gl.ARRAY_BUFFER,it.pb);gl.vertexAttribPointer(M.aPos,3,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ARRAY_BUFFER,it.nb);gl.vertexAttribPointer(M.aNor,3,gl.FLOAT,false,0,0);gl.drawArrays(gl.TRIANGLES,0,it.n);}
+  gl.disableVertexAttribArray(M.aNor);
+  if(V3D.quad){const Q=V3D.texp;gl.useProgram(Q.p);gl.uniformMatrix4fv(Q.u.uVP,false,VP);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,V3D.tex);gl.uniform1i(Q.u.uTex,0);
+    gl.bindBuffer(gl.ARRAY_BUFFER,V3D.quad);gl.enableVertexAttribArray(Q.aPos);gl.enableVertexAttribArray(Q.aUV);gl.vertexAttribPointer(Q.aPos,3,gl.FLOAT,false,20,0);gl.vertexAttribPointer(Q.aUV,2,gl.FLOAT,false,20,12);gl.drawArrays(gl.TRIANGLES,0,6);gl.disableVertexAttribArray(Q.aUV);}
+}
+function m4persp(fovy,asp,n,f){const t=1/Math.tan(fovy/2);return[t/asp,0,0,0,0,t,0,0,0,0,(f+n)/(n-f),-1,0,0,2*f*n/(n-f),0];}
+function m4look(e,c,up){let zx=e[0]-c[0],zy=e[1]-c[1],zz=e[2]-c[2],l=Math.hypot(zx,zy,zz);zx/=l;zy/=l;zz/=l;
+  let xx=up[1]*zz-up[2]*zy,xy=up[2]*zx-up[0]*zz,xz=up[0]*zy-up[1]*zx;l=Math.hypot(xx,xy,xz)||1;xx/=l;xy/=l;xz/=l;
+  const yx=zy*xz-zz*xy,yy=zz*xx-zx*xz,yz=zx*xy-zy*xx;
+  return[xx,yx,zx,0,xy,yy,zy,0,xz,yz,zz,0,-(xx*e[0]+xy*e[1]+xz*e[2]),-(yx*e[0]+yy*e[1]+yz*e[2]),-(zx*e[0]+zy*e[1]+zz*e[2]),1];}
+function m4mul(a,b){const o=new Array(16);for(let i=0;i<4;i++)for(let j=0;j<4;j++){let s=0;for(let k=0;k<4;k++)s+=a[k*4+j]*b[i*4+k];o[i*4+j]=s;}return o;}
+
 /* ---------- wiring ---------- */
 function init(){
   addSamples();
@@ -1813,7 +1935,7 @@ function init(){
   if(start){const src='frameColor' in start?{...start,...legacyToSlots(start)}:start;for(const k in src)if(k in DEFAULTS)P[k]=src[k];}
   try{const pr=JSON.parse(lsGet('pfg-v4-prefs')||'null');if(pr){Object.assign(prefs,pr);if(pr.curPid)curPid=pr.curPid;}}catch(e){}
   if(!start)activeStyle='';
-  view=['front','real','back'].includes(prefs.view)?prefs.view:'front';
+  view=['front','real','back','3d'].includes(prefs.view)?prefs.view:'front';
   syncCur();
   $('#tDims').checked=prefs.dims;$('#tGuides').checked=prefs.guides;$('#tScene').value=prefs.scene;$('#tWall').value=prefs.wall;
   $('#tDims').onchange=e=>{prefs.dims=e.target.checked;savePrefs();};
@@ -1821,7 +1943,7 @@ function init(){
   $('#tScene').onchange=e=>{prefs.scene=e.target.value;if(e.target.value==='kids'&&prefs.wall==='#eeeae3'){prefs.wall='#cfe3f3';$('#tWall').value=prefs.wall;}zoom=1;savePrefs();};
   $('#tWall').onchange=e=>{prefs.wall=e.target.value;savePrefs();};
   const setView=v=>{view=v;prefs.view=v;zoom=1;savePrefs();};
-  $('#vFront').onclick=()=>setView('front');$('#vReal').onclick=()=>setView('real');$('#vBack').onclick=()=>setView('back');
+  $('#vFront').onclick=()=>setView('front');$('#v3d').onclick=()=>setView('3d');$('#vReal').onclick=()=>setView('real');$('#vBack').onclick=()=>setView('back');
   $('#modeSingle').onclick=()=>setMode('single');$('#modeCollage').onclick=()=>setMode('collage');
   buildControls();initTips();
   $('#btnRandom').onclick=randomize;$('#btnHelp').onclick=showHelp;
@@ -1846,9 +1968,10 @@ function init(){
   v.addEventListener('dragover',e=>{e.preventDefault();v.classList.add('drop');});
   v.addEventListener('dragleave',()=>v.classList.remove('drop'));
   v.addEventListener('drop',e=>{e.preventDefault();v.classList.remove('drop');loadFiles(e.dataTransfer.files);});
-  $('#zIn').onclick=()=>{zoom=Math.min(8,zoom*1.25);sizeSVG();};
-  $('#zOut').onclick=()=>{zoom=Math.max(0.2,zoom/1.25);sizeSVG();};
-  $('#zFit').onclick=()=>{zoom=1;sizeSVG();};
+  $('#zIn').onclick=()=>{if(view==='3d'){V3D.dist/=1.25;draw3D();return;}zoom=Math.min(8,zoom*1.25);sizeSVG();};
+  $('#zOut').onclick=()=>{if(view==='3d'){V3D.dist*=1.25;draw3D();return;}zoom=Math.max(0.2,zoom/1.25);sizeSVG();};
+  $('#zFit').onclick=()=>{if(view==='3d'){fit3D(true);draw3D();return;}zoom=1;sizeSVG();};
+  init3D();
   v.addEventListener('scroll',positionColorBar);
   window.addEventListener('resize',sizeSVG);
   matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',schedule);
