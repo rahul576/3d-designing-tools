@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Photo Frame Generator v7</title>
+<title>Photo Frame Generator v8</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link id="gfonts" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@600&family=Great+Vibes&family=Lobster&family=Pacifico&family=Playfair+Display:ital,wght@0,600;1,600&family=Roboto+Slab:wght@500&family=Special+Elite&display=swap" rel="stylesheet">
@@ -153,6 +153,8 @@ main{flex:1;position:relative;min-width:0}
 .pod-ps select{height:28px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);font-size:12px;padding:0 4px;min-width:0}
 .pod-ps button{height:28px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);cursor:pointer;font-size:15px}
 .pod-ps button:hover{background:var(--panel-2)}
+.pod-pw{display:grid;grid-template-columns:1fr 10px 1fr 22px;gap:4px;align-items:center;font-size:11px;color:var(--muted)}
+.pod-pw input{width:100%;height:26px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);font:12px var(--mono);text-align:center;padding:0 2px;-moz-appearance:textfield}
 .pod-photo{font-size:11.5px;line-height:1.45;color:var(--text);background:var(--panel-2);border-radius:7px;padding:6px 8px}
 .pod-photo b{color:#e4572e;font-weight:600}
 .pod-fit{display:flex;align-items:center;justify-content:center;gap:7px;height:34px;border:0;border-radius:8px;cursor:pointer;background:#14a38b;color:#fff;font:600 12.5px system-ui,sans-serif;box-shadow:0 2px 6px rgba(20,163,139,.35)}
@@ -234,7 +236,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
   <aside>
     <div class="brand">
       <svg class="logo" width="30" height="24" viewBox="0 0 30 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="26" height="20" rx="1.5"/><rect x="7" y="6.5" width="16" height="11" rx=".5"/><path d="m7 15 4-4 3 3 2.5-2.5L23 17"/></svg>
-      <h1>Frame <span>v7</span></h1>
+      <h1>Frame <span>v8</span></h1>
       <button class="icon-btn" id="btnHelp" data-tip="How it works: designing, printing and assembling the frame" aria-label="Help"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.7"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg></button>
       <button class="icon-btn" id="themeBtn" data-tip="Switch between light and dark mode" aria-label="Toggle dark mode"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button>
     </div>
@@ -288,6 +290,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
       <div class="pod-r"><span class="pod-l">Height</span><button data-d="H" data-k="-1" data-tip="Make the frame shorter (Shift: 1 mm steps)" aria-label="Shorter">−</button><input id="podH" type="number" step="any" aria-label="Frame height" data-tip="Type the outer height you want"><button data-d="H" data-k="1" data-tip="Make the frame taller (Shift: 1 mm steps)" aria-label="Taller">+</button></div>
       <div class="pod-h" style="margin-top:4px">Photo size</div>
       <div class="pod-ps" id="podPS"><select id="podPreset" aria-label="Photo size" data-tip="Choose the size of the photo you will print"></select><button id="podRot" data-tip="Turn the photo between portrait and landscape" aria-label="Turn photo">⟳</button></div>
+      <div class="pod-pw"><input id="podPW" type="number" step="any" aria-label="Photo width" data-tip="Type the photo width you have"><span>×</span><input id="podPH" type="number" step="any" aria-label="Photo height" data-tip="Type the photo height you have"><span id="podPU">mm</span></div>
       <div class="pod-photo" id="podPhoto"></div>
       <button class="pod-fit" id="btnAutoFit" data-tip="Resize the frame to suit the photo: borders sized for the photo, with room for the hanger and caption"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>Resize frame to fit Photo</button>
     </div>
@@ -398,6 +401,9 @@ const SECTIONS=[
  {id:'collage',title:'Collage',sub:'layout and photos',acc:'#f08a24',show:isCollage,fields:[
   {id:'_layouts',type:'layouts'},
   {id:'_cphotos',type:'cphotos'},
+  sel('colPhoto','Size of each photo','free',[['free','Any size (set the collage size)'],...PHOTO_PRESETS.map(p=>[p[0],p[1]])],null,'Already have prints? Pick their size and the collage is sized so the main opening takes that photo; the other openings scale with it.'),
+  len('colPW','Photo width',101.6,20,500,0.5,p=>p.colPhoto!=='free'),
+  len('colPH','Photo height',152.4,20,500,0.5,p=>p.colPhoto!=='free'),
   len('colW','Collage width (photo area)',254,60,800,0.5,null,'Width of the photo area behind the openings. Print the collage sheet at this size.'),
   len('colH','Collage height (photo area)',203.2,60,800,0.5),
   len('colGap','Frame bars between photos',10,3,60,0.5,null,'Width of the frame bars between the photos. 6 mm or more prints strong.'),
@@ -480,12 +486,15 @@ const SECTIONS=[
  ]},
  {id:'caption',title:'Caption text',sub:'',acc:'#0e9f6e',fields:[
   txt('capText','Text',''),
+  txt('capText2','Second line (small, e.g. a date)',''),
   sel('capPos','Position','bottom',[['bottom','Bottom border'],['top','Top border']]),
   sel('capFont','Font',FONTS[2][0],FONTS),
   sel('capStyle','Style','normal',[['normal','Regular'],['bold','Bold'],['italic','Italic'],['bold italic','Bold italic']]),
   len('capSize','Text size',10,3,80,0.25,null,'Letters 6 mm or taller print best. Bold fonts print better than thin script.'),
   num('capSpacing','Letter spacing (mm)',0.4,0,10,0.1),
   len('capOffset','Nudge down',0,-60,60,0.25),
+  sel('capFont2','Second line font',FONTS[0][0],FONTS,p=>!!p.capText2),
+  len('capSize2','Second line size',6,3,40,0.25,p=>!!p.capText2,'Small capitals 5 mm or taller print cleanly.'),
   slot('capFil','Text colour',2),
  ]},
  {id:'hang',title:'Photo slot & hanging',sub:'',acc:'#64748b',fields:[
@@ -532,7 +541,15 @@ const LAYOUTS=[
  {id:'fam',name:'Family tree',size:[279.4,254],cells:[[third,0,third,.4],[0,.4,third,.3],[third,.4,third,.3],[2*third,.4,third,.3],[0,.7,.25,.3],[.25,.7,.25,.3],[.5,.7,.25,.3],[.75,.7,.25,.3]]},
  {id:'col2',name:'Tall and two',size:[203.2,203.2],cells:[[0,0,.5,1],[.5,0,.5,.5],[.5,.5,.5,.5]]},
  {id:'pan3',name:'Wide over three',size:[304.8,228.6],cells:[[0,0,1,.5],[0,.5,third,.5],[third,.5,third,.5],[2*third,.5,third,.5]]},
+ // a heart built from photo tiles, with room for names and a date below
+ {id:'hmosaic',name:'Heart photo mosaic',group:'Photo walls',size:[280,320],capAt:[.5,.875],cap:{capText:'Riya & Arjun',capText2:'YOU & ME, ALWAYS  ·  02.12.2009',capFont:"'Great Vibes', cursive",capSize:20,capSize2:6},
+  cells:[[1,0,1,1],[2,0,1,1],[4,0,1,1],[5,0,1,1],[0,1,1,1],[1,1,1,1],[2,1,1,1],[3,1,1,1],[4,1,1,1],[5,1,1,1],[6,1,1,1],[0,2,1,1],[1,2,1,1],[2,2,3,2],[5,2,1,1],[6,2,1,1],[1,3,1,1],[5,3,1,1],[2,4,1,1],[3,4,1,1],[4,4,1,1],[3,5,1,1]].map(([x,y,w,h])=>[x/7,y*.75/6,w/7,h*.75/6])},
+ // printed photo wall: one opening, the photos are printed side by side and one person is stuck on top as a cut-out
+ {id:'gridcut',name:'Photo grid with a cut-out on top',group:'Photo walls',size:[203.2,279.4],print:true,
+  cells:[0,1,2,3].flatMap(j=>[0,1,2].map(i=>[i*third,j/4,third,.25])),sticker:[.16,.4,.68,.6]},
+ {id:'gridcut2',name:'Photo wall of nine',group:'Photo walls',size:[254,254],print:true,cells:[0,1,2].flatMap(j=>[0,1,2].map(i=>[i*third,j*third,third,third]))},
 ];
+const nSlots=L=>L.cells.length+(L.sticker?1:0);
 const layoutById=id=>LAYOUTS.find(l=>l.id===id)||LAYOUTS[4];
 
 /* ---------- sample kid photos (drawn here, so the app works offline) ---------- */
@@ -621,6 +638,8 @@ const PRESETS={
  'Heart locket':{frameColor:'#d4af37',fillType:'solid',pattern:'none',outerShape:'heart',winShape:'oval',outerEdge:'plain',winEdge:'plain',mat1On:false,mat2On:true,mat2W:4,mat2Color:'#7a5c12',bevelOn:false,linesWhere:'outer',linesCount:1,linesInset:4,linesWidth:1,linesDash:'solid',linesColor:'#7a5c12',ornament:'none',uniform:true,bSide:16,capText:''},
  'Scalloped heart':{frameColor:'#ffffff',fillType:'solid',pattern:'dots',patColor:'#f28ca8',patScale:9,patWeight:0.3,outerShape:'heart',outerEdge:'scallop',outerEdgeSize:30,outerEdgeDepth:3,winShape:'heart',winEdge:'plain',mat1On:false,mat2On:true,mat2W:5,mat2Color:'#f28ca8',bevelOn:false,linesWhere:'none',ornament:'none',uniform:true,bSide:24,capText:''},
  'Love letter':{frameColor:'#fbe3e8',fillType:'solid',pattern:'hearts',patColor:'#d1495b',patScale:13,patWeight:0.3,outerShape:'rounded',outerR:10,outerEdge:'plain',winShape:'heart',winEdge:'plain',mat1On:true,mat1W:8,mat1Color:'#ffffff',mat2On:false,bevelOn:false,linesWhere:'outer',linesCount:1,linesInset:5,linesWidth:1,linesDash:'dashed',linesColor:'#d1495b',ornament:'heart',ornPlaces:'corners',ornSize:12,ornColor:'#d1495b',uniform:false,bSide:26,bTop:26,bBottom:40,capText:'Together',capFont:"'Great Vibes', cursive",capSize:13,capColor:'#d1495b',capStyle:'normal'},
+ 'Dark walnut':{frameColor:'#5b3a21',fillType:'solid',pattern:'woodgrain',patColor:'#3e2614',patScale:12,patWeight:0.3,outerShape:'rounded',outerR:4,outerEdge:'plain',winShape:'rect',winEdge:'plain',mat1On:false,mat2On:false,bevelOn:false,linesWhere:'none',ornament:'none',uniform:true,bSide:22,capColor:'#f3e6cf'},
+ 'Black poster':{frameColor:'#141414',fillType:'solid',pattern:'none',outerShape:'rounded',outerR:3,outerEdge:'plain',winShape:'rect',winEdge:'plain',mat1On:true,mat1W:6,mat1Color:'#ffffff',mat2On:false,bevelOn:false,linesWhere:'none',ornament:'none',uniform:true,bSide:20,capColor:'#ffffff'},
  'Sticker cut-out':{frameColor:'#7cc4f0',fillType:'solid',pattern:'stars',patColor:'#ffffff',patScale:12,patWeight:0.3,outerShape:'rounded',outerEdge:'plain',winShape:'cutout',winEdge:'plain',mat1On:true,mat1W:7,mat1Color:'#ffffff',mat2On:false,bevelOn:false,linesWhere:'none',ornament:'none',uniform:true,bSide:20,capText:''},
  'Love hearts':{frameColor:'#fde2e4',fillType:'solid',pattern:'hearts',patColor:'#e5566f',patOpacity:0.55,patScale:13,patWeight:0.4,outerShape:'rounded',outerR:20,outerEdge:'wave',outerEdgeSize:20,outerEdgeDepth:3,winShape:'heart',winEdge:'plain',mat1On:false,mat2On:true,mat2W:5,mat2Color:'#ffffff',bevelOn:false,linesWhere:'none',ornament:'none',uniform:false,bSide:30,bTop:30,bBottom:42,capText:'Love you',capFont:"'Great Vibes', cursive",capSize:12,capColor:'#c43c57',capStyle:'normal',photoPreset:'sq4',photoW:101.6,photoH:101.6,holes:'one'},
  'Gothic window':{frameColor:'#3d2b56',fillType:'linear',frameColor2:'#1d1430',gradAngle:90,pattern:'meander',patColor:'#e0c36c',patOpacity:0.3,patScale:10,patLine:0.6,outerShape:'gothic',outerEdge:'plain',winShape:'gothic',winEdge:'plain',mat1On:true,mat1W:8,mat1Color:'#e0c36c',mat2On:false,bevelOn:false,linesWhere:'inner',linesCount:1,linesInset:3,linesWidth:0.6,linesColor:'#e0c36c',linesDash:'solid',ornament:'star',ornPlaces:'corners',ornSize:10,ornColor:'#e0c36c',uniform:true,bSide:26,capText:''},
@@ -783,10 +802,13 @@ function computeGeo(P){
   let m1=P.mat1On?P.mat1W:0,m2=P.mat2On?P.mat2W:0;
   // wide mats would swallow the small openings of a shaped collage, so they are scaled down there
   if(coll&&layoutById(P.layout).art&&m1+m2>7){const f=7/(m1+m2);m1*=f;m2*=f;}
+  // small tiles (a mosaic) get thinner mats so the photos stay big
+  if(coll&&!layoutById(P.layout).art&&!layoutById(P.layout).print){const L=layoutById(P.layout),md=Math.min(...L.cells.map(c=>Math.min(c[2]*P.colW,c[3]*P.colH))),cap=Math.max(2,md*0.12);
+    if(m1+m2>cap){const f=cap/(m1+m2);m1*=f;m2*=f;}}
   const mt=m1+m2;
   const ed=P.winEdge!=='plain'?P.winEdgeDepth:0,ov=P.overlap;
   const winShape=coll?P.cellShape:P.winShape,winR=coll?P.cellR:P.winR;
-  let box,hfw,hfh,cells=[],photoArea,S=null;
+  let box,hfw,hfh,cells=[],photoArea,S=null,printSlots=null;
   if(!coll&&winShape==='cutout'){
     const[pw,ph]=photoDims(P),photo=LIB[curPhoto];
     const st=cutoutStatus(photo);
@@ -804,7 +826,7 @@ function computeGeo(P){
     hfw=hbx.x1-hbx.x0;hfh=hbx.y1-hbx.y0;
     const W=b.x1-b.x0,H=b.y1-b.y0;
     box={W,H,cx:(hbx.x0+hbx.x1)/2,cy:(hbx.y0+hbx.y1)/2,side:Math.min(hbx.x0,W-hbx.x1),top:hbx.y0,bottom:H-hbx.y1};
-    const S0=S;S={...S0,outerBase:T(S0.outerBase),pockets:S0.pockets.map(T),cuts:S0.cuts.filter(Boolean).map(T),outerAt:d=>T(S0.outerAt(d)),rim:T(S0.outerAt((Math.max(4,P.bSide)-P.pocketClear)/2))};
+    const S0=S;S={...S0,holes:(S0.holes||[]).map(T),outerBase:T(S0.outerBase),pockets:S0.pockets.map(T),cuts:S0.cuts.filter(Boolean).map(T),outerAt:d=>T(S0.outerAt(d)),rim:T(S0.outerAt((Math.max(4,P.bSide)-P.pocketClear)/2))};
   }else if(!coll){
     const[pw,ph]=photoDims(P);
     let ww=Math.max(5,pw-2*ov),wh=Math.max(5,ph-2*ov);
@@ -819,20 +841,26 @@ function computeGeo(P){
     box=frameBox(P,hfw,hfh,winShape,false,[Wa+2*P.pocketClear,Ha+2*P.pocketClear]);
     const ax=box.cx-Wa/2,ay=box.cy-Ha/2;
     photoArea={x:ax,y:ay,w:Wa,h:Ha};
-    for(const[x,y,w,h]of L.cells){
+    for(const[x,y,w,h]of(L.print?[[0,0,1,1]]:L.cells)){
       const R={x:ax+x*Wa,y:ay+y*Ha,w:w*Wa,h:h*Ha};
       const il=x<e?ov:g,ir=x+w>1-e?ov:g,it=y<e?ov:g,ib=y+h>1-e?ov:g;
       const bw=R.w-il-ir,bh=R.h-it-ib;
       let ww=Math.max(3,bw-2*mt-2*ed),wh=Math.max(3,bh-2*mt-2*ed);
       if(winShape==='circle'){const d=Math.min(ww,wh);ww=wh=d;}
       if(bw-2*mt-2*ed<10||bh-2*mt-2*ed<10)warn.push('Some collage openings are very small. Make the collage bigger, or use thinner bars or mats.');
-      cells.push({cx:R.x+il+bw/2,cy:R.y+it+bh/2,ww,wh,ph:R});
+      // a few microns of offset per opening stop corners of far-apart openings lining up exactly, which trips the triangulator
+      const jj=cells.length;cells.push({cx:R.x+il+bw/2+(jj*5%13)*0.0013,cy:R.y+it+bh/2+(jj*7%11)*0.0017,ww,wh,ph:R});
     }
+    // printed photo wall: every photo is a tile on the print, with a thin white line between tiles
+    if(L.print){const pg=0.75;printSlots=L.cells.map(([x,y,w,h])=>({ph:{x:ax+x*Wa+pg,y:ay+y*Ha+pg,w:w*Wa-2*pg,h:h*Ha-2*pg},wi:0}));
+      if(L.sticker){const[x,y,w,h]=L.sticker;printSlots.push({ph:{x:ax+x*Wa,y:ay+y*Ha,w:w*Wa,h:h*Ha},wi:0,sticker:true});}}
   }
   let{W,H,cx,cy,side,top,bottom}=box;
   if(W<10||H<10){W=Math.max(W,10);H=Math.max(H,10);}
   const outerBase=S?S.outerBase:translate(shapePts(P.outerShape,W,H,P.outerR),W/2,H/2);
-  const outer=decorate(outerBase,P.outerEdge,P.outerEdgeSize,P.outerEdgeDepth,-1);
+  let outer=decorate(outerBase,P.outerEdge,P.outerEdgeSize,P.outerEdgeDepth,-1);
+  // on a traced shape an edge pattern that folds over itself cannot print, so the plain outline is used
+  if(S&&P.outerEdge!=='plain'&&selfCross(outer)){outer=outerBase;warn.push('The edge pattern does not fit this shape, so the plain edge is used.');}
   const wins=cells.map(c=>{
     const ws=winShape==='cutout'?'rounded':winShape,inflate=c.inflate||(d=>translate(shapePts(ws,c.ww+2*d,c.wh+2*d,winR+d),c.cx,c.cy));
     const win=inflate(0),holeF=c.inflate?inflate(mt):decorate(inflate(mt),P.winEdge,P.winEdgeSize,P.winEdgeDepth,1);
@@ -860,10 +888,13 @@ function computeGeo(P){
   if(P.pattern!=='none'&&usesLine(P)&&P.patLine<0.8)thin.push('pattern lines');
   if(P.linesWhere!=='none'&&P.linesWidth<0.8)thin.push('decorative lines');
   if(thin.length)warn.push(`The ${thin.join(' and ')} are thinner than 0.8 mm (two nozzle widths) and may not print cleanly.`);
-  if(P.capText&&P.capSize<5)warn.push('The caption is smaller than 5 mm and may be hard to read once printed.');
+  if(P.capText&&(P.capSize<5||(P.capText2&&P.capSize2<4)))warn.push('The caption is smaller than 5 mm and may be hard to read once printed.');
   const hb=coll&&!S?{cx:box.cx,cy:box.cy,hfw,hfh}:{cx,cy,hfw,hfh};
   const G={W,H,cx:hb.cx,cy:hb.cy,hfw:hb.hfw,hfh:hb.hfh,side,top,bottom,mt,ed,outerBase,outer,wins,photoArea,pocket,warn,coll};
   G.pockets=S?S.pockets:[pocket];
+  G.slots=printSlots||wins.map((w,i)=>({ph:w.ph,wi:i}));G.printed=!!printSlots;
+  if(coll&&layoutById(P.layout).capAt){const c=layoutById(P.layout).capAt;G.capAt={x:photoArea.x+c[0]*photoArea.w,y:photoArea.y+c[1]*photoArea.h};}
+  G.holes=S&&S.holes||[];
   if(S){G.shaped=true;G.cuts=S.cuts;G.outerAt=S.outerAt;G.rim=S.rim;}
   if(shapedCut)G.cuts=[shapedCut.cut];
   // slide-in: the pocket runs out through one side of the back, so the photo slides in without opening the frame
@@ -914,6 +945,13 @@ function fieldLoop(F,t,extra){
   const q=chaikin(dpClosed(best,0.7),2);
   return norm(dedupe(dpClosed(q,0.12).map(([x,y])=>[ox+x/k,oy+y/k])));
 }
+// the enclosed gaps of a field's shape (loops that wind the other way), at least minA mm²
+function fieldHoles(F,t,minA){
+  const{w,h,k,ox,oy,d}=F,m=new Uint8Array(w*h);for(let i=0;i<m.length;i++)if(d[i]<=t)m[i]=1;
+  const out=[];for(const l of traceLoops(m,w,h)){const a=polyArea(l);if(a>=0||-a<minA*k*k)continue;
+    const q=chaikin(dpClosed(l,0.7),2),r=norm(dedupe(dpClosed(q,0.12).map(([x,y])=>[ox+x/k,oy+y/k])));if(r.length>=3&&!selfCross(r))out.push(r);}
+  return out;
+}
 const fieldCache=new Map();
 function cached(key,fn){if(fieldCache.has(key))return fieldCache.get(key);const v=fn();fieldCache.set(key,v);if(fieldCache.size>60)fieldCache.delete(fieldCache.keys().next().value);return v;}
 
@@ -928,7 +966,10 @@ function artKit(c){
   const LN=(pts,w,cap='round')=>{c.lineWidth=w;c.lineCap=cap;c.lineJoin=cap==='round'?'round':'miter';c.beginPath();pts.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();};
   const HT=(x,y,w,h)=>PG(fitBox(heartUnit(120),w,h).map(([u,v])=>[x+w/2+u,y+h/2+v]));
   const OUT=fn=>{c.globalCompositeOperation='destination-out';fn();c.globalCompositeOperation='source-over';};
-  return{E,C,RR,PG,LN,HT,OUT};
+  // a branch with pairs of leaves that touch it, so every leaf stays joined on
+  const LEAF=(pts,w,sz=2.6)=>{LN(pts,w);for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1],dx=b[0]-a[0],dy=b[1]-a[1],an=Math.atan2(dy,dx);
+    for(let t=0.4;t<1.01;t+=0.6)for(const sg of[-1,1]){const aa=an+sg*0.75;E(a[0]+dx*t+Math.cos(aa)*sz*0.85,a[1]+dy*t+Math.sin(aa)*sz*0.85,sz,sz*0.42,aa);}}};
+  return{E,C,RR,PG,LN,HT,OUT,LEAF};
 }
 // kids and animals
 art('elephant','Elephant','Animals & kids',1.35,({E,C,RR,LN})=>{E(60,36,31,22);C(27,30,17);LN([[14,38],[10,50],[10,60],[15,66]],9);RR(36,46,11,24,4);RR(52,48,11,22,4);RR(69,48,11,22,4);RR(81,44,10,24,4);LN([[90,30],[97,44]],3);},
@@ -989,6 +1030,26 @@ art('balloons','Balloons','Fun shapes',0.85,({E,LN})=>{E(27,38,19,25);E(73,38,19
   [[.08,.13,.28,.32],[.38,.02,.24,.34],[.64,.13,.28,.32]]);
 
 // the love lock needs an arc, so draw it by hand
+// wall frames: separate photo frames joined by a tree and the family name
+art('famtree','Family name tree','Wall frames',1.3,()=>{},
+  [[24,1,22,18],[48,0,16,22],[66,1,24,18],[82,22,16,22],[26,45,24,14],[52,44,26,32],[80,47,18,29],[2,52,20,24],[26,61,24,15]].map(([x,y,w,h])=>[x/100,y/76.9,w/100,h/76.9]));
+ART.famtree.thin=ART.famtree.holes=true;
+ART.famtree.cap={capText:'The Family',capText2:'',capFont:"'Great Vibes', cursive",capSize:24};ART.famtree.capAt=[.53,34/76.9];
+ART.famtree.draw=(K,c)=>{const{RR,LN,LEAF}=K;
+  for(const[x,y,w,h]of ART.famtree.cells)RR(x*100,y*76.9,w*100,h*76.9,2);
+  LN([[12,54],[13,43],[17,35],[22,28]],2.6);LEAF([[13,43],[7,36],[3,27]],1.3);LEAF([[17,35],[12,24],[11,12]],1.3);LEAF([[22,28],[25,17]],1.1);LEAF([[12,24],[5,17]],1);LEAF([[22,28],[29,23]],1);
+  // a plaque for the family name, which prints as raised caption text
+  RR(24,24,58,20,10);};
+art('treeoflife','Tree of life','Wall frames',1,()=>{},
+  [[41,3,18,24],[19,15,18,16],[63,15,18,16],[3,41,24,18],[73,41,24,18],[19,69,18,16],[41,73,18,24],[63,69,18,16]].map(([x,y,w,h])=>[x/100,y/100,w/100,h/100]));
+ART.treeoflife.holes=ART.treeoflife.thin=true;
+ART.treeoflife.draw=(K,c)=>{const{C,RR,LN,OUT,LEAF}=K;
+  const ctr=[[50,27],[50,73],[27,50],[73,50]];for(const[x,y]of ctr)C(x,y,27);OUT(()=>{for(const[x,y]of ctr)C(x,y,24);});
+  for(const[x,y,w,h]of ART.treeoflife.cells)RR(x*100,y*100,w*100,h*100,1.5);
+  RR(48,50,4,25,1.2);LN([[36,74],[45,70],[50,67],[55,70],[64,74]],1.6);
+  for(const pts of[[[50,53],[42,45],[36,38],[31,29]],[[50,53],[58,45],[64,38],[69,29]],[[50,55],[39,53],[25,51]],[[50,55],[61,53],[75,51]],[[50,51],[50,38],[50,25]]])LEAF(pts,1.5,2.4);
+  for(const pts of[[[42,45],[43,36]],[[58,45],[57,36]],[[36,38],[29,40]],[[64,38],[71,40]],[[45,59],[38,62]],[[55,59],[62,62]]])LEAF(pts,1.1,2);};
+
 ART.lock.draw=(K,c)=>{c.lineWidth=10;c.lineCap='round';c.beginPath();c.arc(50,40,22,Math.PI,2*Math.PI);c.stroke();K.LN([[28,40],[28,62]],10);K.LN([[72,40],[72,62]],10);K.HT(6,48,88,76);};
 
 // draw a silhouette filling a w × h box (keeps its proportions, centred)
@@ -1003,7 +1064,8 @@ function maskCanvas(w,h,paint){const cv=document.createElement('canvas');cv.widt
 function shapedCollage(P,L,mt){
   const A=ART[L.art],Wa=P.colW,Ha=P.colH;
   // a thinner rim than a rectangular frame keeps the silhouette recognisable
-  const brd=Math.max(5,P.bSide*0.45),c1=Math.max(2,P.overlap),pad=brd+mt+c1+P.pocketClear+8,area=(Wa+2*pad)*(Ha+2*pad);
+  // wall frames keep their branches and letters, so their rim stays thin
+  const brd=A.thin?Math.max(3,P.bSide*0.15):Math.max(5,P.bSide*0.45),c1=Math.max(2,P.overlap),pad=brd+mt+c1+P.pocketClear+8,area=(Wa+2*pad)*(Ha+2*pad);
   const k=clamp(Math.sqrt(2.2e6/area),1.2,4),w=Math.ceil((Wa+2*pad)*k),h=Math.ceil((Ha+2*pad)*k);
   const key=['sc',L.id,Wa,Ha,P.colGap,P.cellShape,P.cellR,mt,brd,c1,P.pocketClear].join('|');
   return cached(key,()=>{
@@ -1023,7 +1085,7 @@ function shapedCollage(P,L,mt){
       if(n/(k*k)<400)continue;
       let D=sdfMM(cm,sw,sh,k);
       // round the corners: shrink, then grow back (an "opening")
-      const r=Math.min(rr,Math.sqrt(n/(k*k))/2.2);
+      const r=Math.min(rr,Math.sqrt(n/(k*k))/2.2,0.45*Math.min(x1-x0,y1-y0)/k);
       if(r>0.5){const er=new Uint8Array(sw*sh);for(let i=0;i<er.length;i++)er[i]=D[i]<=-r?1:0;D=sdfMM(er,sw,sh,k);for(let i=0;i<D.length;i++)D[i]-=r;}
       const CF={w:sw,h:sh,k,ox:F.ox+sx0/k,oy:F.oy+sy0/k,d:D},memo=new Map();
       const inflate=dd=>{const t=+(dd-mt).toFixed(3);if(!memo.has(t))memo.set(t,fieldLoop(CF,t)||[]);return memo.get(t);};
@@ -1037,16 +1099,46 @@ function shapedCollage(P,L,mt){
     const near=(x,y,q)=>{for(let i=0;i<q.length;i++){const[ax,ay]=q[i],[bx,by]=q[(i+1)%q.length],dx=bx-ax,dy=by-ay,L=dx*dx+dy*dy,t=L?clamp(((x-ax)*dx+(y-ay)*dy)/L,0,1):0;if(Math.hypot(ax+t*dx-x,ay+t*dy-y)<0.3)return true;}return false;};
     const touch=(a,b)=>{const A=bbox(a),B=bbox(b),m=0.3;if(A.x1+m<B.x0||B.x1+m<A.x0||A.y1+m<B.y0||B.y1+m<A.y0)return false;return a.some(([x,y])=>inPoly(x,y,b)||near(x,y,b))||b.some(([x,y])=>inPoly(x,y,a));};
     let clash=false;for(let i=0;i<pockets.length&&!clash;i++)for(let j=i+1;j<pockets.length;j++)if(touch(pockets[i],pockets[j])){clash=true;break;}
-    const outerBase=fieldLoop(F,c1+brd)||[[0,0],[Wa,0],[Wa,Ha],[0,Ha]];
-    if(clash||!cells.length){pockets=[fieldLoop(F,c1+P.pocketClear)||outerBase];cuts=[fieldLoop(F,c1)];}
-    const omemo=new Map(),outerAt=d=>{const t=+(c1+brd-d).toFixed(3);if(!omemo.has(t))omemo.set(t,fieldLoop(F,t));return omemo.get(t);};
-    return{outerBase,pockets,cuts,cells,outerAt,photoArea:{x:0,y:0,w:Wa,h:Ha}};
+    // wall frames: only the photo frames get the full rim; branches and letters keep their drawn width
+    let OF={...F,d:F.d.map(v=>v-(c1+brd))},PF=F;
+    if(A.thin){const mf=maskCanvas(w,h,c=>{c.fillStyle='#fff';for(const[x,y,cw,ch]of L.cells)c.fillRect((x*Wa+pad)*k,(y*Ha+pad)*k,cw*Wa*k,ch*Ha*k);}),df=sdfMM(mf,w,h,k);
+      OF.d=F.d.map((v,i)=>Math.min(v-0.5,df[i]-(c1+brd)));PF={...F,d:df};}
+    const outerBase=fieldLoop(OF,0)||[[0,0],[Wa,0],[Wa,Ha],[0,Ha]];
+    if(clash||!cells.length){pockets=[fieldLoop(PF,c1+P.pocketClear)||outerBase];cuts=[fieldLoop(PF,c1)];}
+    const omemo=new Map(),outerAt=d=>{const t=+(-d).toFixed(3);if(!omemo.has(t))omemo.set(t,fieldLoop(OF,t));return omemo.get(t);};
+    // see-through gaps inside the shape (between branches), kept clear of every photo pocket
+    let holes=[];
+    if(A.holes){const near=(x,y,q)=>{for(let i=0;i<q.length;i++){const[ax,ay]=q[i],[bx,by]=q[(i+1)%q.length],dx=bx-ax,dy=by-ay,L2=dx*dx+dy*dy,t=L2?clamp(((x-ax)*dx+(y-ay)*dy)/L2,0,1):0;if(Math.hypot(ax+t*dx-x,ay+t*dy-y)<2.5)return true;}return false;};
+      holes=fieldHoles(OF,0,40).filter(hl=>!pockets.some(pk=>hl.some(([x,y])=>inPoly(x,y,pk)||near(x,y,pk))||pk.some(([x,y])=>inPoly(x,y,hl))));}
+    return{outerBase,pockets,cuts,cells,outerAt,holes,photoArea:{x:0,y:0,w:Wa,h:Ha}};
   });
 }
 
 /* photo cut-out: the frame follows the outline of the person (or pet) in the photo */
 const CUT={};// photo id → {status:'busy'|'ok'|'fail', w,h,m (mask), how}
 function cutoutStatus(ph){return ph?CUT[ph.id]:null;}
+// the photos on the print (canvas): tiles, plus a cut-out sticker on top when the layout has one
+function paintPhotos(c,G,photos,A,k){
+  G.slots.forEach((sl,i)=>{const p=photos[i];if(!p||!p.ph.img.complete)return;const R=sl.ph;
+    if(sl.sticker){const a=stickerArt(p.ph);if(!a)return;const b=placeImg(R,p.ph.w,p.ph.h,p.z,p.x,p.y,'fit'),f=b.w/a.cw;
+      try{c.drawImage(a.cv,(b.x-a.pad*f-A.x)*k,(b.y-a.pad*f-A.y)*k,(a.cw+2*a.pad)*f*k,(a.ch+2*a.pad)*f*k);}catch(e){}return;}
+    const b=placeImg(R,p.ph.w,p.ph.h,p.z,p.x,p.y,p.fit);
+    c.save();c.beginPath();c.rect((R.x-A.x)*k,(R.y-A.y)*k,R.w*k,R.h*k);c.clip();try{c.drawImage(p.ph.img,(b.x-A.x)*k,(b.y-A.y)*k,b.w*k,b.h*k);}catch(e){}c.restore();});
+}
+// the person cut out of a photo with a white sticker border and a soft shadow (null until the outline is found)
+const STK={};
+function stickerArt(ph){
+  const C=CUT[ph.id];if(!C){findSubject(ph);return null;}if(C.status!=='ok'||!ph.img.complete)return null;
+  if(STK[ph.id])return STK[ph.id];
+  const sc=Math.min(1,1000/Math.max(ph.w,ph.h)),cw=Math.round(ph.w*sc),ch=Math.round(ph.h*sc),r=Math.max(4,Math.round(Math.max(cw,ch)*0.022)),pad=r*2;
+  const mk=(w,h)=>{const v=document.createElement('canvas');v.width=w;v.height=h;return[v,v.getContext('2d')];};
+  const[mc,mx]=mk(C.w,C.h),id=mx.createImageData(C.w,C.h);
+  for(let i=0;i<C.m.length;i++){id.data[i*4]=id.data[i*4+1]=id.data[i*4+2]=255;id.data[i*4+3]=C.m[i]?255:0;}mx.putImageData(id,0,0);
+  const[ring,rx]=mk(cw+2*pad,ch+2*pad);for(let a=0;a<24;a++)rx.drawImage(mc,pad+r*Math.cos(a*Math.PI/12),pad+r*Math.sin(a*Math.PI/12),cw,ch);rx.drawImage(mc,pad,pad,cw,ch);
+  const[t,tx]=mk(cw,ch);tx.drawImage(ph.img,0,0,cw,ch);tx.globalCompositeOperation='destination-in';tx.drawImage(mc,0,0,cw,ch);
+  const[out,ox]=mk(cw+2*pad,ch+2*pad);ox.shadowColor='rgba(0,0,0,.35)';ox.shadowBlur=r;ox.shadowOffsetY=r*0.4;ox.drawImage(ring,0,0);ox.shadowColor='transparent';ox.drawImage(t,pad,pad);
+  return STK[ph.id]={cv:out,pad,cw,ch,url:null};
+}
 async function findSubject(ph){
   if(!ph||CUT[ph.id])return;CUT[ph.id]={status:'busy'};
   try{
@@ -1121,7 +1213,7 @@ function cutoutGeo(P,pw,ph,photo,mt){
 }
 
 // every silhouette is also a collage layout
-for(const A of Object.values(ART)){const sz=A.a>=1?[300,Math.round(300/A.a)]:[Math.round(300*A.a),300];LAYOUTS.push({id:'s_'+A.id,name:A.name,group:A.group,size:sz,art:A.id,cells:A.cells});}
+for(const A of Object.values(ART)){const sz=A.a>=1?[300,Math.round(300/A.a)]:[Math.round(300*A.a),300];LAYOUTS.push({id:'s_'+A.id,name:A.name,group:A.group,size:sz,art:A.id,cells:A.cells,cap:A.cap,capAt:A.capAt});}
 
 /* ---------- back plate: snap pins, keyholes, string holes, top loop ---------- */
 const PEG_R=1.5,KH_HEAD=4.5,KH_SHANK=2.1,KH_LEN=7;
@@ -1135,15 +1227,18 @@ function keyholePts(x,y){// head circle at (x,y), shank slot going up
 function backFeatures(P,G){
   const B={pegs:[],keyholes:[],strings:[],tab:null,warn:[],pegH:0};
   const pk=bbox(G.pockets.flat());
-  const inPk=(x,y)=>G.pockets.some(q=>inPoly(x,y,q))||(G.slot&&inPoly(x,y,G.slot));
-  const okCircle=(x,y,r)=>{if(!inPoly(x,y,G.outer)||inPk(x,y))return false;
-    for(let a=0;a<16;a++){const px=x+r*Math.cos(a*Math.PI/8),py=y+r*Math.sin(a*Math.PI/8);if(!inPoly(px,py,G.outer)||inPk(px,py))return false;}return true;};
+  // lighter copies of long traced outlines keep the many fit tests below quick
+  const lite=q=>{const r=q.length>200?dpClosed(q,0.15):q.slice();r.bb=bbox(r);return r;},OUTL=lite(G.outer),PKS=G.pockets.map(lite),HLS=G.holes.map(lite);
+  const inB=(x,y,q)=>x>=q.bb.x0&&x<=q.bb.x1&&y>=q.bb.y0&&y<=q.bb.y1&&inPoly(x,y,q);
+  const inPk=(x,y)=>PKS.some(q=>inB(x,y,q))||HLS.some(q=>inB(x,y,q))||(G.slot&&inPoly(x,y,G.slot));
+  const okCircle=(x,y,r)=>{if(!inPoly(x,y,OUTL)||inPk(x,y))return false;
+    for(let a=0;a<16;a++){const px=x+r*Math.cos(a*Math.PI/8),py=y+r*Math.sin(a*Math.PI/8);if(!inPoly(px,py,OUTL)||inPk(px,py))return false;}return true;};
   const segX=(a,b,c,d)=>{const o=(p,q,r)=>Math.sign((q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]));return o(a,b,c)*o(a,b,d)<0&&o(c,d,a)*o(c,d,b)<0;};
   const crosses=(A,Bq)=>{const bb=bbox(A);for(let j=0;j<Bq.length;j++){const c=Bq[j],d=Bq[(j+1)%Bq.length];
     if(Math.max(c[0],d[0])<bb.x0-1||Math.min(c[0],d[0])>bb.x1+1||Math.max(c[1],d[1])<bb.y0-1||Math.min(c[1],d[1])>bb.y1+1)continue;
     for(let i=0;i<A.length;i++)if(segX(A[i],A[(i+1)%A.length],c,d))return true;}return false;};
   // vertices clear of the edges, and (for wiggly traced outlines) no edge slipping between them
-  const okPoly=(pts,m)=>pts.every(([x,y])=>okCircle(x,y,m))&&![G.outer,...G.pockets].some(q=>crosses(pts,q));
+  const okPoly=(pts,m)=>pts.every(([x,y])=>okCircle(x,y,m))&&![OUTL,...PKS,...HLS].some(q=>crosses(pts,q));
   const topAt=x=>{const t=rayHit(G.outer,x,pk.y0,0,-1);return isFinite(t)?pk.y0-t:pk.y0;};
   const clash=(x,y,r)=>[...B.keyholes.map(k=>[k.x,k.y-KH_LEN/2,KH_HEAD+KH_LEN/2]),...B.strings.map(s=>[s.x,s.y,s.r])].some(([a,b,rr])=>Math.hypot(a-x,b-y)<r+rr+2);
   const ymid=x=>(topAt(x)+pk.y0)/2;
@@ -1329,7 +1424,15 @@ function shapesSVG(shapes,fc){
   }
   return s;
 }
-function captionPos(P,G){const holeTop=G.cy-G.hfh/2,holeBot=G.cy+G.hfh/2;return{x:G.cx,y:(P.capPos==='top'?holeTop/2:(holeBot+G.H)/2)+P.capOffset};}
+// one or two caption lines, centred together in their border
+function captionLines(P,G){
+  const cp=captionPos(P,G),st=P.capStyle,l1={t:P.capText,font:P.capFont,size:P.capSize,sp:P.capSpacing,bold:st.includes('bold'),it:st.includes('italic'),x:cp.x,y:cp.y};
+  if(!P.capText2)return[l1];
+  const tot=P.capSize+P.capSize2*1.6;l1.y=cp.y-tot/2+P.capSize/2;
+  return[l1,{t:P.capText2,font:P.capFont2,size:P.capSize2,sp:Math.max(P.capSpacing,P.capSize2*0.15),bold:false,it:false,x:cp.x,y:cp.y+tot/2-P.capSize2/2}];
+}
+const capNeed=P=>Math.round(P.capSize*2+8+(P.capText2?P.capSize2*1.6:0));
+function captionPos(P,G){if(G.capAt)return{x:G.capAt.x,y:G.capAt.y+P.capOffset};const holeTop=G.cy-G.hfh/2,holeBot=G.cy+G.hfh/2;return{x:G.cx,y:(P.capPos==='top'?holeTop/2:(holeBot+G.H)/2)+P.capOffset};}
 function fontLabel(v){const f=FONTS.find(x=>x[0]===v);return f?f[1]:'';}
 // where the picture lands inside its photo rectangle (same maths for preview and print)
 function placeImg(R,iw,ih,z,px,py,fit){
@@ -1339,7 +1442,7 @@ function placeImg(R,iw,ih,z,px,py,fit){
   return{x:R.x+R.w/2+px-dw/2,y:R.y+R.h/2+py-dh/2,w:dw,h:dh};
 }
 function windowPhotos(P,G){
-  return G.wins.map((w,i)=>{
+  return G.slots.map((w,i)=>{
     if(!G.coll){const ph=LIB[curPhoto];return ph?{ph,z:P.photoZoom,x:P.photoX,y:P.photoY,fit:P.photoFit}:null;}
     const c=cellState(i),ph=LIB[c.pi];return ph?{ph,z:c.z,x:c.x,y:c.y,fit:'fill'}:null;
   });
@@ -1349,8 +1452,8 @@ function buildSVG(P,G,o={}){
   const m=o.preview?Math.max(G.W,G.H)*0.12:0,y0=G.y0;
   const vb=[-m,y0-m,G.W+2*m,G.H-y0+2*m];
   const size=o.preview||o.inner?'':`width="${f2(G.W)}mm" height="${f2(G.H-y0)}mm"`;
-  const body=pd(G.outer)+G.wins.map(w=>pd(w.holeF)).join('');
-  const solid=pd(G.outer)+G.wins.map(w=>pd(w.win)).join('');
+  const body=pd(G.outer)+G.wins.map(w=>pd(w.holeF)).join('')+G.holes.map(pd).join('');
+  const solid=pd(G.outer)+G.wins.map(w=>pd(w.win)).join('')+G.holes.map(pd).join('');
   const k=Math.max(G.W,G.H),raised=o.real&&P.printStyle==='raised';
   let defs=`<clipPath id="fc"><path clip-rule="evenodd" d="${body}"/></clipPath>`+G.wins.map((w,i)=>`<clipPath id="wc${i}"><path d="${pd(w.win)}"/></clipPath>`).join('');
   defs+=`<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9dcf2"/><stop offset="1" stop-color="#fbeedb"/></linearGradient>`;
@@ -1366,17 +1469,22 @@ function buildSVG(P,G,o={}){
   if(B.tab)s+=`<path fill-rule="evenodd" d="${pd(B.tab.pts)}${pd(B.tab.hole)}" fill="${o.real?mix(fc(P.frameFil),'#000',0.12):fc(P.frameFil)}"/>`;
   // photos
   const photos=o.photos||[];
-  G.wins.forEach((w,i)=>{
-    s+=`<g clip-path="url(#wc${i})">`;
-    const R=w.ph,p=photos[i];
+  if(G.printed)s+=`<g clip-path="url(#wc0)"><rect x="${f2(G.photoArea.x)}" y="${f2(G.photoArea.y)}" width="${f2(G.photoArea.w)}" height="${f2(G.photoArea.h)}" fill="#fff"/></g>`;
+  G.slots.forEach((sl,i)=>{
+    const R=sl.ph,p=photos[i],w=G.wins[sl.wi];
+    if(sl.sticker){if(p){const a=stickerArt(p.ph);if(a){a.url=a.url||a.cv.toDataURL();const b=placeImg(R,p.ph.w,p.ph.h,p.z,p.x,p.y,'fit'),f=b.w/a.cw;
+      s+=`<g clip-path="url(#wc${sl.wi})"><image href="${a.url}" x="${f2(b.x-a.pad*f)}" y="${f2(b.y-a.pad*f)}" width="${f2((a.cw+2*a.pad)*f)}" height="${f2((a.ch+2*a.pad)*f)}" preserveAspectRatio="none"/></g>`;}}return;}
+    s+=`<g clip-path="url(#wc${sl.wi})">`+(G.printed?`<svg x="${f2(R.x)}" y="${f2(R.y)}" width="${f2(R.w)}" height="${f2(R.h)}" viewBox="${f2(R.x)} ${f2(R.y)} ${f2(R.w)} ${f2(R.h)}" overflow="hidden">`:'');
     if(p){const b=placeImg(R,p.ph.w,p.ph.h,p.z,p.x,p.y,p.fit);
       s+=`<rect x="${f2(R.x-R.w)}" y="${f2(R.y-R.h)}" width="${f2(R.w*3)}" height="${f2(R.h*3)}" fill="#e4e4e4"/><image href="${p.ph.url}" xlink:href="${p.ph.url}" x="${f2(b.x)}" y="${f2(b.y)}" width="${f2(b.w)}" height="${f2(b.h)}" preserveAspectRatio="none"/>`;}
     else{const x0=R.x,y0=R.y,pw=R.w,ph=R.h;
       s+=`<rect x="${f2(x0)}" y="${f2(y0)}" width="${f2(pw)}" height="${f2(ph)}" fill="url(#sky)"/><circle cx="${f2(x0+pw*0.7)}" cy="${f2(y0+ph*0.3)}" r="${f2(Math.min(pw,ph)*0.09)}" fill="#ffd27a"/>`;
       s+=`<path d="M${f2(x0)} ${f2(y0+ph*0.72)}L${f2(x0+pw*0.3)} ${f2(y0+ph*0.48)}L${f2(x0+pw*0.5)} ${f2(y0+ph*0.64)}L${f2(x0+pw*0.68)} ${f2(y0+ph*0.5)}L${f2(x0+pw)} ${f2(y0+ph*0.74)}V${f2(y0+ph)}H${f2(x0)}Z" fill="#8bb08f"/>`;}
-    if(o.real)s+=`<path d="${pd(w.win)}" fill="none" stroke="#000" stroke-opacity=".45" stroke-width="${f2(k*0.012)}" filter="url(#bl)"/>`;
+    if(G.printed)s+='</svg>';
+    if(o.real&&!G.printed)s+=`<path d="${pd(w.win)}" fill="none" stroke="#000" stroke-opacity=".45" stroke-width="${f2(k*0.012)}" filter="url(#bl)"/>`;
     s+=`</g>`;
   });
+  if(o.real&&G.printed)s+=`<path d="${pd(G.wins[0].win)}" fill="none" stroke="#000" stroke-opacity=".45" stroke-width="${f2(k*0.012)}" filter="url(#bl)"/>`;
   // mats, bevel, body, decoration, caption: painter's order matches the 3D export
   const rf=raised?' filter="url(#rl)"':'';
   let mats='';for(const w of G.wins){for(const mt of w.mats)mats+=`<path fill-rule="evenodd" d="${pd(mt.outerP)}${pd(mt.innerP)}" fill="${fc(mt.slot)}"/>`;if(w.bevel)mats+=`<path fill-rule="evenodd" d="${pd(w.bevel.outerP)}${pd(w.bevel.innerP)}" fill="${fc(w.bevel.slot)}"/>`;}
@@ -1385,14 +1493,13 @@ function buildSVG(P,G,o={}){
   const deco=decoShapes(P,G);
   if(deco.length)s+=`<g clip-path="url(#fc)"><g${rf}>${shapesSVG(deco,fc)}</g></g>`;
   if(P.capText&&!o.noCaption){
-    const c=captionPos(P,G),st=P.capStyle;
-    s+=`<text x="${f2(c.x)}" y="${f2(c.y)}" text-anchor="middle" dominant-baseline="central" font-family="${esc(P.capFont)}" font-size="${f2(P.capSize)}" letter-spacing="${f2(P.capSpacing)}" fill="${fc(P.capFil)}"${st.includes('bold')?' font-weight="700"':''}${st.includes('italic')?' font-style="italic"':''}${rf}>${esc(P.capText)}</text>`;
+    for(const l of captionLines(P,G))s+=`<text x="${f2(l.x)}" y="${f2(l.y)}" text-anchor="middle" dominant-baseline="central" font-family="${esc(l.font)}" font-size="${f2(l.size)}" letter-spacing="${f2(l.sp)}" fill="${fc(P.capFil)}"${l.bold?' font-weight="700"':''}${l.it?' font-style="italic"':''}${rf}>${esc(l.t)}</text>`;
   }
   if(o.real)s+=`<rect x="0" y="0" width="${f2(G.W)}" height="${f2(G.H)}" fill="url(#sheen)" clip-path="url(#sc)"/>`;
   if(o.preview){
     const sw=k*0.0025;
     if(o.guides)for(const w of G.wins){const R=w.ph;s+=`<rect x="${f2(R.x)}" y="${f2(R.y)}" width="${f2(R.w)}" height="${f2(R.h)}" fill="none" stroke="#e4572e" stroke-width="${f2(sw)}" stroke-dasharray="${f2(sw*4)} ${f2(sw*3)}" opacity=".75"/>`;}
-    if(G.coll&&o.sel!=null&&G.wins[o.sel])s+=`<path d="${pd(G.wins[o.sel].win)}" fill="none" stroke="#2b78c5" stroke-width="${f2(sw*2.4)}"/>`;
+    if(G.coll&&o.sel!=null&&G.slots[o.sel]){const sl=G.slots[o.sel],R=sl.ph;s+=`<path d="${G.printed?`M${f2(R.x)} ${f2(R.y)}h${f2(R.w)}v${f2(R.h)}h${f2(-R.w)}Z`:pd(G.wins[sl.wi].win)}" fill="none" stroke="#2b78c5" stroke-width="${f2(sw*2.4)}"${G.printed?` stroke-dasharray="${f2(sw*5)} ${f2(sw*3)}"`:''}/>`;}
     if(o.dims){
       const fs=m*0.2,y=y0-m*0.45,x=-m*0.45,col='currentColor',Ht=G.H-y0;
       const tick=(x1,y1,x2,y2)=>`<path d="M${f2(x1)} ${f2(y1)}L${f2(x2)} ${f2(y2)}" stroke="${col}" stroke-width="${f2(sw)}"/>`;
@@ -1408,7 +1515,7 @@ function buildSVG(P,G,o={}){
       s+=`</g>`;
     }
   }
-  if(o.hit)G.wins.forEach((w,i)=>{s+=`<path class="win-hit" data-i="${i}" d="${pd(w.win)}" fill="transparent"/>`;});
+  if(o.hit)G.slots.forEach((sl,i)=>{const R=sl.ph;s+=`<path class="win-hit" data-i="${i}" d="${G.printed?`M${f2(R.x)} ${f2(R.y)}h${f2(R.w)}v${f2(R.h)}h${f2(-R.w)}Z`:pd(G.wins[sl.wi].win)}" fill="transparent"/>`;});
   if(!o.inner)s+=`</svg>`;
   if(o.idp)s=s.replace(/id="(fc|wc\d+|sky|sc|rl|bl|sheen)"/g,`id="${o.idp}$1"`).replace(/url\(#(fc|wc\d+|sky|sc|rl|bl|sheen)\)/g,`url(#${o.idp}$1)`);
   return s;
@@ -1571,7 +1678,7 @@ async function loadFiles(list){
   for(const f of files){const r=await readImage(f);if(!r)continue;const ph={id:'u'+(++photoSeq),name:f.name,...r,sample:false};LIB.push(ph);added.push(ph);}
   if(!added.length)return toast('Could not read that image.');
   if(isCollage(P)){
-    const n=layoutById(P.layout).cells.length;for(let i=0;i<n;i++)cellState(i);
+    const n=nSlots(layoutById(P.layout));for(let i=0;i<n;i++)cellState(i);
     const order=[...Array(n).keys()].sort((a,b)=>{const sa=!CELLS[a].pid||LIB[photoIndex(CELLS[a].pid)]?.sample?0:1,sb=!CELLS[b].pid||LIB[photoIndex(CELLS[b].pid)]?.sample?0:1;return sa-sb||a-b;});
     added.forEach((ph,j)=>{if(j<n){const c=CELLS[order[j]];c.pid=ph.id;c.x=c.y=0;c.z=1;}});
     toast(`${added.length} photo${added.length>1?'s':''} added`+(added.length>n?` (the collage has ${n} openings; click an opening, then a photo, to swap)`:''));
@@ -1589,7 +1696,7 @@ function removePhoto(id){
   syncCur();renderLibs();schedule();
 }
 function libHTML(mode){
-  const nums={};if(mode==='c')CELLS.slice(0,layoutById(P.layout).cells.length).forEach((c,i)=>{if(c.pid)(nums[c.pid]=nums[c.pid]||[]).push(i+1);});
+  const nums={};if(mode==='c')CELLS.slice(0,nSlots(layoutById(P.layout))).forEach((c,i)=>{if(c.pid)(nums[c.pid]=nums[c.pid]||[]).push(i+1);});
   const selPid=mode==='c'?cellState(selCell).pid:curPid;
   return LIB.map(p=>`<button class="ph${p.id===selPid?' on':''}" data-pid="${p.id}" data-tip="${esc(p.sample?`Sample photo: ${p.name}. Click to use it`+(mode==='c'?' in the selected opening':''):`Your photo: ${p.name}. Click to use it`+(mode==='c'?' in the selected opening':''))}"><img src="${p.url}" alt="">${nums[p.id]?`<span class="n">${nums[p.id].join(',')}</span>`:''}${p.sample?'':`<span class="x" data-del="${p.id}" data-tip="Remove this photo">×</span>`}</button>`).join('');
 }
@@ -1597,7 +1704,7 @@ function renderLibs(){
   const s=$('#sLib');if(s)s.innerHTML=libHTML('s');
   const c=$('#cLib');if(c)c.innerHTML=libHTML('c');
   const cb=$('#cellBox');
-  if(cb){const n=layoutById(P.layout).cells.length;if(selCell>=n)selCell=0;const st=cellState(selCell);
+  if(cb){const n=nSlots(layoutById(P.layout));if(selCell>=n)selCell=0;const st=cellState(selCell);
     cb.innerHTML=`<div><b>Opening ${selCell+1} of ${n} selected.</b> Click another opening in the preview to select it, then click a photo above. Drag in the preview to move the photo.</div>
       <div class="row"><label class="lbl">Zoom this photo</label><div class="slider"><input type="range" id="cellZoom" min="1" max="4" step="0.01" value="${st.z}"><input type="number" id="cellZoomN" min="1" max="4" step="0.01" value="${st.z}"></div></div>
       <div class="btnrow"><button class="btn small" id="cellCentre" data-tip="Put the photo back in the middle of this opening at normal zoom">Re-centre</button><button class="btn small" id="cellEmpty" data-tip="Remove the photo from this opening">Empty this opening</button></div>`;
@@ -1625,8 +1732,9 @@ function layoutThumb(L){
   return`<svg viewBox="0 0 ${w+2*pad} ${h+2*pad}"><rect x="1" y="1" width="${w+2*pad-2}" height="${h+2*pad-2}" rx="4" fill="#9aa4b1"/>${L.cells.map(([x,y,cw,ch])=>`<rect x="${f2(pad+x*w+2)}" y="${f2(pad+y*h+2)}" width="${f2(cw*w-4)}" height="${f2(ch*h-4)}" rx="1.5" fill="#e9eef4"/>`).join('')}</svg>`;
 }
 function setLayout(id){
-  const L=layoutById(id);P.layout=L.id;P.colW=L.size[0];P.colH=L.size[1];
-  for(let i=0;i<L.cells.length;i++)cellState(i);if(selCell>=L.cells.length)selCell=0;
+  const L=layoutById(id);P.layout=L.id;P.colW=L.size[0];P.colH=L.size[1];if(P.colPhoto!=='free'){orientColPhoto();applyColPhoto();}
+  for(let i=0;i<nSlots(L);i++)cellState(i);if(selCell>=nSlots(L))selCell=0;
+  if(L.cap&&!P.capText){Object.assign(P,L.cap);P.capPos='bottom';capPrev=P.capText;}
   if(activeStyle){activeStyle='';markGallery();}
   document.querySelectorAll('#layouts button').forEach(b=>b.classList.toggle('on',b.dataset.l===P.layout));
   syncControls();renderLibs();schedule();
@@ -1704,7 +1812,7 @@ function makeRow(f){
     el.innerHTML=`<label class="lbl">Photos</label><div class="btnrow"><button class="btn primary small" id="btnAddMany" data-tip="Choose several photos at once (hold Ctrl or Shift, or select many on your phone). They fill the openings in order.">Add photos…</button><button class="btn small" id="btnFill" data-tip="Put the photos into the openings in order: your own photos first, then the samples">Fill in order</button></div><div class="photos" id="cLib"></div><div class="cellbox" id="cellBox"></div>`;
     el.querySelector('#cLib').onclick=e=>libClick(e,'c');
     el.querySelector('#btnAddMany').onclick=()=>$('#filePhoto').click();
-    el.querySelector('#btnFill').onclick=()=>{const own=LIB.filter(p=>!p.sample),list=[...own,...LIB.filter(p=>p.sample)],n=layoutById(P.layout).cells.length;for(let i=0;i<n;i++){const c=cellState(i);c.pid=list.length?list[i%list.length].id:null;c.x=c.y=0;c.z=1;}renderLibs();schedule();};
+    el.querySelector('#btnFill').onclick=()=>{const own=LIB.filter(p=>!p.sample),list=[...own,...LIB.filter(p=>p.sample)],n=nSlots(layoutById(P.layout));for(let i=0;i<n;i++){const c=cellState(i);c.pid=list.length?list[i%list.length].id:null;c.x=c.y=0;c.z=1;}renderLibs();schedule();};
   }
   return{el,set,labelEl};
 }
@@ -1744,9 +1852,13 @@ function setParam(id,v){
   if(activeStyle&&id!=='units'){activeStyle='';markGallery();}
   if(id==='photoPreset'){const pr=PHOTO_PRESETS.find(p=>p[0]===v);if(pr&&pr[2]){P.photoW=pr[2];P.photoH=pr[3];}}
   if(id==='photoW'||id==='photoH')P.photoPreset=matchPreset();
+  if(id==='colPhoto'){const pr=PHOTO_PRESETS.find(p=>p[0]===v);if(pr&&pr[2]){P.colPW=pr[2];P.colPH=pr[3];orientColPhoto();}}
+  if(id==='colPW'||id==='colPH')P.colPhoto=matchPreset(P.colPW,P.colPH);
+  if(id==='colPhoto'||id==='colPW'||id==='colPH')applyColPhoto();
+  if((id==='colW'||id==='colH')&&P.colPhoto!=='free')P.colPhoto='free';
   if(id==='nCol')for(const s of SLOT_FIELDS)if(P[s]>P.nCol)P[s]=Math.min(P[s],P.nCol);
   if(id==='units'){buildControls();}
-  if(id==='capText'||id==='capPos'||id==='capSize')captionRoom(id);
+  if(['capText','capPos','capSize','capText2','capSize2'].includes(id))captionRoom(id);
   if(id==='sizeMode'&&v==='outer'&&G){P.outerW=f2(G.W);P.outerH=f2(G.H);}
   syncControls();schedule();
 }
@@ -1754,18 +1866,27 @@ function setParam(id,v){
 let capPrev='';
 function captionRoom(id){
   const had=!!capPrev,has=!!P.capText;capPrev=P.capText;
-  if(isOuter(P))return;
-  const need=Math.round(P.capSize*2+8);
+  if(isOuter(P)||(isCollage(P)&&layoutById(P.layout).capAt))return;
+  const need=capNeed(P);
   if(P.uniform){P.bTop=P.bBottom=P.bSide;P.uniform=false;}
   if(has){const k=P.capPos==='top'?'bTop':'bBottom',o=P.capPos==='top'?'bBottom':'bTop';
     if(id==='capPos'){const m=Math.min(P.bTop,P.bBottom);P[o]=m;}
     if(P[k]<need)P[k]=need;}
   else if(had){const m=Math.min(P.bTop,P.bBottom);P.bTop=P.bBottom=m;}
 }
-function matchPreset(){const pr=PHOTO_PRESETS.find(p=>p[2]&&((Math.abs(p[2]-P.photoW)<0.2&&Math.abs(p[3]-P.photoH)<0.2)||(Math.abs(p[3]-P.photoW)<0.2&&Math.abs(p[2]-P.photoH)<0.2)));return pr?pr[0]:'custom';}
+function matchPreset(w=P.photoW,h=P.photoH){const pr=PHOTO_PRESETS.find(p=>p[2]&&((Math.abs(p[2]-w)<0.2&&Math.abs(p[3]-h)<0.2)||(Math.abs(p[3]-w)<0.2&&Math.abs(p[2]-h)<0.2)));return pr?pr[0]:'custom';}
+// collage built around photos you already have: the biggest opening takes a photo of colPW × colPH
+const mainCell=L=>L.cells.reduce((a,c)=>c[2]*c[3]>a[2]*a[3]?c:a);
+function orientColPhoto(){const L=layoutById(P.layout),c=mainCell(L),land=c[2]*L.size[0]>c[3]*L.size[1];
+  if(land!==(P.colPW>P.colPH)&&P.colPW!==P.colPH)[P.colPW,P.colPH]=[P.colPH,P.colPW];}
+function applyColPhoto(){
+  if(P.colPhoto==='free')return;const c=mainCell(layoutById(P.layout)),fw=FIELDS.colW;
+  const W=P.colPW/c[2],H=P.colPH/c[3];P.colW=f2(clamp(W,fw.min,fw.max));P.colH=f2(clamp(H,fw.min,fw.max));
+  if(Math.abs(P.colW-W)>0.5||Math.abs(P.colH-H)>0.5)toast('That photo is too big or small for this layout, so the collage was limited to '+fmtLen(P.colW)+' × '+fmtLen(P.colH));
+}
 function setMode(m){
   if(P.mode===m)return;P.mode=m;if(activeStyle){activeStyle='';}
-  if(m==='collage'){const n=layoutById(P.layout).cells.length;for(let i=0;i<n;i++)cellState(i);prefs.open='collage';}
+  if(m==='collage'){const n=nSlots(layoutById(P.layout));for(let i=0;i<n;i++)cellState(i);prefs.open='collage';}
   else if(prefs.open==='collage')prefs.open='photo';
   buildControls();zoom=1;schedule();
 }
@@ -1838,7 +1959,7 @@ function autoFit(){
   const[pw,ph]=isCollage(P)?[P.colW,P.colH]:photoDims(P);
   const b=Math.round(clamp(Math.min(pw,ph)*0.16,15,45));
   let top=b,bottom=b+Math.round(b*0.2);
-  if(P.capText){const need=Math.round(P.capSize*2+8);if(P.capPos==='top')top=Math.max(top,need);else bottom=Math.max(bottom,need);}
+  if(P.capText){const need=capNeed(P);if(P.capPos==='top')top=Math.max(top,need);else bottom=Math.max(bottom,need);}
   if(['keyhole1','keyhole2','loop','string'].includes(P.hang))top=Math.max(top,22);
   if(isSingle(P))P.sizeMode='photo';
   P.uniform=false;P.bSide=b;P.bTop=top;P.bBottom=bottom;
@@ -1854,17 +1975,39 @@ function initSizePod(){
     inp.addEventListener('change',()=>{const v=parseFloat(inp.value);if(!isNaN(v)&&v>0)setFrameSize(d,P.units==='in'?v*MM_IN:v);});
     inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();});}
   $('#btnAutoFit').onclick=autoFit;
-  const ps=$('#podPreset');ps.innerHTML=PHOTO_PRESETS.map(p=>`<option value="${p[0]}">${esc(p[1])}</option>`).join('');
-  ps.onchange=()=>{if(ps.value==='custom'){prefs.open='size';buildControls();toast('Type your photo size in the Size section');return;}setParam('photoPreset',ps.value);};
-  $('#podRot').onclick=()=>setParam('orient',P.orient==='portrait'?'landscape':'portrait');
+  const ps=$('#podPreset');
+  ps.onchange=()=>{const coll=!isSingle(P);
+    if(ps.value==='custom'){if(coll&&P.colPhoto==='free'){P.colPhoto='custom';applyColPhoto();}else (coll?P.colPhoto='custom':P.photoPreset='custom');syncControls();schedule();$('#podPW').focus();$('#podPW').select();return;}
+    setParam(coll?'colPhoto':'photoPreset',ps.value);};
+  $('#podRot').onclick=()=>{if(isSingle(P))setParam('orient',P.orient==='portrait'?'landscape':'portrait');
+    else{if(P.colPhoto==='free'){P.colPhoto=matchPreset(P.colPW,P.colPH);}[P.colPW,P.colPH]=[P.colPH,P.colPW];applyColPhoto();syncControls();schedule();}};
+  // typed photo size: the photo you already have
+  for(const d of['PW','PH']){const inp=$('#pod'+d);
+    inp.addEventListener('change',()=>{let v=parseFloat(inp.value);if(isNaN(v)||v<=0)return;v=P.units==='in'?v*MM_IN:v;
+      if(isSingle(P)){let[w,h]=photoDims(P);if(d==='PW')w=v;else h=v;w=clamp(w,20,800);h=clamp(h,20,800);P.photoW=w;P.photoH=h;if(w!==h)P.orient=w>h?'landscape':'portrait';P.photoPreset=matchPreset();
+        if(activeStyle){activeStyle='';markGallery();}syncControls();schedule();}
+      else{setParam(d==='PW'?'colPW':'colPH',v);if(P.colPhoto==='free'){P.colPhoto=matchPreset(P.colPW,P.colPH);applyColPhoto();syncControls();schedule();}}});
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();});}
+}
+// the print size each opening takes, grouped: "4×6 in ×2, 2×3 in ×4"
+function collSizes(){
+  const L=layoutById(P.layout),n=new Map();
+  for(const c of L.cells){const w=c[2]*P.colW,h=c[3]*P.colH,pr=matchPreset(w,h),k=pr!=='custom'?PHOTO_PRESETS.find(p=>p[0]===pr)[1].replace(/ \(.*\)/,''):`${fmtLen(w)} × ${fmtLen(h)}`;n.set(k,(n.get(k)||0)+1);}
+  if(n.size>4)return'';return'<br>'+[...n].map(([k,c])=>`${c} × ${esc(k)}`).join('<br>');
 }
 function syncSizePod(){
   if(!G||$('#sizePod').hidden)return;
   const dv=mm=>P.units==='in'?(mm/MM_IN).toFixed(2):(Math.round(mm*10)/10).toString();
   for(const[d,v]of[['W',G.W],['H',G.H]]){const inp=$('#pod'+d);if(document.activeElement!==inp)inp.value=dv(v);}
-  $('#podPS').hidden=!isSingle(P);if(isSingle(P)&&document.activeElement!==$('#podPreset'))$('#podPreset').value=P.photoPreset;
+  const ps=$('#podPreset'),single=isSingle(P),mk=single?'s':'c';
+  if(ps.dataset.m!==mk){ps.dataset.m=mk;ps.innerHTML=(single?[]:[['free','Any size (fills the collage)']]).concat(PHOTO_PRESETS.map(p=>[p[0],p[1]])).map(p=>`<option value="${p[0]}">${esc(p[1])}</option>`).join('');}
+  if(document.activeElement!==ps)ps.value=single?P.photoPreset:P.colPhoto;
+  ps.dataset.tip=single?'Choose the size of the photo you will print':'Choose the size of the prints you already have: the main opening takes that size and the collage grows around it';
+  const[ppw,pph]=single?photoDims(P):[P.colPW,P.colPH];
+  for(const[d,v]of[['PW',ppw],['PH',pph]]){const inp=$('#pod'+d);if(document.activeElement!==inp)inp.value=dv(v);inp.disabled=!single&&P.colPhoto==='free';}
+  $('#podPU').textContent=P.units==='in'?'in':'mm';
   const A=G.photoArea,pr=isSingle(P)?PHOTO_PRESETS.find(p=>p[0]===P.photoPreset&&p[2]):null;
-  $('#podPhoto').innerHTML=G.coll?`<b>Photo sheet</b> ${fmtLen(A.w)} × ${fmtLen(A.h)}<br>${G.wins.length} photos`:`<b>Photo</b> ${pr?esc(pr[1].replace(/ \(.*\)/,''))+' · ':''}${fmtLen(A.w)} × ${fmtLen(A.h)}<br>Visible ${fmtLen(G.wins[0].ww)} × ${fmtLen(G.wins[0].wh)}`;
+  $('#podPhoto').innerHTML=G.coll?`<b>Photo sheet</b> ${fmtLen(A.w)} × ${fmtLen(A.h)}<br>${G.slots.length} photos${collSizes()}`:`<b>Photo</b> ${pr?esc(pr[1].replace(/ \(.*\)/,''))+' · ':''}${fmtLen(A.w)} × ${fmtLen(A.h)}<br>Visible ${fmtLen(G.wins[0].ww)} × ${fmtLen(G.wins[0].wh)}`;
   $('#podPhoto').innerHTML+=`<br>${G.slot?`Slides in from the ${P.load} side`:'Back comes off to change it'}`;
 }
 
@@ -1931,7 +2074,7 @@ function info(){
   const solid=area(g.outer)-g.wins.reduce((a,w)=>a+area(w.win),0);
   const vol=solid*P.frontT+area(g.outer)*P.backT+(area(g.outer)-g.pockets.reduce((a,q)=>a+area(q),0))*P.pocketD;
   const grams=Math.round(vol/1000*1.24*0.75);
-  const op=g.coll?`${g.wins.length} photos, sheet ${fmtLen(g.photoArea.w)} × ${fmtLen(g.photoArea.h)}`:`${fmtLen(g.wins[0].ww)} × ${fmtLen(g.wins[0].wh)}`;
+  const op=g.coll?`${g.slots.length} photos, sheet ${fmtLen(g.photoArea.w)} × ${fmtLen(g.photoArea.h)}`:`${fmtLen(g.wins[0].ww)} × ${fmtLen(g.wins[0].wh)}`;
   const pieces=['front','back'];if(P.hang==='stand')pieces.push('stand leg');
   el.innerHTML=g.warn.map(w=>`<div class="warn">${esc(w)}</div>`).join('')+`<dl class="stats"><dt>Outer size</dt><dd>${fmtLen(g.W)} × ${fmtLen(g.H-g.y0)}</dd><dt>${g.coll?'Collage':'Visible opening'}</dt><dd>${op}</dd>${g.coll?'':`<dt>Photo print</dt><dd>${fmtLen(g.photoArea.w)} × ${fmtLen(g.photoArea.h)}</dd>`}<dt>Printed pieces</dt><dd>${pieces.join(' + ')}</dd><dt>Colours / filament changes</dt><dd>${si.k} / ${si.approx&&si.changes?'≈':''}${si.changes}</dd><dt>Plastic (about)</dt><dd>${grams} g</dd></dl>`;
 }
@@ -1966,8 +2109,8 @@ async function rasterFront(P,G,kMax=10,budget=6e6){
   const w=Math.ceil(G.W*k)+2*pad,h=Math.ceil(G.H*k)+2*pad;
   const cv=document.createElement('canvas');cv.width=w;cv.height=h;
   const ctx=cv.getContext('2d',{willReadFrequently:true});
-  if(P.capText){try{await document.fonts.load(`${P.capStyle==='normal'?'':P.capStyle} 40px ${P.capFont}`,P.capText);}catch(e){}}
-  const bodyP=new Path2D();polyPath(bodyP,G.outer);G.wins.forEach(w=>polyPath(bodyP,w.holeF));
+  if(P.capText){try{await document.fonts.load(`${P.capStyle==='normal'?'':P.capStyle} 40px ${P.capFont}`,P.capText);if(P.capText2)await document.fonts.load(`40px ${P.capFont2}`,P.capText2);}catch(e){}}
+  const bodyP=new Path2D();polyPath(bodyP,G.outer);G.wins.forEach(w=>polyPath(bodyP,w.holeF));G.holes.forEach(q=>polyPath(bodyP,q));
   const els=[];
   for(const w of G.wins){
     for(const mt of w.mats)els.push({slot:mt.slot,raised:1,draw:c=>{const q=new Path2D();polyPath(q,mt.outerP);polyPath(q,mt.innerP);c.fill(q,'evenodd');}});
@@ -1975,7 +2118,7 @@ async function rasterFront(P,G,kMax=10,budget=6e6){
   }
   els.push({slot:P.frameFil,raised:0,draw:c=>c.fill(bodyP,'evenodd')});
   for(const sh of decoShapes(P,G))els.push({slot:sh.slot,raised:1,clip:1,draw:c=>drawShape(c,sh)});
-  if(P.capText){const cp=captionPos(P,G);els.push({slot:P.capFil,raised:1,clip:1,draw:c=>{c.textAlign='center';c.textBaseline='middle';c.font=`${P.capStyle==='normal'?'':P.capStyle} ${P.capSize}px ${P.capFont}`;if('letterSpacing' in c)c.letterSpacing=`${P.capSpacing}px`;c.fillText(P.capText,cp.x,cp.y);if('letterSpacing' in c)c.letterSpacing='0px';}});}
+  if(P.capText)for(const l of captionLines(P,G))els.push({slot:P.capFil,raised:1,clip:1,draw:c=>{c.textAlign='center';c.textBaseline='middle';c.font=`${l.it?'italic ':''}${l.bold?'bold ':''}${l.size}px ${l.font}`;if('letterSpacing' in c)c.letterSpacing=`${l.sp}px`;c.fillText(l.t,l.x,l.y);if('letterSpacing' in c)c.letterSpacing='0px';}});
   const pass=want=>{
     ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);ctx.setTransform(k,0,0,k,pad,pad);
     let clipped=false;
@@ -2054,7 +2197,7 @@ function maskPolys(M,test){
     if(!has)continue;
     const outs=[],holes=[];
     for(const l of traceLoops(sub,tw,th)){const q=dropCollinear(dpClosed(l,0.75)),a=polyArea(q);if(q.length<3||Math.abs(a)<2.5)continue;
-      const mm=q.map(([x,y],i)=>[(x+tx-pad)/k+jit(x+tx+i*0.37,y+ty),(y+ty-pad)/k+jit(y+ty,x+tx+i*0.37)]);/* the index splits pinch points */(a>0?outs:holes).push({p:mm,a:Math.abs(a),b:bbox(mm),h:[]});}
+      const sl=(res.length+outs.length+holes.length)*1.91,mm=q.map(([x,y],i)=>[(x+tx-pad)/k+jit(x+tx+i*0.37+sl,y+ty),(y+ty-pad)/k+jit(y+ty,x+tx+i*0.37+sl)]);/* the index splits pinch points */(a>0?outs:holes).push({p:mm,a:Math.abs(a),b:bbox(mm),h:[]});}
     outs.sort((a,b)=>a.a-b.a);
     for(const hl of holes){const[x,y]=hl.p[0];
       for(const o of outs){if(o.a<hl.a||hl.b.x0<o.b.x0-1e-3||hl.b.x1>o.b.x1+1e-3||hl.b.y0<o.b.y0-1e-3||hl.b.y1>o.b.y1+1e-3)continue;
@@ -2087,7 +2230,7 @@ function frontParts(P,G,M,kind){
   const body=[],uMax=flat?fT-iD:fT;
   const cuts=[...new Set([0,cavD,pegD,fT].filter(u=>u>=0&&u<=fT))].sort((a,b)=>a-b);
   for(let i=0;i<cuts.length-1;i++){const u0=cuts[i],u1=Math.min(cuts[i+1],uMax);if(u1<=u0)continue;
-    const holes=[...wins,...(u1<=pegD+1e-9?pegHoles:[]),...(u1<=cavD+1e-9?cav:[])];
+    const holes=[...wins,...G.holes,...(u1<=pegD+1e-9?pegHoles:[]),...(u1<=cavD+1e-9?cav:[])];
     extrude(body,[{outer:G.outer,holes}],flat?fT-u1:u0,flat?fT-u0:u1,tf,true);}
   const parts=[{name:`Frame (colour ${P.frameFil})`,slot:P.frameFil,tris:body}],R=p=>M.raised[p]>=128&&M.lab[p]>0;
   if(kind==='single'){extrude(body,maskPolys(M,R),fT,fT+rH,tf);return{parts,fT,rH,iD,flat:false,tiers:[]};}
@@ -2103,7 +2246,7 @@ function frontParts(P,G,M,kind){
 }
 // the layer around the photo: the outline with the pocket cut out, or for a slide-in slot a U shape open on one side
 function pocketRing(G,holes){
-  if(!G.slot)return[{outer:G.outer,holes:[...G.pockets,...holes]}];
+  if(!G.slot)return[{outer:G.outer,holes:[...G.pockets,...G.holes,...holes]}];
   const pk=bbox(G.slot),B=1e5,R=(x0,y0,x1,y1)=>norm([[x0,y0],[x1,y0],[x1,y1],[x0,y1]]);
   const closed=pk.x0<0?R(pk.x1,pk.y0,B,pk.y1):R(-B,pk.y0,pk.x0,pk.y1);
   const out=[];
@@ -2114,7 +2257,7 @@ function pocketRing(G,holes){
 function backParts(P,G){
   const{bT,pD}=heights(P),ox=G.W+15,tf=([x,y])=>[x+ox,G.H-y],B=G.back,T=[];
   const strings=B.strings.map(s=>circlePts(s.x,s.y,s.r,32));
-  extrude(T,[{outer:G.outer,holes:[...B.keyholes.map(k=>k.through),...strings,...(B.finger?[B.finger]:[])]}],0,bT,tf,true);
+  extrude(T,[{outer:G.outer,holes:[...G.holes,...B.keyholes.map(k=>k.through),...strings,...(B.finger?[B.finger]:[])]}],0,bT,tf,true);
   extrude(T,pocketRing(G,[...B.keyholes.map(k=>k.cavity),...strings]),bT,bT+pD,tf,true);
   for(const p of B.pegs)extrude(T,[{outer:circlePts(p.x,p.y,p.r,24),holes:[]}],bT+pD,bT+pD+B.pegH,tf);
   if(B.tab)extrude(T,[{outer:B.tab.pts,holes:[B.tab.hole]}],0,bT+pD,tf,true);
@@ -2126,7 +2269,7 @@ function backParts(P,G){
 /* ---------- file writers ---------- */
 function stlBlob(tris){
   const n=tris.length/3,buf=new ArrayBuffer(84+n*50),dv=new DataView(buf);
-  const hdr='Photo frame generator v7 STL (mm)';for(let i=0;i<hdr.length;i++)dv.setUint8(i,hdr.charCodeAt(i));
+  const hdr='Photo frame generator v8 STL (mm)';for(let i=0;i<hdr.length;i++)dv.setUint8(i,hdr.charCodeAt(i));
   dv.setUint32(80,n,true);let off=84;
   for(let t=0;t<tris.length;t+=3){const a=tris[t],b=tris[t+1],c=tris[t+2];const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;const l=Math.hypot(nx,ny,nz)||1;
     for(const v of[nx/l,ny/l,nz/l,...a,...b,...c]){dv.setFloat32(off,v,true);off+=4;}dv.setUint16(off,0,true);off+=2;}
@@ -2158,7 +2301,7 @@ function meshXML(id,name,tris,pindex){
 }
 function build3MF(objects,multi){
   const slots=multi?[...new Set(objects.flatMap(o=>o.parts.map(p=>p.slot)))].sort():[];
-  const x=[`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">Photo frame</metadata><metadata name="Application">Photo Frame Generator v7</metadata><resources>`];
+  const x=[`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">Photo frame</metadata><metadata name="Application">Photo Frame Generator v8</metadata><resources>`];
   if(multi)x.push(`<basematerials id="1">${slots.map(s=>`<base name="Colour ${s}" displaycolor="${P['fil'+s].toUpperCase()}FF"/>`).join('')}</basematerials>`);
   let id=2;const build=[];
   for(const o of objects){
@@ -2194,12 +2337,8 @@ async function exportPhoto(){
   const cv=document.createElement('canvas');cv.width=cw;cv.height=ch;const c=cv.getContext('2d');
   c.fillStyle='#fff';c.fillRect(0,0,cw,ch);
   const photos=windowPhotos(P,G);
-  for(let i=0;i<G.wins.length;i++){const p=photos[i];if(!p)continue;const R=G.wins[i].ph;
-    if(!p.ph.img.complete)await new Promise(r=>{p.ph.img.onload=r;p.ph.img.onerror=r;});
-    const b=placeImg(R,p.ph.w,p.ph.h,p.z,p.x,p.y,p.fit);
-    c.save();c.beginPath();c.rect((R.x-A.x)*k,(R.y-A.y)*k,R.w*k,R.h*k);c.clip();
-    try{c.drawImage(p.ph.img,(b.x-A.x)*k,(b.y-A.y)*k,b.w*k,b.h*k);}catch(e){console.error(e);}
-    c.restore();}
+  for(const p of photos)if(p&&!p.ph.img.complete)await new Promise(r=>{p.ph.img.onload=r;p.ph.img.onerror=r;});
+  paintPhotos(c,G,photos,A,k);
   if(G.cuts){const path=()=>{c.beginPath();for(const q of G.cuts){q.forEach(([x,y],i)=>i?c.lineTo((x-A.x)*k,(y-A.y)*k):c.moveTo((x-A.x)*k,(y-A.y)*k));c.closePath();}};
     c.save();path();c.rect(0,0,cw,ch);c.fillStyle='#fff';c.fill('evenodd');c.restore();
     path();c.strokeStyle='#888';c.lineWidth=3;c.setLineDash([18,12]);c.stroke();c.setLineDash([]);}
@@ -2234,7 +2373,7 @@ function showPrintGuide(kind,F,Bk){
 function showHelp(){
   $('#modalCard').innerHTML=`<button class="btn small close" id="mClose">Close</button><h2>Photo Frame Generator</h2>
   <p>Design a frame for your 3D printer, see it on a wall at true size, and download files for your slicer.</p>
-  <h3>1. Design</h3><ul><li>Start from a <b>Frame style</b>, or use <b>Single photo</b> / <b>Collage</b> at the top of the left panel.</li><li>Pick a sample kid photo or upload your own. In a collage, choose many photos at once; click an opening in the preview to choose which photo goes there.</li><li>The round buttons to the right of the frame are your <b>filament colours</b>. Click one to change it, or + to add a colour.</li><li>The <b>Frame size</b> box makes the frame wider, narrower, taller or shorter. Pick your <b>photo size</b> there too; <b>Resize frame to fit Photo</b> picks good borders for it. <b>Surprise me</b> tries a random style.</li><li>Under <b>Collage</b>, the shaped layouts (elephant, bunny, heart, wine bottle, flower, LOVE and more) put several photos inside one silhouette. Print the photo sheet and cut along the dashed lines.</li><li><b>Photo cut-out</b> (an opening shape) makes the frame follow the outline of the person or pet in your photo. The app finds them with a small AI model that runs in your browser (nothing is uploaded), or uses the see-through part of a PNG. It works best with one clear subject on a plain background. Opened as a local file without internet, only plain backgrounds and transparent PNGs work.</li><li>The photo slides into a slot in the side of the back, so you can change it any time without opening the frame (or choose a removable back under <b>Photo slot &amp; hanging</b>).</li></ul>
+  <h3>1. Design</h3><ul><li>Start from a <b>Frame style</b>, or use <b>Single photo</b> / <b>Collage</b> at the top of the left panel.</li><li>Pick a sample kid photo or upload your own. In a collage, choose many photos at once; click an opening in the preview to choose which photo goes there.</li><li>The round buttons to the right of the frame are your <b>filament colours</b>. Click one to change it, or + to add a colour.</li><li>The <b>Frame size</b> box makes the frame wider, narrower, taller or shorter. Pick your <b>photo size</b> there too, or type its width and height if you already have the print; <b>Resize frame to fit Photo</b> picks good borders for it. In a collage the photo size sets the size of the main opening and the collage grows around it. <b>Surprise me</b> tries a random style.</li><li>Under <b>Collage</b>, the shaped layouts (elephant, bunny, heart, wine bottle, flower, LOVE and more) put several photos inside one silhouette. Print the photo sheet and cut along the dashed lines.</li><li><b>Photo walls</b> and <b>Wall frames</b>: a heart photo mosaic with names and a date, a printed photo grid with a cut-out of one person stuck on top, a family tree with the family name, and a tree of life with eight photos. Captions can have a small second line for a date.</li><li><b>Photo cut-out</b> (an opening shape) makes the frame follow the outline of the person or pet in your photo. The app finds them with a small AI model that runs in your browser (nothing is uploaded), or uses the see-through part of a PNG. It works best with one clear subject on a plain background. Opened as a local file without internet, only plain backgrounds and transparent PNGs work.</li><li>The photo slides into a slot in the side of the back, so you can change it any time without opening the frame (or choose a removable back under <b>Photo slot &amp; hanging</b>).</li></ul>
   <h3>2. Check</h3><ul><li><b>3D</b> shows the real printed pieces in their colours; drag to turn them. <b>Real world</b> shows the frame at true size on a wall or shelf. In 3D, <b>Back</b> shows the photo slot and hanger, and <b>Photo going in</b> shows how the photo slides in.</li><li>Yellow notes at the bottom left warn about anything that may not print well.</li></ul>
   <h3>3. Print</h3><ul><li><b>Raised colours</b> (default) work on any printer: the frame prints face up and each extra colour stands a little higher, so you change filament only once per colour.</li><li><b>Flat colours</b> print face down for a smooth front, for printers with an AMS or multi-material unit.</li><li>The multicolour 3MF has one part per colour. The single colour 3MF and STL turn the decorations into raised texture.</li></ul>
   <p class="tips">Hover over any button for a short explanation.</p>`;
@@ -2257,8 +2396,12 @@ function randomize(){
   activeStyle='';markGallery();syncControls();schedule();toast('Random style: click Surprise me again for another');
 }
 let activeStyle='',galleryKey='';
-const KEEP=['mode','layout','colW','colH','colGap','cellShape','cellR','units','photoPreset','photoW','photoH','orient','sizeMode','outerW','outerH','photoFit','photoZoom','photoX','photoY','hang','holeD','holeSpacing','pegs','load','printStyle','frontT','reliefH','inlayD','backT','pocketD','pocketClear','layerH'];
-function presetParams(name){const keep={};for(const k of KEEP)keep[k]=P[k];const pp={...DEFAULTS,...legacyToSlots(PRESETS[name]),...keep};if(pp.mode==='collage'&&pp.cellShape==='rect'&&PRESETS[name].winShape&&CELL_SHAPES.some(c=>c[0]===PRESETS[name].winShape))pp.cellShape=PRESETS[name].winShape;return pp;}
+const KEEP=['mode','layout','colW','colH','colPhoto','colPW','colPH','colGap','cellShape','cellR','units','photoPreset','photoW','photoH','orient','sizeMode','outerW','outerH','photoFit','photoZoom','photoX','photoY','hang','holeD','holeSpacing','pegs','load','printStyle','frontT','reliefH','inlayD','backT','pocketD','pocketClear','layerH'];
+function presetParams(name){const keep={};for(const k of KEEP)keep[k]=P[k];
+  // a style without its own text keeps the names and date you typed
+  const pr=PRESETS[name],kc=!pr.capText&&P.capText?{capText:P.capText,capText2:P.capText2,capFont:P.capFont,capFont2:P.capFont2,capSize:P.capSize,capSize2:P.capSize2,capPos:P.capPos,capStyle:P.capStyle}:{};
+  const pp={...DEFAULTS,...legacyToSlots({...pr,...kc}),...keep};
+  if(kc.capText&&!(isCollage(pp)&&layoutById(pp.layout).capAt)){const need=capNeed(pp),k=pp.capPos==='top'?'bTop':'bBottom';if(pp.uniform){pp.bTop=pp.bBottom=pp.bSide;pp.uniform=false;}if(pp[k]<need)pp[k]=need;}if(pp.mode==='collage'&&pp.cellShape==='rect'&&PRESETS[name].winShape&&CELL_SHAPES.some(c=>c[0]===PRESETS[name].winShape))pp.cellShape=PRESETS[name].winShape;return pp;}
 function applyPreset(name){if(!PRESETS[name])return;P=presetParams(name);buildControls();schedule();activeStyle=name;markGallery();toast(`Style: ${name}`);}
 function initPresets(){
   const g=$('#gallery');if(!g)return;g.innerHTML='';
@@ -2363,9 +2506,8 @@ async function build3D(key,lay){
     if(asm){const A=GG.photoArea,kk=Math.min(4,2048/Math.max(A.w,A.h)),cv=document.createElement('canvas');cv.width=Math.max(2,Math.round(A.w*kk));cv.height=Math.max(2,Math.round(A.h*kk));
       const c=cv.getContext('2d');
       if(GG.cuts){c.beginPath();for(const q of GG.cuts){q.forEach(([x,y],i)=>i?c.lineTo((x-A.x)*kk,(y-A.y)*kk):c.moveTo((x-A.x)*kk,(y-A.y)*kk));c.closePath();}c.clip();}
-      c.fillStyle='#ddd';c.fillRect(0,0,cv.width,cv.height);const ph=windowPhotos(PP,GG);
-      GG.wins.forEach((w,i)=>{const p=ph[i];if(!p||!p.ph.img.complete)return;const R=w.ph,b=placeImg(R,p.ph.w,p.ph.h,p.z,p.x,p.y,p.fit);
-        c.save();c.beginPath();c.rect((R.x-A.x)*kk,(R.y-A.y)*kk,R.w*kk,R.h*kk);c.clip();try{c.drawImage(p.ph.img,(b.x-A.x)*kk,(b.y-A.y)*kk,b.w*kk,b.h*kk);}catch(e){}c.restore();});
+      c.fillStyle=GG.printed?'#fff':'#ddd';c.fillRect(0,0,cv.width,cv.height);const ph=windowPhotos(PP,GG);
+      paintPhotos(c,GG,ph,A,kk);
       tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,cv);
       for(const[k2,v]of[[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,k2,v);
       const z=-0.25-gapZ/2,x0=A.x+slideX,x1=A.x+A.w+slideX,y0=GG.H-A.y,y1=GG.H-A.y-A.h;
@@ -2445,7 +2587,7 @@ function init(){
   $('#colorBar').addEventListener('click',e=>{e.stopPropagation();const b=e.target.closest('.sw');if(b){const s=+b.dataset.s;if(popSlot===s)closeColorPop();else openColorPop(s);return;}if(e.target.closest('#cbAdd'))addSlot();});
   try{const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}
   $('#themeBtn').onclick=()=>{const de=document.documentElement;const dark=de.dataset.theme?de.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;de.dataset.theme=dark?'light':'dark';lsSet('theme',de.dataset.theme);schedule();};
-  $('#btnSave').onclick=()=>download('photo-frame-settings.json',JSON.stringify({v:7,...P},null,2),'application/json');
+  $('#btnSave').onclick=()=>download('photo-frame-settings.json',JSON.stringify({v:8,...P},null,2),'application/json');
   $('#btnLoad').onclick=()=>$('#fileSettings').click();
   $('#fileSettings').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{applySettings(JSON.parse(t));toast('Settings loaded');}catch(err){toast('That file is not a settings file.');}});e.target.value='';};
   $('#btnLink').onclick=()=>{const url=location.href.split('#')[0]+'#s='+encodeHash();history.replaceState(null,'',url);(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast('Link copied (photos not included)'),()=>toast('Link is in the address bar'));};
