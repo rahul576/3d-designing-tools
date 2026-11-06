@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Photo Frame Generator v9</title>
+<title>Photo Frame Generator v10</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link id="gfonts" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@600&family=Great+Vibes&family=Lobster&family=Pacifico&family=Playfair+Display:ital,wght@0,600;1,600&family=Roboto+Slab:wght@500&family=Special+Elite&display=swap" rel="stylesheet">
@@ -59,6 +59,10 @@ aside{width:316px;flex:none;background:var(--panel);border-right:1px solid var(-
 .sec[open] summary::after{transform:rotate(-135deg) translateY(-1px);border-color:var(--acc)}
 .sec-body{padding:12px 14px 14px 12px;display:grid;gap:12px}
 .row{display:grid;gap:6px}
+.pshape{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.pshape button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px 5px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--muted);font-size:10.5px;cursor:pointer}
+.pshape button:hover{border-color:var(--accent);color:var(--text)}
+.pshape button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
 .row label.lbl{display:flex;align-items:center;gap:4px}
 .row label.lbl small{color:var(--muted);font-size:10px}
 .help{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:var(--panel-2);color:var(--muted);font-size:10px;font-weight:700;cursor:help;flex:none;border:1px solid var(--line)}
@@ -193,13 +197,10 @@ main{flex:1;position:relative;min-width:0}
 /* floating filament colours next to the frame */
 #view.design.aoopen #canvasWrap{padding-right:340px}
 .sbsep{width:1px;height:18px;background:var(--line);margin:0 4px;align-self:center}
-#cutOpts{display:flex;align-items:center;gap:2px}
-#cutOpts .cut-l{font:11.5px var(--mono);color:var(--muted);padding:0 4px 0 2px}
-#cutOpts button,#histOpts button{display:grid;place-items:center;width:30px;height:28px;padding:0}
-#cutOpts button.on{background:var(--accent);color:#fff;box-shadow:none}
+#histOpts button{display:grid;place-items:center;width:30px;height:28px;padding:0}
 #histOpts{display:flex;gap:2px}
 #histOpts button:disabled{opacity:.35;cursor:default;background:transparent}
-.aopanel{position:absolute;right:18px;top:72px;bottom:232px;width:236px;z-index:3;background:var(--panel);border-radius:12px;box-shadow:0 3px 14px rgba(0,0,0,.16);padding:10px;display:flex;flex-direction:column;gap:8px;overflow:auto;font-size:12px}
+.aopanel{overflow-x:hidden;position:absolute;right:18px;top:72px;bottom:232px;width:236px;z-index:3;background:var(--panel);border-radius:12px;box-shadow:0 3px 14px rgba(0,0,0,.16);padding:10px;display:flex;flex-direction:column;gap:8px;overflow:auto;font-size:12px}
 .aopanel.shut{bottom:auto;width:auto;padding:4px;overflow:visible}
 .aopanel[hidden]{display:none}
 .ao-toggle{border:0;background:transparent;color:var(--text);font:600 12px var(--mono);padding:6px 10px;border-radius:8px;cursor:pointer}
@@ -207,9 +208,6 @@ main{flex:1;position:relative;min-width:0}
 .ao-head{display:flex;align-items:center;justify-content:space-between}
 .ao-head b{font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .ao-x{border:0;background:transparent;color:var(--muted);font-size:18px;line-height:1;width:26px;height:26px;border-radius:7px;cursor:pointer}
-.ao-tabs{display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:3px;background:var(--panel-2);border-radius:8px}
-.ao-tabs button{border:0;background:transparent;color:var(--text);font:600 12px system-ui,sans-serif;padding:6px;border-radius:6px;cursor:pointer}
-.ao-tabs button.on{background:var(--panel);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .ao-hint{margin:0;color:var(--muted);font-size:11px;line-height:1.4}
 .ao-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
 .ao-clip{aspect-ratio:1;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:#c2562b;cursor:grab;padding:6px}
@@ -223,12 +221,12 @@ main{flex:1;position:relative;min-width:0}
 .ao-row input[type=number]{width:62px;height:26px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);font:12px var(--mono);text-align:center}
 .ao-row input[type=range]{flex:1;min-width:0}
 .ao-u{color:var(--muted);font-size:11px}
-.ao-v{width:46px;text-align:right;font:11px var(--mono);color:var(--muted)}
+.ao-v{width:40px;text-align:right;font:11px var(--mono);color:var(--muted)}
 .ao-tog{width:28px;height:26px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);cursor:pointer}
 .ao-tog.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .ao-add{height:32px;border:0;border-radius:8px;background:#14a38b;color:#fff;font:600 12.5px system-ui,sans-serif;cursor:pointer}
 .ao-add:hover{background:#0f8a75}
-.ao-sel{border:1px solid var(--accent);background:var(--accent-soft);border-radius:9px;padding:8px;display:grid;gap:8px}
+.ao-sel{grid-template-columns:minmax(0,1fr);min-width:0;border:1px solid var(--accent);background:var(--accent-soft);border-radius:9px;padding:8px;display:grid;gap:8px}
 .ao-sh{font-weight:600}
 .ao-slots{display:flex;gap:5px}
 .ao-slots button{width:26px;height:26px;border-radius:50%;border:2px solid var(--panel);box-shadow:0 0 0 1px rgba(0,0,0,.2);font:700 10px var(--mono);cursor:pointer}
@@ -238,6 +236,8 @@ main{flex:1;position:relative;min-width:0}
 .ao-btns button:hover{background:var(--panel-2)}
 .ao-btns .ao-danger{color:#d6402b}
 .ao-foot{margin-top:auto}
+.ao-texth{border-top:1px solid var(--line);padding-top:8px;margin-top:2px}
+#view.aoopen #canvasWrap{padding-right:340px}
 #canvasWrap .ao-hit{cursor:move}#canvasWrap .ao-rs{cursor:nwse-resize}#canvasWrap .ao-rot{cursor:grab}#canvasWrap .ao-del{cursor:pointer}
 #colorBar{position:absolute;z-index:3;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 8px;background:var(--panel);border-radius:14px;box-shadow:0 3px 14px rgba(0,0,0,.18)}
 #colorBar .cb-h{font:600 9px var(--mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
@@ -284,7 +284,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
   <aside>
     <div class="brand">
       <svg class="logo" width="30" height="24" viewBox="0 0 30 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="26" height="20" rx="1.5"/><rect x="7" y="6.5" width="16" height="11" rx=".5"/><path d="m7 15 4-4 3 3 2.5-2.5L23 17"/></svg>
-      <h1>Frame <span>v9</span></h1>
+      <h1>Frame <span>v10</span></h1>
       <button class="icon-btn" id="btnHelp" data-tip="How it works: designing, printing and assembling the frame" aria-label="Help"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.7"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg></button>
       <button class="icon-btn" id="themeBtn" data-tip="Switch between light and dark mode" aria-label="Toggle dark mode"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button>
     </div>
@@ -318,7 +318,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
     <div class="subbar" id="subbar">
       <span id="designOpts">
         <label data-tip="Show the frame and photo sizes on the drawing"><input type="checkbox" id="tDims" checked>Sizes</label>
-        <span class="sbsep"></span><span id="cutOpts" role="group" aria-label="Photo cut-out shape"></span><span class="sbsep"></span>
+        <span class="sbsep"></span>
       </span>
       <span id="histOpts"><button id="btnUndo" data-tip="Undo (Ctrl+Z)" aria-label="Undo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button><button id="btnRedo" data-tip="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button></span>
       <span id="opts3d" class="lay3d">
@@ -415,6 +415,11 @@ const COLOUR_NAMES=[...FILAMENTS,['Teal','#2a9d8f'],['Turquoise','#40c4c4'],['Cr
 function colName(hex){let best='Colour',bd=1e9;for(const[n,c]of COLOUR_NAMES){const d=cdist(hex,c);if(d<bd){bd=d;best=n;}}return best;}
 const slotName=s=>colName(P['fil'+s]||'#888');
 
+const PHOTO_SHAPES=[['style','As style','<rect x="4" y="5" width="16" height="14" rx="4" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2.4"/>'],['rect','Rectangle','<rect x="4" y="5" width="16" height="14" rx="1" fill="currentColor"/>'],['circle','Circle','<circle cx="12" cy="12" r="8.5" fill="currentColor"/>'],['heart','Heart','<path d="M12 20.5s-8.5-5.4-8.5-11A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8.5 2.5c0 5.6-8.5 11-8.5 11z" fill="currentColor"/>'],['star','Star','<path d="m12 2.5 2.9 6 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="currentColor"/>']];
+// the opening shape in use: the photo shape you picked, or the style's own
+const effShape=P=>P.photoShape&&P.photoShape!=='style'?P.photoShape:(isCollage(P)?P.cellShape:P.winShape);
+// fit a shape with its natural proportions inside a w × h opening box
+function fitShapeBox(shape,w,h){const asp={circle:1,heart:1/0.92,star:1/0.95}[shape];if(!asp)return[w,h];return w/h>asp?[h*asp,h]:[w,w/asp];}
 /* ---------- control schema ---------- */
 const len=(id,label,def,min,max,step,show,help)=>({id,label,type:'len',def,min,max,step:step||0.5,show,help});
 const num=(id,label,def,min,max,step,show,help)=>({id,label,type:'num',def,min,max,step:step||1,show,help});
@@ -445,7 +450,7 @@ const IC={
   print:'<path d="M6 3h12v5H6z"/><path d="M4 8h16v7H4z"/><path d="M9 15v6h6v-6"/>',
 };
 const SECTIONS=[
- {id:'styles',title:'Frame styles',sub:'click one to apply',acc:'#7c5cff',fields:[{id:'_styles',type:'styles'}]},
+ {id:'styles',title:'Frame styles',sub:'click one to apply',acc:'#7c5cff',fields:[{id:'photoShape',label:'Photo shape (keeps the frame design)',type:'pshape',def:'style',help:'Cut the photo as a rectangle, circle, heart or star in any frame. The frame style, size and colours stay the same; the styles below show your photo in that shape.'},{id:'_styles',type:'styles'}]},
  {id:'photo',title:'Photo',sub:'sample or your own',acc:'#f08a24',show:isSingle,fields:[
   {id:'_photo',type:'photo'},
   sel('photoFit','Fit','fill',[['fill','Fill the opening (crop)'],['fit','Show whole photo']]),
@@ -846,7 +851,14 @@ function frameBox(P,hfw,hfh,winShape,outerMode,pk,canCut){
   return{W,H,cx,cy,side,top,bottom,cutPhoto};
 }
 
+// a photo shape picked for a shaped frame (a heart) is made smaller until it sits inside the frame
+let GEO_FIT=1;
 function computeGeo(P){
+  GEO_FIT=1;let g=computeGeo0(P);
+  if(isSingle(P)&&effShape(P)!==P.winShape)for(let i=0;i<10&&g.warn.some(w=>/pokes through|photo corners reach/.test(w));i++){GEO_FIT*=0.93;g=computeGeo0(P);}
+  GEO_FIT=1;return g;
+}
+function computeGeo0(P){
   const warn=[],coll=isCollage(P);
   let m1=P.mat1On?P.mat1W:0,m2=P.mat2On?P.mat2W:0;
   // wide mats would swallow the small openings of a shaped collage, so they are scaled down there
@@ -856,7 +868,7 @@ function computeGeo(P){
     if(m1+m2>cap){const f=cap/(m1+m2);m1*=f;m2*=f;}}
   const mt=m1+m2;
   const ed=P.winEdge!=='plain'?P.winEdgeDepth:0,ov=P.overlap;
-  const winShape=coll?P.cellShape:P.winShape,winR=coll?P.cellR:P.winR;
+  const baseShape=coll?P.cellShape:P.winShape,winShape=effShape(P),over=winShape!==baseShape,winR=coll?P.cellR:P.winR;
   let box,hfw,hfh,cells=[],photoArea,S=null,printSlots=null;
   if(!coll&&winShape==='cutout'){
     const[pw,ph]=photoDims(P),photo=LIB[curPhoto];
@@ -879,15 +891,17 @@ function computeGeo(P){
   }else if(!coll){
     const[pw,ph]=photoDims(P);
     let ww=Math.max(5,pw-2*ov),wh=Math.max(5,ph-2*ov);
-    if(winShape==='circle'){const d=Math.min(ww,wh);ww=wh=d;}
+    if(baseShape==='circle'){const d=Math.min(ww,wh);ww=wh=d;}
     hfw=ww+2*mt+2*ed;hfh=wh+2*mt+2*ed;
-    box=frameBox(P,hfw,hfh,winShape,P.sizeMode==='outer',[pw+2*P.pocketClear,ph+2*P.pocketClear],true);
+    // a picked photo shape keeps the frame exactly as the style makes it; the shape is fitted inside the opening
+    box=frameBox(P,hfw,hfh,over&&baseShape!=='cutout'?baseShape:winShape,P.sizeMode==='outer',[pw+2*P.pocketClear,ph+2*P.pocketClear],true);
+    if(over)[ww,wh]=fitShapeBox(winShape,ww*GEO_FIT,wh*GEO_FIT);
     photoArea={x:box.cx-pw/2,y:box.cy-ph/2,w:pw,h:ph};
     cells=[{cx:box.cx,cy:box.cy,ww,wh,ph:photoArea}];
   }else if(!S){
     const L=layoutById(P.layout),Wa=P.colW,Ha=P.colH,g=P.colGap/2,e=1e-6;
     hfw=Wa-2*ov;hfh=Ha-2*ov;
-    box=frameBox(P,hfw,hfh,winShape,false,[Wa+2*P.pocketClear,Ha+2*P.pocketClear]);
+    box=frameBox(P,hfw,hfh,baseShape,false,[Wa+2*P.pocketClear,Ha+2*P.pocketClear]);
     const ax=box.cx-Wa/2,ay=box.cy-Ha/2;
     photoArea={x:ax,y:ay,w:Wa,h:Ha};
     for(const[x,y,w,h]of(L.print?[[0,0,1,1]]:L.cells)){
@@ -895,7 +909,7 @@ function computeGeo(P){
       const il=x<e?ov:g,ir=x+w>1-e?ov:g,it=y<e?ov:g,ib=y+h>1-e?ov:g;
       const bw=R.w-il-ir,bh=R.h-it-ib;
       let ww=Math.max(3,bw-2*mt-2*ed),wh=Math.max(3,bh-2*mt-2*ed);
-      if(winShape==='circle'){const d=Math.min(ww,wh);ww=wh=d;}
+      if(winShape==='circle'){const d=Math.min(ww,wh);ww=wh=d;}else if(over)[ww,wh]=fitShapeBox(winShape,ww,wh);
       if(bw-2*mt-2*ed<10||bh-2*mt-2*ed<10)warn.push('Some collage openings are very small. Make the collage bigger, or use thinner bars or mats.');
       // a few microns of offset per opening stop corners of far-apart openings lining up exactly, which trips the triangulator
       const jj=cells.length;cells.push({cx:R.x+il+bw/2+(jj*5%13)*0.0013,cy:R.y+it+bh/2+(jj*7%11)*0.0017,ww,wh,ph:R});
@@ -1841,6 +1855,12 @@ function makeRow(f){
     c.addEventListener('input',()=>setParam(f.id,c.value));
     t.addEventListener('input',()=>{if(/^#[0-9a-f]{6}$/i.test(t.value.trim()))setParam(f.id,t.value.trim().toLowerCase());});
     w.append(c,t);el.append(lab,w);set=v=>{c.value=v;if(document.activeElement!==t)t.value=v;};
+  }else if(f.type==='pshape'){
+    lab.innerHTML=`<span class="t"></span>${help}`;labelEl=lab.querySelector('.t');
+    const w=document.createElement('div');w.className='pshape';w.setAttribute('role','radiogroup');
+    w.innerHTML=PHOTO_SHAPES.map(([v,name,ic])=>`<button type="button" role="radio" data-v="${v}" data-tip="${v==='style'?'Use the opening shape that comes with the frame style':'Make the photo '+name.toLowerCase()+' in this frame'}"><svg viewBox="0 0 24 24" width="22" height="22">${ic}</svg><span>${name}</span></button>`).join('');
+    w.addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(b)setParam('photoShape',b.dataset.v);});
+    el.append(lab,w);set=v=>{w.querySelectorAll('button').forEach(b=>{const on=b.dataset.v===v;b.classList.toggle('on',on);b.setAttribute('aria-checked',on);});};
   }else if(f.type==='slot'){
     lab.innerHTML=`<span class="t"></span>${help}`;labelEl=lab.querySelector('.t');
     const w=document.createElement('div');w.className='slots';el.append(lab,w);
@@ -1916,6 +1936,7 @@ function setParam(id,v){
   if(id==='colPhoto'||id==='colPW'||id==='colPH')applyColPhoto();
   if((id==='colW'||id==='colH')&&P.colPhoto!=='free')P.colPhoto='free';
   if(id==='nCol')for(const s of SLOT_FIELDS)if(P[s]>P.nCol)P[s]=Math.min(P[s],P.nCol);
+  if((id==='winShape'||id==='cellShape')&&P.photoShape!=='style'){P.photoShape='style';}
   if(id==='units'){buildControls();renderAoPanel();}
   if(['capText','capPos','capSize','capText2','capSize2'].includes(id))captionRoom(id);
   if(id==='sizeMode'&&v==='outer'&&G){P.outerW=f2(G.W);P.outerH=f2(G.H);}
@@ -1965,11 +1986,11 @@ function renderColorBar(){
 function positionColorBar(){
   const bar=$('#colorBar'),svg=$('#canvasWrap svg'),main=$('main');
   const mr=main.getBoundingClientRect(),bw=bar.offsetWidth||56,bh=bar.offsetHeight||200;
-  if(view==='3d'||!svg){bar.style.left=(mr.width-bw-18)+'px';bar.style.top=Math.max(70,(mr.height-bh)/2)+'px';const pop=$('#colorPop');if(!pop.hidden){pop.style.left=Math.max(8,mr.width-bw-18-258)+'px';pop.style.top=Math.max(70,(mr.height-bh)/2)+'px';}return;}
+  if(view==='3d'||!svg){bar.style.left=(mr.width-bw-18-(aoUI.open&&innerWidth>820?262:0))+'px';bar.style.top=Math.max(70,(mr.height-bh)/2)+'px';const pop=$('#colorPop');if(!pop.hidden){pop.style.left=Math.max(8,mr.width-bw-18-258)+'px';pop.style.top=Math.max(70,(mr.height-bh)/2)+'px';}return;}
   const sr=svg.getBoundingClientRect();
   let fb=frameBoxInView;const sc=sr.width/viewBox[2];
   const right=sr.left+(fb[0]+fb[2]-viewBox[0])*sc,midY=sr.top+(fb[1]+fb[3]/2-viewBox[1])*sc;
-  let left=right-mr.left+16;left=clamp(left,12,mr.width-bw-12-(view==='front'&&aoUI.open&&innerWidth>820?262:0));
+  let left=right-mr.left+16;left=clamp(left,12,mr.width-bw-12-(aoUI.open&&innerWidth>820?262:0));
   let top=midY-mr.top-bh/2;top=clamp(top,70,Math.max(70,mr.height-bh-70));
   if(innerWidth<=820){left=mr.width-bw-8;top=56;}
   bar.style.left=left+'px';bar.style.top=top+'px';
@@ -2114,8 +2135,8 @@ function render(){
   for(const[id,on]of[['vFront',view==='front'],['vReal',view==='real'],['v3d',is3d]])$('#'+id).classList.toggle('on',on);
   $('#designOpts').hidden=view!=='front';$('#realOpts').hidden=view!=='real';$('#opts3d').hidden=!is3d;
   $('#sizePod').hidden=view!=='front';syncSizePod();
-  $('#aoPanel').hidden=view!=='front';$('#view').classList.toggle('aoopen',view==='front'&&aoUI.open&&innerWidth>820);if(selAo&&!aoGet(selAo))selAo=null;
-  renderColorBar();sizeSVG();if(svg)bindDrag(svg);info();secSubs();syncCutBar();histRecord();
+  $('#aoPanel').hidden=false;$('#view').classList.toggle('aoopen',view!=='3d'&&aoUI.open&&innerWidth>820);if(selAo&&!aoGet(selAo))selAo=null;
+  renderColorBar();sizeSVG();if(svg)bindDrag(svg);info();secSubs();histRecord();
   if(is3d)queue3D();else $('#gl3dMsg').hidden=true;
   clearTimeout(render._g);render._g=setTimeout(()=>{renderGallery(false);renderPatterns();},250);
   clearTimeout(saveT);saveT=setTimeout(()=>{lsSet('pfg-v4',JSON.stringify(P));},400);
@@ -2123,7 +2144,7 @@ function render(){
 function sizeSVG(){
   if(view==='3d'){$('#zVal').textContent='3D';positionColorBar();draw3D();return;}
   const svg=$('#canvasWrap svg');if(!svg)return;const v=$('#view');
-  const narrow=innerWidth<=820,aw=v.clientWidth-(narrow?90:view==='front'?340+(aoUI.open?250:0):130),ah=v.clientHeight-(narrow?140:220);const sc=Math.max(0.05,Math.min(aw/viewBox[2],ah/viewBox[3]))*zoom;
+  const narrow=innerWidth<=820,aw=v.clientWidth-(narrow?90:(view==='front'?340:130)+(aoUI.open?250:0)),ah=v.clientHeight-(narrow?140:220);const sc=Math.max(0.05,Math.min(aw/viewBox[2],ah/viewBox[3]))*zoom;
   svg.style.width=f2(viewBox[2]*sc)+'px';svg.style.height=f2(viewBox[3]*sc)+'px';
   $('#zVal').textContent=zoom===1?'Fit':Math.round(zoom*100)+'%';
   positionColorBar();
@@ -2290,12 +2311,12 @@ function bindAddons(svg){
 const aoUI={open:true,tab:'clip'};
 function renderAoPanel(){
   const el=$('#aoPanel');if(!el)return;el.classList.toggle('shut',!aoUI.open);
-  if(!aoUI.open){el.innerHTML=`<button class="ao-toggle" id="aoOpen" data-tip="Show the clip art and text add-ons">Add-ons ‹</button>`;$('#aoOpen').onclick=()=>{aoUI.open=true;renderAoPanel();sizeSVG();};return;}
-  const a=selAo?aoGet(selAo):null;if(a&&a.k==='text'&&aoUI.lastSel!==a.id)aoUI.tab='text';aoUI.lastSel=a?a.id:null;
-  let h=`<div class="ao-head"><b>Add-ons</b><button class="ao-x" id="aoClose" data-tip="Hide this panel" aria-label="Hide add-ons">›</button></div>`;
-  h+=`<div class="ao-tabs"><button data-tab="clip" class="${aoUI.tab==='clip'?'on':''}">Clip art</button><button data-tab="text" class="${aoUI.tab==='text'?'on':''}">Text</button></div><!--SEL-->`;
-  if(aoUI.tab==='clip')h+=`<p class="ao-hint">Drag a picture onto the frame, or click it to add it. Drag the corner square to resize.</p><div class="ao-grid">${CLIPS.map(c=>`<button class="ao-clip" draggable="true" data-clip="${c.id}" data-tip="${esc(c.name)}" aria-label="${esc(c.name)}"><svg viewBox="-4 -4 108 108"><path d="${c.d}" fill="currentColor"/></svg></button>`).join('')}</div>`;
-  else h+=`<p class="ao-hint">Type your words, pick a font and size, then drag the text where you want it.</p>
+  if(!aoUI.open){el.innerHTML=`<button class="ao-toggle" id="aoOpen" data-tip="Show the clip art panel">‹ Clip art</button>`;$('#aoOpen').onclick=()=>{aoUI.open=true;renderAoPanel();sizeSVG();};return;}
+  const a=selAo?aoGet(selAo):null;
+  let h=`<div class="ao-head"><b>Clip art</b><button class="ao-x" id="aoClose" data-tip="Hide this panel" aria-label="Hide add-ons">›</button></div>`;
+  h+=`<!--SEL-->`;
+  h+=`<p class="ao-hint">Drag a picture onto the frame, or click it to add it. Drag the corner square to resize.</p><div class="ao-grid">${CLIPS.map(c=>`<button class="ao-clip" draggable="true" data-clip="${c.id}" data-tip="${esc(c.name)}" aria-label="${esc(c.name)}"><svg viewBox="-4 -4 108 108"><path d="${c.d}" fill="currentColor"/></svg></button>`).join('')}</div>`;
+  h+=`<div class="ao-sh ao-texth">Text on the frame</div><p class="ao-hint">Type your words, pick a font and size, then drag the text where you want it.</p>
     <textarea id="aoT" rows="2" placeholder="Your text">${a&&a.k==='text'?esc(a.t):''}</textarea>
     <div class="ao-row"><select id="aoF" aria-label="Font">${FONTS.map(f=>`<option value="${esc(f[0])}" style="font-family:${esc(f[0])}">${esc(f[1])}</option>`).join('')}</select></div>
     <div class="ao-row"><label>Size</label><input id="aoS" type="number" min="3" max="200" step="0.5" aria-label="Text size"><span class="ao-u">${P.units==='in'?'in':'mm'}</span><button id="aoB" class="ao-tog" data-tip="Bold" aria-label="Bold"><b>B</b></button><button id="aoI" class="ao-tog" data-tip="Italic" aria-label="Italic"><i>I</i></button></div>
@@ -2313,10 +2334,9 @@ function renderAoPanel(){
   h+=`<p class="ao-hint ao-foot">On the frame they print in filament as raised colour. Over the photo they are printed on the photo print.</p>`;
   el.innerHTML=h;
   $('#aoClose').onclick=()=>{aoUI.open=false;renderAoPanel();sizeSVG();};
-  el.querySelectorAll('.ao-tabs button').forEach(b=>b.onclick=()=>{aoUI.tab=b.dataset.tab;renderAoPanel();});
   el.querySelectorAll('.ao-clip').forEach(b=>{b.onclick=()=>aoAdd({k:'clip',a:b.dataset.clip});
     b.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/x-pfg-clip',b.dataset.clip);e.dataTransfer.effectAllowed='copy';});});
-  if(aoUI.tab==='text'){
+  {
     const tx=a&&a.k==='text'?a:aoUI.textDef||(aoUI.textDef={f:FONTS[2][0],s:10,b:false,i:false});
     const fs=$('#aoF'),ss=$('#aoS');fs.value=tx.f;ss.value=f2(P.units==='in'?tx.s/MM_IN:tx.s);ss.step=P.units==='in'?0.02:0.5;
     $('#aoB').classList.toggle('on',!!tx.b);$('#aoI').classList.toggle('on',!!tx.i);
@@ -2368,18 +2388,7 @@ function histGo(d){
   if(selAo&&!aoGet(selAo))selAo=null;activeStyle='';markGallery();buildControls();renderAoPanel();schedule();syncHistBtns();
 }
 function syncHistBtns(){const u=$('#btnUndo'),r=$('#btnRedo');if(u)u.disabled=HIST.i<=0;if(r)r.disabled=HIST.i>=HIST.list.length-1;}
-/* ---------- photo cut-out shape buttons ---------- */
-const CUT_SHAPES=[['rect','Rectangle','<rect x="4" y="6" width="16" height="12" rx="1"/>'],['circle','Circle','<circle cx="12" cy="12" r="8"/>'],['heart','Heart','<path d="M12 20s-8-5.2-8-10.6A4.4 4.4 0 0 1 12 7a4.4 4.4 0 0 1 8 2.4C20 14.8 12 20 12 20z"/>'],['star','Star','<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>']];
-function syncCutBar(){
-  const cur=isSingle(P)?P.winShape:P.cellShape;
-  document.querySelectorAll('#cutOpts [data-cut]').forEach(b=>{const on=b.dataset.cut===cur;b.classList.toggle('on',on);b.setAttribute('aria-checked',on);});
-}
-function initCutBar(){
-  const box=$('#cutOpts');
-  box.innerHTML=`<span class="cut-l">Photo cut-out</span>`+CUT_SHAPES.map(([id,name,ic])=>`<button role="checkbox" data-cut="${id}" data-tip="Cut the photo opening as a ${name.toLowerCase()}" aria-label="${name}"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">${ic}</svg></button>`).join('');
-  box.addEventListener('click',e=>{const b=e.target.closest('[data-cut]');if(!b)return;
-    const v=b.dataset.cut;
-    if(isSingle(P))setParam('winShape',v);else setParam('cellShape',v);syncCutBar();});
+function initHist(){
   $('#btnUndo').onclick=()=>histGo(-1);$('#btnRedo').onclick=()=>histGo(1);
   document.addEventListener('keydown',e=>{
     const tg=e.target,typing=tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'||tg.tagName==='SELECT'||tg.isContentEditable);
@@ -2599,7 +2608,7 @@ function meshXML(id,name,tris,pindex){
 }
 function build3MF(objects,multi){
   const slots=multi?[...new Set(objects.flatMap(o=>o.parts.map(p=>p.slot)))].sort():[];
-  const x=[`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">Photo frame</metadata><metadata name="Application">Photo Frame Generator v9</metadata><resources>`];
+  const x=[`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">Photo frame</metadata><metadata name="Application">Photo Frame Generator v10</metadata><resources>`];
   if(multi)x.push(`<basematerials id="1">${slots.map(s=>`<base name="${esc(slotName(s))} (colour ${s})" displaycolor="${P['fil'+s].toUpperCase()}FF"/>`).join('')}</basematerials>`);
   let id=2;const build=[];
   for(const o of objects){
@@ -2673,7 +2682,7 @@ function showPrintGuide(kind,F,Bk){
 function showHelp(){
   $('#modalCard').innerHTML=`<button class="btn small close" id="mClose">Close</button><h2>Photo Frame Generator</h2>
   <p>Design a frame for your 3D printer, see it on a wall at true size, and download files for your slicer.</p>
-  <h3>1. Design</h3><ul><li>Start from a <b>Frame style</b>, or use <b>Single photo</b> / <b>Collage</b> at the top of the left panel.</li><li>Pick a sample kid photo or upload your own. In a collage, choose many photos at once; click an opening in the preview to choose which photo goes there.</li><li>The round buttons to the right of the frame are your <b>filament colours</b>. Click one to change it, or + to add a colour.</li><li>The <b>Frame size</b> box makes the frame wider, narrower, taller or shorter. Pick your <b>photo size</b> there too, or type its width and height if you already have the print; <b>Resize frame to fit Photo</b> picks good borders for it. In a collage the photo size sets the size of the main opening and the collage grows around it. <b>Surprise me</b> tries a random style.</li><li><b>Photo cut-out</b> buttons above the preview cut the photo opening as a rectangle, circle, heart or star. <b>Undo</b> and <b>Redo</b> sit next to them (Ctrl+Z, Ctrl+Shift+Z).</li><li><b>Add-ons</b> on the right: drag clip art onto the frame (or click it), drag the corner square to resize, the round handle to turn it, and pick its filament colour. Under <b>Text</b>, type words in any font and size and drag them where you want. On the frame they print as raised colour; over the photo they are printed on the photo print.</li><li>Under <b>Collage</b>, the shaped layouts (elephant, bunny, heart, wine bottle, flower, LOVE and more) put several photos inside one silhouette. Print the photo sheet and cut along the dashed lines.</li><li><b>Photo walls</b> and <b>Wall frames</b>: a heart photo mosaic with names and a date, a printed photo grid with a cut-out of one person stuck on top, a family tree with the family name, and a tree of life with eight photos. Captions can have a small second line for a date.</li><li><b>Photo cut-out</b> (an opening shape) makes the frame follow the outline of the person or pet in your photo. The app finds them with a small AI model that runs in your browser (nothing is uploaded), or uses the see-through part of a PNG. It works best with one clear subject on a plain background. Opened as a local file without internet, only plain backgrounds and transparent PNGs work.</li><li>The photo slides into a slot in the side of the back, so you can change it any time without opening the frame (or choose a removable back under <b>Photo slot &amp; hanging</b>).</li></ul>
+  <h3>1. Design</h3><ul><li>Start from a <b>Frame style</b>, or use <b>Single photo</b> / <b>Collage</b> at the top of the left panel.</li><li>Pick a sample kid photo or upload your own. In a collage, choose many photos at once; click an opening in the preview to choose which photo goes there.</li><li>The round buttons to the right of the frame are your <b>filament colours</b>. Click one to change it, or + to add a colour.</li><li>The <b>Frame size</b> box makes the frame wider, narrower, taller or shorter. Pick your <b>photo size</b> there too, or type its width and height if you already have the print; <b>Resize frame to fit Photo</b> picks good borders for it. In a collage the photo size sets the size of the main opening and the collage grows around it. <b>Surprise me</b> tries a random style.</li><li><b>Photo shape</b> at the top of Frame styles makes the photo a rectangle, circle, heart or star in any frame: the frame design stays the same, and the style pictures show your photo in that shape. <b>Undo</b> and <b>Redo</b> float above the preview (Ctrl+Z, Ctrl+Shift+Z).</li><li><b>Clip art</b> panel on the right: drag a picture onto the frame (or click it), drag the corner square to resize, the round handle to turn it, and pick its filament colour. Under <b>Text on the frame</b>, type words in any font and size and drag them where you want. On the frame they print as raised colour; over the photo they are printed on the photo print.</li><li>Under <b>Collage</b>, the shaped layouts (elephant, bunny, heart, wine bottle, flower, LOVE and more) put several photos inside one silhouette. Print the photo sheet and cut along the dashed lines.</li><li><b>Photo walls</b> and <b>Wall frames</b>: a heart photo mosaic with names and a date, a printed photo grid with a cut-out of one person stuck on top, a family tree with the family name, and a tree of life with eight photos. Captions can have a small second line for a date.</li><li><b>Photo cut-out</b> (an opening shape) makes the frame follow the outline of the person or pet in your photo. The app finds them with a small AI model that runs in your browser (nothing is uploaded), or uses the see-through part of a PNG. It works best with one clear subject on a plain background. Opened as a local file without internet, only plain backgrounds and transparent PNGs work.</li><li>The photo slides into a slot in the side of the back, so you can change it any time without opening the frame (or choose a removable back under <b>Photo slot &amp; hanging</b>).</li></ul>
   <h3>2. Check</h3><ul><li><b>3D</b> shows the real printed pieces in their colours; drag to turn them. <b>Real world</b> shows the frame at true size on a wall or shelf. In 3D, <b>Back</b> shows the photo slot and hanger, and <b>Photo going in</b> shows how the photo slides in.</li><li>Yellow notes at the bottom left warn about anything that may not print well.</li></ul>
   <h3>3. Print</h3><ul><li><b>Raised colours</b> (default) work on any printer: the frame prints face up and each extra colour stands a little higher, so you change filament only once per colour.</li><li><b>Flat colours</b> print face down for a smooth front, for printers with an AMS or multi-material unit.</li><li>The multicolour 3MF has one part per colour. The single colour 3MF and STL turn the decorations into raised texture.</li></ul>
   <p class="tips">Hover over any button for a short explanation.</p>`;
@@ -2696,7 +2705,7 @@ function randomize(){
   activeStyle='';markGallery();syncControls();schedule();toast('Random style: click Surprise me again for another');
 }
 let activeStyle='',galleryKey='';
-const KEEP=['addons','mode','layout','colW','colH','colPhoto','colPW','colPH','colGap','cellShape','cellR','units','photoPreset','photoW','photoH','orient','sizeMode','outerW','outerH','photoFit','photoZoom','photoX','photoY','hang','holeD','holeSpacing','pegs','load','printStyle','frontT','reliefH','inlayD','backT','pocketD','pocketClear','layerH'];
+const KEEP=['addons','photoShape','mode','layout','colW','colH','colPhoto','colPW','colPH','colGap','cellShape','cellR','units','photoPreset','photoW','photoH','orient','sizeMode','outerW','outerH','photoFit','photoZoom','photoX','photoY','hang','holeD','holeSpacing','pegs','load','printStyle','frontT','reliefH','inlayD','backT','pocketD','pocketClear','layerH'];
 function presetParams(name){const keep={};for(const k of KEEP)keep[k]=P[k];
   // a style without its own text keeps the names and date you typed
   const pr=PRESETS[name],kc=!pr.capText&&P.capText?{capText:P.capText,capText2:P.capText2,capFont:P.capFont,capFont2:P.capFont2,capSize:P.capSize,capSize2:P.capSize2,capPos:P.capPos,capStyle:P.capStyle}:{};
@@ -2711,7 +2720,7 @@ function initPresets(){
 }
 function markGallery(){document.querySelectorAll('#gallery .tile').forEach(t=>t.classList.toggle('on',t.dataset.style===activeStyle));}
 function renderGallery(force){
-  const key=[P.mode,P.layout,P.colW,P.colH,P.photoW,P.photoH,P.orient,P.sizeMode,P.outerW,P.outerH,P.hang,curPid,CELLS.map(c=>c.pid).join(',')].join('|');
+  const key=[P.photoShape,P.mode,P.layout,P.colW,P.colH,P.photoW,P.photoH,P.orient,P.sizeMode,P.outerW,P.outerH,P.hang,curPid,CELLS.map(c=>c.pid).join(',')].join('|');
   if(!force&&key===galleryKey)return;galleryKey=key;
   document.querySelectorAll('#gallery .tile').forEach((t,i)=>{const PP=presetParams(t.dataset.style);
     try{const GG=computeGeo(PP);t.querySelector('.thumb').innerHTML=buildSVG(PP,GG,{photos:windowPhotos(PP,GG),idp:'g'+i+'_'});}catch(e){console.error(e);}});
@@ -2874,7 +2883,7 @@ function init(){
   $('#modeSingle').onclick=()=>setMode('single');$('#modeCollage').onclick=()=>setMode('collage');
   buildControls();initTips();
   $('#btnSurprise').onclick=()=>{const b=$('#btnSurprise');b.classList.remove('spin');void b.offsetWidth;b.classList.add('spin');randomize();};
-  initSizePod();initCutBar();if(innerWidth<=820)aoUI.open=false;renderAoPanel();$('#btnHelp').onclick=showHelp;
+  initSizePod();initHist();if(innerWidth<=820)aoUI.open=false;renderAoPanel();$('#btnHelp').onclick=showHelp;
   $('#btnReset').onclick=()=>{applySettings({});toast('Reset to defaults');};
   const menu=$('#dlMenu'),dlBtn=$('#download');
   const showMenu=on=>{menu.hidden=!on;dlBtn.setAttribute('aria-expanded',on);};
@@ -2887,7 +2896,7 @@ function init(){
   $('#colorBar').addEventListener('click',e=>{e.stopPropagation();const b=e.target.closest('.sw');if(b){const s=+b.dataset.s;if(popSlot===s)closeColorPop();else openColorPop(s);return;}if(e.target.closest('#cbAdd'))addSlot();});
   try{const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}
   $('#themeBtn').onclick=()=>{const de=document.documentElement;const dark=de.dataset.theme?de.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;de.dataset.theme=dark?'light':'dark';lsSet('theme',de.dataset.theme);schedule();};
-  $('#btnSave').onclick=()=>download('photo-frame-settings.json',JSON.stringify({v:9,...P},null,2),'application/json');
+  $('#btnSave').onclick=()=>download('photo-frame-settings.json',JSON.stringify({v:10,...P},null,2),'application/json');
   $('#btnLoad').onclick=()=>$('#fileSettings').click();
   $('#fileSettings').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{applySettings(JSON.parse(t));toast('Settings loaded');}catch(err){toast('That file is not a settings file.');}});e.target.value='';};
   $('#btnLink').onclick=()=>{const url=location.href.split('#')[0]+'#s='+encodeHash();history.replaceState(null,'',url);(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast('Link copied (photos not included)'),()=>toast('Link is in the address bar'));};
