@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Photo Frame Generator v10</title>
+<title>Photo Frame Generator v11</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link id="gfonts" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@600&family=Great+Vibes&family=Lobster&family=Pacifico&family=Playfair+Display:ital,wght@0,600;1,600&family=Roboto+Slab:wght@500&family=Special+Elite&display=swap" rel="stylesheet">
@@ -160,7 +160,8 @@ main{flex:1;position:relative;min-width:0}
 .pod-pw{display:grid;grid-template-columns:1fr 10px 1fr 22px;gap:4px;align-items:center;font-size:11px;color:var(--muted)}
 .pod-pw input{width:100%;height:26px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);font:12px var(--mono);text-align:center;padding:0 2px;-moz-appearance:textfield}
 .pod-photo{font-size:11.5px;line-height:1.45;color:var(--text);background:var(--panel-2);border-radius:7px;padding:6px 8px}
-.pod-photo b{color:#e4572e;font-weight:600}
+.pod-photo b{color:#2b78c5;font-weight:600}
+.pod-photo .pp-p{color:#2b78c5;font-weight:600}.pod-photo .pp-v{color:#e4572e;font-weight:600}.pod-photo .pp-k{color:#c2410c;font-weight:600}.pod-photo .pp-n{color:var(--muted)}
 .pod-fit{display:flex;align-items:center;justify-content:center;gap:7px;height:34px;border:0;border-radius:8px;cursor:pointer;background:#14a38b;color:#fff;font:600 12.5px system-ui,sans-serif;box-shadow:0 2px 6px rgba(20,163,139,.35)}
 .pod-fit:hover{background:#0f8a75}
 .zoombox{position:absolute;right:18px;bottom:70px;z-index:3;display:flex;flex-direction:column;align-items:center;background:var(--panel);border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.14);padding:3px}
@@ -284,7 +285,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
   <aside>
     <div class="brand">
       <svg class="logo" width="30" height="24" viewBox="0 0 30 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="26" height="20" rx="1.5"/><rect x="7" y="6.5" width="16" height="11" rx=".5"/><path d="m7 15 4-4 3 3 2.5-2.5L23 17"/></svg>
-      <h1>Frame <span>v10</span></h1>
+      <h1>Frame <span>v11</span></h1>
       <button class="icon-btn" id="btnHelp" data-tip="How it works: designing, printing and assembling the frame" aria-label="Help"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.7"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg></button>
       <button class="icon-btn" id="themeBtn" data-tip="Switch between light and dark mode" aria-label="Toggle dark mode"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button>
     </div>
@@ -1576,14 +1577,23 @@ function buildSVG(P,G,o={}){
           q+=`<text ${vert?`transform="translate(${f2(mx)} ${f2(my)}) rotate(-90)"`:`x="${f2(mx)}" y="${f2(my)}"`} text-anchor="middle" dominant-baseline="central" fill="${c}"${c===pc?' font-weight="600"':''}>${esc(label)}</text>`;}
         return q;};
       s+=`<g font-family="system-ui,sans-serif" font-size="${f2(fs)}">`;
-      const yF=y0-m*0.3,xF=-m*0.3,yP=y0-m*0.68,xP=-m*0.68;
-      s+=dim(0,yF,G.W,yF,col,'Frame '+fmtLen(G.W))+dim(xF,G.H,xF,y0,col,'Frame '+fmtLen(Ht),true);
-      const A=G.photoArea,wb=G.coll?{x0:A.x,x1:A.x+A.w,y0:A.y,y1:A.y+A.h}:bbox(G.wins[0].win),pw=G.coll?'Photo sheet ':'Opening ';
-      s+=dim(wb.x0,yP,wb.x1,yP,pc,pw+fmtLen(wb.x1-wb.x0))+dim(xP,wb.y1,xP,wb.y0,pc,pw+fmtLen(wb.y1-wb.y0),true);
-      // light guides from the opening out to its arrows
-      s+=`<path d="M${f2(wb.x0)} ${f2(yP+fs*0.55)}V${f2(y0)}M${f2(wb.x1)} ${f2(yP+fs*0.55)}V${f2(y0)}M${f2(xP+fs*0.55)} ${f2(wb.y0)}H0M${f2(xP+fs*0.55)} ${f2(wb.y1)}H0" stroke="${pc}" stroke-width="${f2(sw*0.6)}" opacity=".45"/>`;
-      const pl=`${G.coll?'Photo sheet':'Photo print'} ${fmtLen(A.w)} × ${fmtLen(A.h)}`+(G.coll?'':` · visible ${fmtLen(G.wins[0].ww)} × ${fmtLen(G.wins[0].wh)}`);
-      s+=`<text x="${f2(G.W/2)}" y="${f2(G.H+m*0.32)}" text-anchor="middle" dominant-baseline="central" fill="${pc}" font-weight="600" font-size="${f2(fs*1.15)}">${pl}</text>`;
+      const A=G.photoArea,fi=photoFit(G),bc='#2b78c5';
+      if(G.coll){
+        const yF=y0-m*0.3,xF=-m*0.3,yP=y0-m*0.68,xP=-m*0.68;
+        s+=dim(0,yF,G.W,yF,col,'Frame '+fmtLen(G.W))+dim(xF,G.H,xF,y0,col,'Frame '+fmtLen(Ht),true);
+        s+=dim(A.x,yP,A.x+A.w,yP,pc,'Photo sheet '+fmtLen(A.w))+dim(xP,A.y+A.h,xP,A.y,pc,'Photo sheet '+fmtLen(A.h),true);
+        s+=`<path d="M${f2(A.x)} ${f2(yP+fs*0.55)}V${f2(y0)}M${f2(A.x+A.w)} ${f2(yP+fs*0.55)}V${f2(y0)}M${f2(xP+fs*0.55)} ${f2(A.y)}H0M${f2(xP+fs*0.55)} ${f2(A.y+A.h)}H0" stroke="${pc}" stroke-width="${f2(sw*0.6)}" opacity=".45"/>`;
+      }else{
+        // three rows: the frame, the photo print (it sits in the pocket behind the frame), and the window you see it through
+        const yF=y0-m*0.25,xF=-m*0.25,yP=y0-m*0.55,xP=-m*0.55,yV=y0-m*0.85,xV=-m*0.85,wb=bbox(G.wins[0].win);
+        s+=dim(0,yF,G.W,yF,col,'Frame '+fmtLen(G.W))+dim(xF,G.H,xF,y0,col,'Frame '+fmtLen(Ht),true);
+        s+=dim(A.x,yP,A.x+A.w,yP,bc,'Photo '+fmtLen(A.w))+dim(xP,A.y+A.h,xP,A.y,bc,'Photo '+fmtLen(A.h),true);
+        s+=dim(wb.x0,yV,wb.x1,yV,pc,'Visible '+fmtLen(wb.x1-wb.x0))+dim(xV,wb.y1,xV,wb.y0,pc,'Visible '+fmtLen(wb.y1-wb.y0),true);
+        const gd=(x0,x1,yy,ya,yb,xx,c)=>`<path d="M${f2(x0)} ${f2(yy+fs*0.55)}V${f2(y0)}M${f2(x1)} ${f2(yy+fs*0.55)}V${f2(y0)}M${f2(xx+fs*0.55)} ${f2(ya)}H0M${f2(xx+fs*0.55)} ${f2(yb)}H0" stroke="${c}" stroke-width="${f2(sw*0.6)}" opacity=".45"/>`;
+        s+=gd(A.x,A.x+A.w,yP,A.y,A.y+A.h,xP,bc)+gd(wb.x0,wb.x1,yV,wb.y0,wb.y1,xV,pc);
+      }
+      const pl=G.coll?`Photo sheet ${fmtLen(A.w)} × ${fmtLen(A.h)} · ${fi.how==='trim'?'cut along the dashed lines':fi.how==='slide'?'slides in from the '+P.load+' side':'back comes off'}`:fi.how==='trim'?`Trim the photo to the dashed line on the photo print`:`Photo ${fmtLen(A.w)} × ${fmtLen(A.h)} fits the ${fmtLen(fi.pw)} × ${fmtLen(fi.ph)} pocket`;
+      s+=`<text x="${f2(G.W/2)}" y="${f2(G.H+m*0.32)}" text-anchor="middle" dominant-baseline="central" fill="${G.coll||fi.how==='trim'?pc:bc}" font-weight="600" font-size="${f2(fs*1.05)}">${pl}</text>`;
       s+=`</g>`;
     }
   }
@@ -1593,6 +1603,8 @@ function buildSVG(P,G,o={}){
   if(o.idp)s=s.replace(/id="(fc|oc|wc\d+|sky|sc|rl|bl|sheen)"/g,`id="${o.idp}$1"`).replace(/url\(#(fc|oc|wc\d+|sky|sc|rl|bl|sheen)\)/g,`url(#${o.idp}$1)`);
   return s;
 }
+// how the photo goes in: the pocket behind the frame is the photo plus a little room; the window in front is smaller so the frame holds the photo
+function photoFit(G){const pb=bbox(G.pockets.flat());return{pw:pb.x1-pb.x0,ph:pb.y1-pb.y0,how:G.cuts&&G.cuts.length?'trim':G.slot?'slide':'back',ov:P.overlap};}
 function fmtLen(mm){return P.units==='in'?`${(mm/MM_IN).toFixed(2)} in`:`${(Math.round(mm*10)/10)} mm`;}
 
 /* ---------- real world scenes (all sizes in mm, so the frame is shown at true scale) ---------- */
@@ -2087,8 +2099,13 @@ function syncSizePod(){
   for(const[d,v]of[['PW',ppw],['PH',pph]]){const inp=$('#pod'+d);if(document.activeElement!==inp)inp.value=dv(v);inp.disabled=!single&&P.colPhoto==='free';}
   $('#podPU').textContent=P.units==='in'?'in':'mm';
   const A=G.photoArea,pr=isSingle(P)?PHOTO_PRESETS.find(p=>p[0]===P.photoPreset&&p[2]):null;
-  $('#podPhoto').innerHTML=G.coll?`<b>Photo sheet</b> ${fmtLen(A.w)} × ${fmtLen(A.h)}<br>${G.slots.length} photos${collSizes()}`:`<b>Photo</b> ${pr?esc(pr[1].replace(/ \(.*\)/,''))+' · ':''}${fmtLen(A.w)} × ${fmtLen(A.h)}<br>Visible ${fmtLen(G.wins[0].ww)} × ${fmtLen(G.wins[0].wh)}`;
-  $('#podPhoto').innerHTML+=`<br>${G.slot?`Slides in from the ${P.load} side`:'Back comes off to change it'}`;
+  const fi=photoFit(G);
+  $('#podPhoto').innerHTML=G.coll?`<b>Photo sheet</b> ${fmtLen(A.w)} × ${fmtLen(A.h)}<br>${G.slots.length} photos${collSizes()}<br>${fi.how==='trim'?'Cut the sheet along the dashed lines':G.slot?`Slides in from the ${P.load} side`:'Back comes off to change it'}`
+    :`<b>Photo</b> ${pr?esc(pr[1].replace(/ \(.*\)/,''))+' · ':''}${fmtLen(A.w)} × ${fmtLen(A.h)}`+
+     (fi.how==='trim'?`<br><span class="pp-k">Trim</span> to the dashed line on the photo print`
+      :`<br><span class="pp-p">Pocket</span> ${fmtLen(fi.pw)} × ${fmtLen(fi.ph)} <span class="pp-n">(whole photo fits)</span>`)+
+     `<br><span class="pp-v">Visible</span> ${fmtLen(G.wins[0].ww)} × ${fmtLen(G.wins[0].wh)} <span class="pp-n">(${fmtLen(P.overlap)} edge under the frame)</span>`+
+     (fi.how==='slide'?`<br>Slides in from the ${P.load} side`:'<br>Back comes off to put it in');
 }
 
 /* ---------- pattern picker with pictures and a close-up on hover ---------- */
@@ -2157,7 +2174,7 @@ function info(){
   const grams=Math.round(vol/1000*1.24*0.75);
   const op=g.coll?`${g.slots.length} photos, sheet ${fmtLen(g.photoArea.w)} × ${fmtLen(g.photoArea.h)}`:`${fmtLen(g.wins[0].ww)} × ${fmtLen(g.wins[0].wh)}`;
   const pieces=['front','back'];if(P.hang==='stand')pieces.push('stand leg');
-  el.innerHTML=g.warn.map(w=>`<div class="warn">${esc(w)}</div>`).join('')+`<dl class="stats"><dt>Outer size</dt><dd>${fmtLen(g.W)} × ${fmtLen(g.H-g.y0)}</dd><dt>${g.coll?'Collage':'Visible opening'}</dt><dd>${op}</dd>${g.coll?'':`<dt>Photo print</dt><dd>${fmtLen(g.photoArea.w)} × ${fmtLen(g.photoArea.h)}</dd>`}<dt>Printed pieces</dt><dd>${pieces.join(' + ')}</dd><dt>Colours / filament changes</dt><dd>${si.k} / ${si.approx&&si.changes?'≈':''}${si.changes}</dd><dt>Plastic (about)</dt><dd>${grams} g</dd></dl>`;
+  el.innerHTML=g.warn.map(w=>`<div class="warn">${esc(w)}</div>`).join('')+`<dl class="stats"><dt>Outer size</dt><dd>${fmtLen(g.W)} × ${fmtLen(g.H-g.y0)}</dd><dt>${g.coll?'Collage':'Visible opening'}</dt><dd>${op}</dd>${g.coll?'':`<dt>Photo print</dt><dd>${fmtLen(g.photoArea.w)} × ${fmtLen(g.photoArea.h)}</dd><dt>Photo pocket</dt><dd>${(f=>f.how==='trim'?'shaped (trim photo)':`${fmtLen(f.pw)} × ${fmtLen(f.ph)}`)(photoFit(g))}</dd>`}<dt>Printed pieces</dt><dd>${pieces.join(' + ')}</dd><dt>Colours / filament changes</dt><dd>${si.k} / ${si.approx&&si.changes?'≈':''}${si.changes}</dd><dt>Plastic (about)</dt><dd>${grams} g</dd></dl>`;
 }
 function bindDrag(svg){
   bindAddons(svg);
@@ -2608,7 +2625,7 @@ function meshXML(id,name,tris,pindex){
 }
 function build3MF(objects,multi){
   const slots=multi?[...new Set(objects.flatMap(o=>o.parts.map(p=>p.slot)))].sort():[];
-  const x=[`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">Photo frame</metadata><metadata name="Application">Photo Frame Generator v10</metadata><resources>`];
+  const x=[`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">Photo frame</metadata><metadata name="Application">Photo Frame Generator v11</metadata><resources>`];
   if(multi)x.push(`<basematerials id="1">${slots.map(s=>`<base name="${esc(slotName(s))} (colour ${s})" displaycolor="${P['fil'+s].toUpperCase()}FF"/>`).join('')}</basematerials>`);
   let id=2;const build=[];
   for(const o of objects){
@@ -2682,7 +2699,7 @@ function showPrintGuide(kind,F,Bk){
 function showHelp(){
   $('#modalCard').innerHTML=`<button class="btn small close" id="mClose">Close</button><h2>Photo Frame Generator</h2>
   <p>Design a frame for your 3D printer, see it on a wall at true size, and download files for your slicer.</p>
-  <h3>1. Design</h3><ul><li>Start from a <b>Frame style</b>, or use <b>Single photo</b> / <b>Collage</b> at the top of the left panel.</li><li>Pick a sample kid photo or upload your own. In a collage, choose many photos at once; click an opening in the preview to choose which photo goes there.</li><li>The round buttons to the right of the frame are your <b>filament colours</b>. Click one to change it, or + to add a colour.</li><li>The <b>Frame size</b> box makes the frame wider, narrower, taller or shorter. Pick your <b>photo size</b> there too, or type its width and height if you already have the print; <b>Resize frame to fit Photo</b> picks good borders for it. In a collage the photo size sets the size of the main opening and the collage grows around it. <b>Surprise me</b> tries a random style.</li><li><b>Photo shape</b> at the top of Frame styles makes the photo a rectangle, circle, heart or star in any frame: the frame design stays the same, and the style pictures show your photo in that shape. <b>Undo</b> and <b>Redo</b> float above the preview (Ctrl+Z, Ctrl+Shift+Z).</li><li><b>Clip art</b> panel on the right: drag a picture onto the frame (or click it), drag the corner square to resize, the round handle to turn it, and pick its filament colour. Under <b>Text on the frame</b>, type words in any font and size and drag them where you want. On the frame they print as raised colour; over the photo they are printed on the photo print.</li><li>Under <b>Collage</b>, the shaped layouts (elephant, bunny, heart, wine bottle, flower, LOVE and more) put several photos inside one silhouette. Print the photo sheet and cut along the dashed lines.</li><li><b>Photo walls</b> and <b>Wall frames</b>: a heart photo mosaic with names and a date, a printed photo grid with a cut-out of one person stuck on top, a family tree with the family name, and a tree of life with eight photos. Captions can have a small second line for a date.</li><li><b>Photo cut-out</b> (an opening shape) makes the frame follow the outline of the person or pet in your photo. The app finds them with a small AI model that runs in your browser (nothing is uploaded), or uses the see-through part of a PNG. It works best with one clear subject on a plain background. Opened as a local file without internet, only plain backgrounds and transparent PNGs work.</li><li>The photo slides into a slot in the side of the back, so you can change it any time without opening the frame (or choose a removable back under <b>Photo slot &amp; hanging</b>).</li></ul>
+  <h3>1. Design</h3><ul><li>Start from a <b>Frame style</b>, or use <b>Single photo</b> / <b>Collage</b> at the top of the left panel.</li><li>Pick a sample kid photo or upload your own. In a collage, choose many photos at once; click an opening in the preview to choose which photo goes there.</li><li>The round buttons to the right of the frame are your <b>filament colours</b>. Click one to change it, or + to add a colour.</li><li>The <b>Frame size</b> box makes the frame wider, narrower, taller or shorter. Pick your <b>photo size</b> there too, or type its width and height if you already have the print; <b>Resize frame to fit Photo</b> picks good borders for it. In a collage the photo size sets the size of the main opening and the collage grows around it. <b>Surprise me</b> tries a random style.</li><li><b>Photo shape</b> at the top of Frame styles makes the photo a rectangle, circle, heart or star in any frame: the frame design stays the same, and the style pictures show your photo in that shape. <b>Undo</b> and <b>Redo</b> float above the preview (Ctrl+Z, Ctrl+Shift+Z).</li><li><b>Clip art</b> panel on the right: drag a picture onto the frame (or click it), drag the corner square to resize, the round handle to turn it, and pick its filament colour. Under <b>Text on the frame</b>, type words in any font and size and drag them where you want. On the frame they print as raised colour; over the photo they are printed on the photo print.</li><li>Under <b>Collage</b>, the shaped layouts (elephant, bunny, heart, wine bottle, flower, LOVE and more) put several photos inside one silhouette. Print the photo sheet and cut along the dashed lines.</li><li><b>Photo walls</b> and <b>Wall frames</b>: a heart photo mosaic with names and a date, a printed photo grid with a cut-out of one person stuck on top, a family tree with the family name, and a tree of life with eight photos. Captions can have a small second line for a date.</li><li><b>Photo cut-out</b> (an opening shape) makes the frame follow the outline of the person or pet in your photo. The app finds them with a small AI model that runs in your browser (nothing is uploaded), or uses the see-through part of a PNG. It works best with one clear subject on a plain background. Opened as a local file without internet, only plain backgrounds and transparent PNGs work.</li><li>The Design view shows three sizes: the <b>frame</b>, the <b>photo</b> (the whole print sits in a pocket behind the frame, 0.6 mm bigger each side) and the <b>visible</b> window, which is a little smaller than the photo so the frame holds its edges.</li><li>The photo slides into a slot in the side of the back, so you can change it any time without opening the frame (or choose a removable back under <b>Photo slot &amp; hanging</b>).</li></ul>
   <h3>2. Check</h3><ul><li><b>3D</b> shows the real printed pieces in their colours; drag to turn them. <b>Real world</b> shows the frame at true size on a wall or shelf. In 3D, <b>Back</b> shows the photo slot and hanger, and <b>Photo going in</b> shows how the photo slides in.</li><li>Yellow notes at the bottom left warn about anything that may not print well.</li></ul>
   <h3>3. Print</h3><ul><li><b>Raised colours</b> (default) work on any printer: the frame prints face up and each extra colour stands a little higher, so you change filament only once per colour.</li><li><b>Flat colours</b> print face down for a smooth front, for printers with an AMS or multi-material unit.</li><li>The multicolour 3MF has one part per colour. The single colour 3MF and STL turn the decorations into raised texture.</li></ul>
   <p class="tips">Hover over any button for a short explanation.</p>`;
@@ -2896,7 +2913,7 @@ function init(){
   $('#colorBar').addEventListener('click',e=>{e.stopPropagation();const b=e.target.closest('.sw');if(b){const s=+b.dataset.s;if(popSlot===s)closeColorPop();else openColorPop(s);return;}if(e.target.closest('#cbAdd'))addSlot();});
   try{const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}
   $('#themeBtn').onclick=()=>{const de=document.documentElement;const dark=de.dataset.theme?de.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;de.dataset.theme=dark?'light':'dark';lsSet('theme',de.dataset.theme);schedule();};
-  $('#btnSave').onclick=()=>download('photo-frame-settings.json',JSON.stringify({v:10,...P},null,2),'application/json');
+  $('#btnSave').onclick=()=>download('photo-frame-settings.json',JSON.stringify({v:11,...P},null,2),'application/json');
   $('#btnLoad').onclick=()=>$('#fileSettings').click();
   $('#fileSettings').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{applySettings(JSON.parse(t));toast('Settings loaded');}catch(err){toast('That file is not a settings file.');}});e.target.value='';};
   $('#btnLink').onclick=()=>{const url=location.href.split('#')[0]+'#s='+encodeHash();history.replaceState(null,'',url);(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast('Link copied (photos not included)'),()=>toast('Link is in the address bar'));};
