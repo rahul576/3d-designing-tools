@@ -1,14 +1,14 @@
-# Photo Frame Generator (v11)
+# Photo Frame Generator (v12)
 
 Design a photo frame or a photo collage frame for your 3D printer, see it at true size on a wall or shelf, and download files ready for your slicer.
 
 **Live site:** https://rahul576.github.io/3d-designing-tools/photo-frame-generator/
 
-The app is a single offline HTML file. `index.html` is always the latest version; every version is kept under `versions/vN/index.html` (v1 to v11). Nothing is uploaded; your photos stay in the browser.
+The app is a single offline HTML file. `index.html` is always the latest version; every version is kept under `versions/vN/index.html` (v1 to v12). Nothing is uploaded; your photos stay in the browser.
 
 ## Features
 
-- **Photo shape for any frame:** at the top of Frame styles, pick Rectangle, Circle, Heart or Star (or "As style") and the photo opening takes that shape in whatever frame you choose. The frame design, size and colours stay the same, and every style picture shows your photo in that shape. Heart frames shrink the shape a little so it stays inside the frame. **Undo / Redo** float above the preview (Ctrl+Z, Ctrl+Shift+Z or Ctrl+Y); a drag or a slider move counts as one step.
+- **Photo shape for any frame:** at the top of Frame styles, pick Rectangle, Circle, Heart or Star (or "As style") and the photo opening takes that shape in whatever frame you choose. The frame design, size and colours stay the same, and every style picture shows your photo in that shape. Heart frames shrink the shape a little so it stays inside the frame. The same Rectangle / Circle / Heart / Star **Photo cut-out** buttons also float above the preview in every view, next to **Undo / Redo**; both places change the same setting. Undo / Redo (Ctrl+Z, Ctrl+Shift+Z or Ctrl+Y); a drag or a slider move counts as one step.
 - **Clip art panel (floating, right side):** 30 pictures (heart, star, flower, sun, moon, butterfly, paw, crown, animals, rocket, car and more), always at hand in every view. Drag one onto the frame or click to add it; drag to move, corner square to resize, round handle to turn, pick the filament colour, duplicate or remove. **Text on the frame** (same panel) in any of the 11 fonts, any size, bold or italic, placed anywhere on the front. On the frame they print as raised colour in the 3MF; over the photo they are printed on the photo print.
 - **Size arrows:** the Design view shows three rows of arrows: the frame, the photo (it sits in a pocket behind the frame) and the visible window. The window is the photo minus the hidden edge (4 mm each side by default), which is what holds the photo in; the pocket is the photo plus 0.6 mm room each side, so a 141 × 95 mm print goes into a 142.2 × 96.2 mm pocket and shows 133 × 87 mm. The Frame size box and the info panel list photo, pocket and visible size, and say how it goes in (slides in from the side, back comes off, or trim to the dashed line for heart and cut-out frames).
 - **Colour names in the 3MF:** each part and filament in the multicolour 3MF is named after its colour (for example "Sky blue - frame (colour 1)", "Yellow - raised (colour 3)"), and the print guide uses the same names.
@@ -35,6 +35,7 @@ The app is a single offline HTML file. `index.html` is always the latest version
 
 ## Versions
 
+- **v12:** Photo cut-out buttons (rectangle, circle, heart, star) are back in the floating bar above the preview, linked to the Photo shape row under Frame styles; each shape click is its own undo step.
 - **v11:** photo size, photo pocket and visible window are shown separately (arrows, Frame size box, info panel) so it is clear the whole photo fits and slides in; checked the pocket and slide-in slot against the photo for every style and photo shape.
 - **v10:** photo shape (rectangle, circle, heart, star) is now a setting under Frame styles that keeps the frame design, instead of the floating cut-out bar; clip art has its own floating panel on the right, shown in every view.
 - **v9:** no more extra lines on the frames (decorative contour lines and the red photo edge guide are gone from every frame); rectangle, circle, heart and star photo cut-out buttons with undo and redo; clip art and text add-ons panel with drag, resize and turn; size arrows for the frame and the photo opening; colour names on the 3MF parts.
