@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Photo Frame Generator v8</title>
+<title>Photo Frame Generator v9</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link id="gfonts" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@600&family=Great+Vibes&family=Lobster&family=Pacifico&family=Playfair+Display:ital,wght@0,600;1,600&family=Roboto+Slab:wght@500&family=Special+Elite&display=swap" rel="stylesheet">
@@ -191,6 +191,54 @@ main{flex:1;position:relative;min-width:0}
 .reset{position:absolute;right:18px;bottom:18px;z-index:3}
 .btn-ghost{border:0;background:var(--panel);color:var(--text);padding:10px;border-radius:6px;cursor:pointer;display:grid;place-items:center;box-shadow:0 1px 4px rgba(0,0,0,.12)}
 /* floating filament colours next to the frame */
+#view.design.aoopen #canvasWrap{padding-right:340px}
+.sbsep{width:1px;height:18px;background:var(--line);margin:0 4px;align-self:center}
+#cutOpts{display:flex;align-items:center;gap:2px}
+#cutOpts .cut-l{font:11.5px var(--mono);color:var(--muted);padding:0 4px 0 2px}
+#cutOpts button,#histOpts button{display:grid;place-items:center;width:30px;height:28px;padding:0}
+#cutOpts button.on{background:var(--accent);color:#fff;box-shadow:none}
+#histOpts{display:flex;gap:2px}
+#histOpts button:disabled{opacity:.35;cursor:default;background:transparent}
+.aopanel{position:absolute;right:18px;top:72px;bottom:232px;width:236px;z-index:3;background:var(--panel);border-radius:12px;box-shadow:0 3px 14px rgba(0,0,0,.16);padding:10px;display:flex;flex-direction:column;gap:8px;overflow:auto;font-size:12px}
+.aopanel.shut{bottom:auto;width:auto;padding:4px;overflow:visible}
+.aopanel[hidden]{display:none}
+.ao-toggle{border:0;background:transparent;color:var(--text);font:600 12px var(--mono);padding:6px 10px;border-radius:8px;cursor:pointer}
+.ao-toggle:hover,.ao-x:hover{background:var(--panel-2)}
+.ao-head{display:flex;align-items:center;justify-content:space-between}
+.ao-head b{font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ao-x{border:0;background:transparent;color:var(--muted);font-size:18px;line-height:1;width:26px;height:26px;border-radius:7px;cursor:pointer}
+.ao-tabs{display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:3px;background:var(--panel-2);border-radius:8px}
+.ao-tabs button{border:0;background:transparent;color:var(--text);font:600 12px system-ui,sans-serif;padding:6px;border-radius:6px;cursor:pointer}
+.ao-tabs button.on{background:var(--panel);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.ao-hint{margin:0;color:var(--muted);font-size:11px;line-height:1.4}
+.ao-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.ao-clip{aspect-ratio:1;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:#c2562b;cursor:grab;padding:6px}
+.ao-clip:nth-child(4n+2){color:#2a9d8f}.ao-clip:nth-child(4n+3){color:#d1495b}.ao-clip:nth-child(4n){color:#7b4fb8}
+.ao-clip:hover{background:var(--panel-2);border-color:var(--accent)}
+.ao-clip svg{width:100%;height:100%;display:block;pointer-events:none}
+.aopanel textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);font:13px system-ui,sans-serif;padding:6px;resize:vertical}
+.ao-row{display:flex;align-items:center;gap:6px}
+.ao-row label{width:44px;color:var(--muted);flex:none}
+.ao-row select{flex:1;min-width:0;height:28px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);font-size:13px}
+.ao-row input[type=number]{width:62px;height:26px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);font:12px var(--mono);text-align:center}
+.ao-row input[type=range]{flex:1;min-width:0}
+.ao-u{color:var(--muted);font-size:11px}
+.ao-v{width:46px;text-align:right;font:11px var(--mono);color:var(--muted)}
+.ao-tog{width:28px;height:26px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);cursor:pointer}
+.ao-tog.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.ao-add{height:32px;border:0;border-radius:8px;background:#14a38b;color:#fff;font:600 12.5px system-ui,sans-serif;cursor:pointer}
+.ao-add:hover{background:#0f8a75}
+.ao-sel{border:1px solid var(--accent);background:var(--accent-soft);border-radius:9px;padding:8px;display:grid;gap:8px}
+.ao-sh{font-weight:600}
+.ao-slots{display:flex;gap:5px}
+.ao-slots button{width:26px;height:26px;border-radius:50%;border:2px solid var(--panel);box-shadow:0 0 0 1px rgba(0,0,0,.2);font:700 10px var(--mono);cursor:pointer}
+.ao-slots button.on{box-shadow:0 0 0 2px var(--accent)}
+.ao-btns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.ao-btns button{height:28px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);font-size:11.5px;cursor:pointer;padding:0 2px}
+.ao-btns button:hover{background:var(--panel-2)}
+.ao-btns .ao-danger{color:#d6402b}
+.ao-foot{margin-top:auto}
+#canvasWrap .ao-hit{cursor:move}#canvasWrap .ao-rs{cursor:nwse-resize}#canvasWrap .ao-rot{cursor:grab}#canvasWrap .ao-del{cursor:pointer}
 #colorBar{position:absolute;z-index:3;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 8px;background:var(--panel);border-radius:14px;box-shadow:0 3px 14px rgba(0,0,0,.18)}
 #colorBar .cb-h{font:600 9px var(--mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
 #colorBar .sw{width:38px;height:38px;border-radius:50%;border:3px solid var(--panel);box-shadow:0 0 0 1px rgba(0,0,0,.18),0 2px 5px rgba(0,0,0,.2);cursor:pointer;font:700 12px var(--mono);display:grid;place-items:center;position:relative}
@@ -236,7 +284,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
   <aside>
     <div class="brand">
       <svg class="logo" width="30" height="24" viewBox="0 0 30 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="26" height="20" rx="1.5"/><rect x="7" y="6.5" width="16" height="11" rx=".5"/><path d="m7 15 4-4 3 3 2.5-2.5L23 17"/></svg>
-      <h1>Frame <span>v8</span></h1>
+      <h1>Frame <span>v9</span></h1>
       <button class="icon-btn" id="btnHelp" data-tip="How it works: designing, printing and assembling the frame" aria-label="Help"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.7"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg></button>
       <button class="icon-btn" id="themeBtn" data-tip="Switch between light and dark mode" aria-label="Toggle dark mode"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button>
     </div>
@@ -270,8 +318,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
     <div class="subbar" id="subbar">
       <span id="designOpts">
         <label data-tip="Show the frame and photo sizes on the drawing"><input type="checkbox" id="tDims" checked>Sizes</label>
-        <label data-tip="Show the photo edge (red dashes) that hides under the frame"><input type="checkbox" id="tGuides" checked>Photo edge</label>
+        <span class="sbsep"></span><span id="cutOpts" role="group" aria-label="Photo cut-out shape"></span><span class="sbsep"></span>
       </span>
+      <span id="histOpts"><button id="btnUndo" data-tip="Undo (Ctrl+Z)" aria-label="Undo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button><button id="btnRedo" data-tip="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button></span>
       <span id="opts3d" class="lay3d">
         <button data-l="assembled" data-tip="The finished frame from the front, with your photo">Front</button>
         <button data-l="back" data-tip="The back: the photo slot, finger hole and hanger">Back</button>
@@ -312,6 +361,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
       </div>
     </div>
     <div id="colorBar" aria-label="Filament colours"></div>
+    <div id="aoPanel" class="aopanel" aria-label="Clip art and text add-ons"></div>
     <div id="colorPop" hidden></div>
     <div id="info"></div>
     <div class="reset"><button class="btn-ghost" id="btnReset" data-tip="Reset every setting to the defaults" aria-label="Reset to defaults"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button></div>
@@ -348,17 +398,22 @@ const PHOTO_PRESETS=[
   ['a4','A4 (210×297)',210,297],['a3','A3 (297×420)',297,420],['10x15','10×15 cm',100,150],['13x18','13×18 cm',130,180],
   ['instax','Instax Mini print',54,86],['instaxsq','Instax Square print',62,72],['polaroid','Polaroid print',88,107]
 ];
-const SHAPES_OUT=[['rect','Rectangle'],['rounded','Rounded rectangle'],['stadium','Pill'],['oval','Oval'],['circle','Circle'],['arch','Arch top'],['gothic','Gothic arch'],['octagon','Octagon (cut corners)'],['ticket','Notched corners'],['hexagon','Hexagon'],['heart','Heart']];
+const SHAPES_OUT=[['rect','Rectangle'],['rounded','Rounded rectangle'],['stadium','Pill'],['oval','Oval'],['circle','Circle'],['arch','Arch top'],['gothic','Gothic arch'],['octagon','Octagon (cut corners)'],['ticket','Notched corners'],['hexagon','Hexagon'],['heart','Heart'],['star','Star']];
 const SHAPES_WIN=[...SHAPES_OUT,['diamond','Diamond'],['cutout','Photo cut-out (follows the person)']];
 const EDGES=[['plain','Plain'],['scallop','Scalloped'],['zigzag','Pinked / zigzag'],['wave','Wavy'],['stamp','Postage stamp'],['crenel','Castle']];
 const PATTERNS=[['none','None (plain colour)'],['stripes','Stripes'],['pinstripe','Pinstripes'],['grid','Grid'],['checker','Checkerboard'],['gingham','Gingham'],['plaid','Plaid'],['dots','Dots'],['polka','Polka dots'],['chevron','Chevron'],['zigzag','Zigzag lines'],['waves','Waves'],['diamonds','Diamonds / argyle'],['honeycomb','Honeycomb'],['triangles','Triangles'],['stars','Stars'],['hearts','Hearts'],['flowers','Flowers'],['scales','Fish scales'],['bricks','Bricks'],['herringbone','Herringbone'],['meander','Greek key'],['basket','Basket weave'],['circles','Interlocking circles'],['sunburst','Sunburst'],['rings','Concentric rings'],['crosses','Crosses'],['confetti','Confetti'],['woodgrain','Wood grain']];
 const ORNAMENTS=[['none','None'],['circle','Circle'],['diamond','Diamond'],['star','Star'],['heart','Heart'],['flower','Flower'],['square','Square'],['bracket','Corner brackets']];
 const FONTS=[["Georgia, serif","Georgia"],["'Playfair Display', Georgia, serif","Playfair Display"],["'Dancing Script', cursive","Dancing Script"],["'Great Vibes', cursive","Great Vibes"],["Pacifico, cursive","Pacifico"],["Lobster, cursive","Lobster"],["'Roboto Slab', serif","Roboto Slab"],["'Special Elite', monospace","Typewriter"],["'Bebas Neue', sans-serif","Bebas Neue"],["'Helvetica Neue', Arial, sans-serif","Helvetica"],["'Courier New', monospace","Courier"]];
 const GOOGLE_FONTS=new Set(['Playfair Display','Dancing Script','Great Vibes','Pacifico','Lobster','Roboto Slab','Typewriter','Bebas Neue']);
-const CELL_SHAPES=[['rect','Rectangle'],['rounded','Rounded rectangle'],['stadium','Pill'],['oval','Oval'],['circle','Circle'],['arch','Arch top'],['octagon','Octagon (cut corners)'],['hexagon','Hexagon'],['heart','Heart']];
+const CELL_SHAPES=[['rect','Rectangle'],['rounded','Rounded rectangle'],['stadium','Pill'],['oval','Oval'],['circle','Circle'],['arch','Arch top'],['octagon','Octagon (cut corners)'],['hexagon','Hexagon'],['heart','Heart'],['star','Star']];
 const SLOTS=[1,2,3,4];
 // common PLA colours offered in the floating colour picker
 const FILAMENTS=[['White','#f5f5f2'],['Black','#1d1d1f'],['Grey','#8e9196'],['Silver','#c0c3c7'],['Red','#c8202f'],['Orange','#f07b24'],['Yellow','#f6d02f'],['Lime','#9bd14a'],['Green','#2f8f4e'],['Mint','#a8e6cf'],['Sky blue','#7cc4f0'],['Blue','#1f5fbf'],['Navy','#1b2a4a'],['Purple','#7b4fb8'],['Lilac','#c9b3e6'],['Pink','#f4a6c1'],['Magenta','#d6337e'],['Beige','#e9dcc3'],['Wood','#a87a4f'],['Gold','#c9a227']];
+
+// names for any colour, so the 3MF parts and the print guide say "Teal" instead of "Colour 1"
+const COLOUR_NAMES=[...FILAMENTS,['Teal','#2a9d8f'],['Turquoise','#40c4c4'],['Cream','#f6f2e9'],['Ivory','#fbfaf6'],['Brown','#6b4226'],['Chocolate','#3e2723'],['Maroon','#7a1f2b'],['Coral','#ff7f6b'],['Peach','#f8c3a0'],['Rose','#d97a93'],['Blush','#f6d5dc'],['Olive','#6b7a2f'],['Forest green','#1f4d2b'],['Sage','#9caf88'],['Mustard','#d9a521'],['Sand','#d8c39a'],['Charcoal','#333b41'],['Slate','#284b63'],['Dark purple','#3a2a4d'],['Plum','#5e2750'],['Lavender','#b9a7e0'],['Cyan','#00b7d6'],['Ochre','#c2562b']];
+function colName(hex){let best='Colour',bd=1e9;for(const[n,c]of COLOUR_NAMES){const d=cdist(hex,c);if(d<bd){bd=d;best=n;}}return best;}
+const slotName=s=>colName(P['fil'+s]||'#888');
 
 /* ---------- control schema ---------- */
 const len=(id,label,def,min,max,step,show,help)=>({id,label,type:'len',def,min,max,step:step||0.5,show,help});
@@ -470,14 +525,7 @@ const SECTIONS=[
   len('patOffY','Shift vertically',0,-60,60,0.5,p=>p.pattern!=='none'),
   num('patSeed','Random seed',7,1,999,1,p=>p.pattern==='confetti'),
  ]},
- {id:'lines',title:'Lines & ornaments',sub:'',acc:'#d4a106',fields:[
-  sel('linesWhere','Decorative lines','inner',[['none','None'],['outer','Along outer edge'],['inner','Around opening'],['both','Both']]),
-  num('linesCount','Number of lines',1,1,6,1,p=>p.linesWhere!=='none'),
-  len('linesInset','Distance from edge',4,0,80,0.25,p=>p.linesWhere!=='none'),
-  len('linesGap','Gap between lines',3,0.5,40,0.25,p=>p.linesWhere!=='none'&&p.linesCount>1),
-  len('linesWidth','Line width',1.2,0.6,6,0.1,p=>p.linesWhere!=='none'),
-  sel('linesDash','Line style','dotted',[['solid','Solid'],['dashed','Dashed'],['dotted','Dotted (stitches)']],p=>p.linesWhere!=='none'),
-  slot('linesFil','Line colour',3,p=>p.linesWhere!=='none'),
+ {id:'lines',title:'Ornaments',sub:'',acc:'#d4a106',fields:[
   sel('ornament','Ornaments','none',ORNAMENTS),
   sel('ornPlaces','Place at','corners',[['corners','Corners'],['all','Corners and sides']],p=>p.ornament!=='none'&&p.ornament!=='bracket'),
   len('ornSize','Ornament size',12,4,100,0.5,p=>p.ornament!=='none'),
@@ -516,7 +564,7 @@ const SECTIONS=[
  ]},
 ];
 const FIELDS={};SECTIONS.forEach(s=>s.fields.forEach(f=>{if(f.def!==undefined)FIELDS[f.id]=f;}));
-const DEFAULTS={mode:'single',layout:'g2x2',...Object.fromEntries(Object.values(FIELDS).map(f=>[f.id,f.def]))};
+const DEFAULTS={mode:'single',layout:'g2x2',addons:[],...Object.fromEntries(Object.values(FIELDS).map(f=>[f.id,f.def]))};
 
 /* ---------- collage layouts: cells as [x,y,w,h] fractions of the photo area ---------- */
 const third=1/3;
@@ -677,6 +725,7 @@ function shapePts(kind,w,h,r){
     case 'hexagon':p=[[-W,0],[-W/2,-H],[W/2,-H],[W,0],[W/2,H],[-W/2,H]];break;
     case 'diamond':p=[[0,-H],[W,0],[0,H],[-W,0]];break;
     case 'heart':p=fitBox(heartUnit(240),w,h);break;
+    case 'star':p=fitBox(starPts(0,0,1,0.55,5),w,h);break;
     default:p=[[-W,-H],[W,-H],[W,H],[-W,H]];
   }
   return norm(p);
@@ -786,7 +835,7 @@ function frameBox(P,hfw,hfh,winShape,outerMode,pk,canCut){
       cutPhoto=canCut&&full.W*full.H>1.15*bare.W*bare.H;const f=cutPhoto?bare:full;
       W=f.W;H=f.H;cx=W/2;cy=f.cy;side=(W-hfw)/2;top=cy-hfh/2;bottom=H-cy-hfh/2;
     }else if(P.outerShape==='oval'||P.outerShape==='circle'||P.outerShape==='hexagon'){
-      const roundWin=sameShape||['oval','circle','heart','diamond'].includes(winShape);
+      const roundWin=sameShape||['oval','circle','heart','diamond','star'].includes(winShape);
       let a,b;
       if(P.outerShape==='hexagon'){a=hfw/2*(sameShape?1:roundWin?1.25:1.5)+side*1.15;b=hfh/2*(roundWin?1.1:1.2)+(top+bottom)/2;}
       else{const k=roundWin?1:Math.SQRT2;a=hfw/2*k+side;b=hfh/2*k+(top+bottom)/2;if(P.outerShape==='circle')a=b=Math.max(a,b);}
@@ -886,7 +935,6 @@ function computeGeo(P){
   if((P.outerEdge!=='plain'&&selfCross(outer))||(P.winEdge!=='plain'&&wins.some(w=>selfCross(w.holeF))))warn.push('The edge pattern folds over itself on this shape. Reduce the edge depth or use a larger edge repeat.');
   const thin=[];
   if(P.pattern!=='none'&&usesLine(P)&&P.patLine<0.8)thin.push('pattern lines');
-  if(P.linesWhere!=='none'&&P.linesWidth<0.8)thin.push('decorative lines');
   if(thin.length)warn.push(`The ${thin.join(' and ')} are thinner than 0.8 mm (two nozzle widths) and may not print cleanly.`);
   if(P.capText&&(P.capSize<5||(P.capText2&&P.capSize2<4)))warn.push('The caption is smaller than 5 mm and may be hard to read once printed.');
   const hb=coll&&!S?{cx:box.cx,cy:box.cy,hfw,hfh}:{cx,cy,hfw,hfh};
@@ -1348,7 +1396,8 @@ function genPattern(P,G){
     return{...base,k:'p',closed:sh.closed,pts:sh.pts.map(T)};});
 }
 function genLines(P,G){
-  const out=[];if(P.linesWhere==='none')return out;
+  const out=[];return out;// v9: no decorative contour lines on any frame
+  if(P.linesWhere==='none')return out;
   const base={k:'p',closed:true,mode:'stroke',slot:P.linesFil,lw:P.linesWidth,dash:P.linesDash};
   for(let i=0;i<P.linesCount;i++){
     const d=P.linesInset+i*P.linesGap;
@@ -1396,9 +1445,9 @@ function slotUse(P){
   if(P.mat1On)add(P.mat1Fil,'Mat');if(P.mat2On)add(P.mat2Fil,'Accent band');
   if(P.bevelOn&&hasMats(P))add(P.bevelFil,'Line around photo');
   if(P.pattern!=='none'){add(P.patFil,'Pattern');if(usesC2(P))add(P.patFil2,'Pattern (2nd)');}
-  if(P.linesWhere!=='none')add(P.linesFil,'Lines');
   if(P.ornament!=='none')add(P.ornFil,'Ornaments');
   if(P.capText)add(P.capFil,'Caption');
+  for(const a of P.addons||[])if(!(u[a.slot]||[]).includes('Add-ons'))add(a.slot,'Add-ons');
   return u;
 }
 // filament changes: raised = one per extra colour; flat = per layer of the colour band
@@ -1449,13 +1498,13 @@ function windowPhotos(P,G){
 }
 function buildSVG(P,G,o={}){
   const fc=s=>P['fil'+clamp(s|0,1,4)]||'#888';
-  const m=o.preview?Math.max(G.W,G.H)*0.12:0,y0=G.y0;
+  const m=o.preview?Math.max(G.W,G.H)*0.17:0,y0=G.y0;
   const vb=[-m,y0-m,G.W+2*m,G.H-y0+2*m];
   const size=o.preview||o.inner?'':`width="${f2(G.W)}mm" height="${f2(G.H-y0)}mm"`;
   const body=pd(G.outer)+G.wins.map(w=>pd(w.holeF)).join('')+G.holes.map(pd).join('');
   const solid=pd(G.outer)+G.wins.map(w=>pd(w.win)).join('')+G.holes.map(pd).join('');
   const k=Math.max(G.W,G.H),raised=o.real&&P.printStyle==='raised';
-  let defs=`<clipPath id="fc"><path clip-rule="evenodd" d="${body}"/></clipPath>`+G.wins.map((w,i)=>`<clipPath id="wc${i}"><path d="${pd(w.win)}"/></clipPath>`).join('');
+  let defs=`<clipPath id="fc"><path clip-rule="evenodd" d="${body}"/></clipPath><clipPath id="oc"><path d="${pd(G.outer)}"/></clipPath>`+G.wins.map((w,i)=>`<clipPath id="wc${i}"><path d="${pd(w.win)}"/></clipPath>`).join('');
   defs+=`<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9dcf2"/><stop offset="1" stop-color="#fbeedb"/></linearGradient>`;
   if(o.real){
     defs+=`<clipPath id="sc"><path clip-rule="evenodd" d="${solid}"/></clipPath>`;
@@ -1495,29 +1544,39 @@ function buildSVG(P,G,o={}){
   if(P.capText&&!o.noCaption){
     for(const l of captionLines(P,G))s+=`<text x="${f2(l.x)}" y="${f2(l.y)}" text-anchor="middle" dominant-baseline="central" font-family="${esc(l.font)}" font-size="${f2(l.size)}" letter-spacing="${f2(l.sp)}" fill="${fc(P.capFil)}"${l.bold?' font-weight="700"':''}${l.it?' font-style="italic"':''}${rf}>${esc(l.t)}</text>`;
   }
+  if((P.addons||[]).length)s+=`<g clip-path="url(#oc)"><g${rf}>${aoSVG(P,G,fc)}</g></g>`;
   if(o.real)s+=`<rect x="0" y="0" width="${f2(G.W)}" height="${f2(G.H)}" fill="url(#sheen)" clip-path="url(#sc)"/>`;
   if(o.preview){
     const sw=k*0.0025;
-    if(o.guides)for(const w of G.wins){const R=w.ph;s+=`<rect x="${f2(R.x)}" y="${f2(R.y)}" width="${f2(R.w)}" height="${f2(R.h)}" fill="none" stroke="#e4572e" stroke-width="${f2(sw)}" stroke-dasharray="${f2(sw*4)} ${f2(sw*3)}" opacity=".75"/>`;}
+    if(false)for(const w of G.wins){const R=w.ph;s+=`<rect x="${f2(R.x)}" y="${f2(R.y)}" width="${f2(R.w)}" height="${f2(R.h)}" fill="none" stroke="#e4572e" stroke-width="${f2(sw)}" stroke-dasharray="${f2(sw*4)} ${f2(sw*3)}" opacity=".75"/>`;}
     if(G.coll&&o.sel!=null&&G.slots[o.sel]){const sl=G.slots[o.sel],R=sl.ph;s+=`<path d="${G.printed?`M${f2(R.x)} ${f2(R.y)}h${f2(R.w)}v${f2(R.h)}h${f2(-R.w)}Z`:pd(G.wins[sl.wi].win)}" fill="none" stroke="#2b78c5" stroke-width="${f2(sw*2.4)}"${G.printed?` stroke-dasharray="${f2(sw*5)} ${f2(sw*3)}"`:''}/>`;}
     if(o.dims){
-      const fs=m*0.2,y=y0-m*0.45,x=-m*0.45,col='currentColor',Ht=G.H-y0;
-      const tick=(x1,y1,x2,y2)=>`<path d="M${f2(x1)} ${f2(y1)}L${f2(x2)} ${f2(y2)}" stroke="${col}" stroke-width="${f2(sw)}"/>`;
-      s+=`<g fill="${col}" font-family="system-ui,sans-serif" font-size="${f2(fs)}">`;
-      s+=tick(0,y,G.W,y)+tick(0,y-fs*0.4,0,y+fs*0.4)+tick(G.W,y-fs*0.4,G.W,y+fs*0.4);
-      s+=`<rect x="${f2(G.W/2-fs*3.4)}" y="${f2(y-fs*0.7)}" width="${f2(fs*6.8)}" height="${f2(fs*1.4)}" style="fill:var(--stagebg)"/>`;
-      s+=`<text x="${f2(G.W/2)}" y="${f2(y)}" text-anchor="middle" dominant-baseline="central">${fmtLen(G.W)}</text>`;
-      s+=tick(x,y0,x,G.H)+tick(x-fs*0.4,y0,x+fs*0.4,y0)+tick(x-fs*0.4,G.H,x+fs*0.4,G.H);
-      s+=`<rect x="${f2(x-fs*0.7)}" y="${f2(y0+Ht/2-fs*3.4)}" width="${f2(fs*1.4)}" height="${f2(fs*6.8)}" style="fill:var(--stagebg)"/>`;
-      s+=`<text transform="translate(${f2(x)} ${f2(y0+Ht/2)}) rotate(-90)" text-anchor="middle" dominant-baseline="central">${fmtLen(Ht)}</text>`;
-      const A=G.photoArea,pl=`${G.coll?'Photo sheet':'Photo'} ${fmtLen(A.w)} × ${fmtLen(A.h)}`+(G.coll?'':` · visible ${fmtLen(G.wins[0].ww)} × ${fmtLen(G.wins[0].wh)}`);
-      s+=`<text x="${f2(G.W/2)}" y="${f2(G.H+m*0.42)}" text-anchor="middle" dominant-baseline="central" fill="#e4572e" font-weight="600">${pl}</text>`;
+      // dimension arrows: frame size on the outside row, the photo opening right next to it
+      const fs=m*0.13,col='currentColor',pc='#e4572e',Ht=G.H-y0;
+      const head=(x,y,dx,dy,a,b)=>`M${f2(x)} ${f2(y)}L${f2(x-dx*a-dy*b)} ${f2(y-dy*a+dx*b)}L${f2(x-dx*a+dy*b)} ${f2(y-dy*a-dx*b)}Z`;
+      const dim=(x1,y1,x2,y2,c,label,vert)=>{const L=Math.hypot(x2-x1,y2-y1);if(L<1e-6)return'';const ux=(x2-x1)/L,uy=(y2-y1)/L,a=Math.min(fs*0.75,L/4),b=a*0.4,t=fs*0.55;
+        let q=`<path d="M${f2(x1+ux*a*0.8)} ${f2(y1+uy*a*0.8)}L${f2(x2-ux*a*0.8)} ${f2(y2-uy*a*0.8)}M${f2(x1-uy*t)} ${f2(y1+ux*t)}L${f2(x1+uy*t)} ${f2(y1-ux*t)}M${f2(x2-uy*t)} ${f2(y2+ux*t)}L${f2(x2+uy*t)} ${f2(y2-ux*t)}" stroke="${c}" stroke-width="${f2(sw)}" fill="none"/>`;
+        q+=`<path d="${head(x2,y2,ux,uy,a,b)}${head(x1,y1,-ux,-uy,a,b)}" fill="${c}"/>`;
+        const mx=(x1+x2)/2,my=(y1+y2)/2,lw=Math.min(label.length*fs*0.56+fs*0.8,L-2.4*a);
+        if(lw>fs){q+=vert?`<rect x="${f2(mx-fs*0.7)}" y="${f2(my-lw/2)}" width="${f2(fs*1.4)}" height="${f2(lw)}" style="fill:var(--stagebg)"/>`:`<rect x="${f2(mx-lw/2)}" y="${f2(my-fs*0.7)}" width="${f2(lw)}" height="${f2(fs*1.4)}" style="fill:var(--stagebg)"/>`;
+          q+=`<text ${vert?`transform="translate(${f2(mx)} ${f2(my)}) rotate(-90)"`:`x="${f2(mx)}" y="${f2(my)}"`} text-anchor="middle" dominant-baseline="central" fill="${c}"${c===pc?' font-weight="600"':''}>${esc(label)}</text>`;}
+        return q;};
+      s+=`<g font-family="system-ui,sans-serif" font-size="${f2(fs)}">`;
+      const yF=y0-m*0.3,xF=-m*0.3,yP=y0-m*0.68,xP=-m*0.68;
+      s+=dim(0,yF,G.W,yF,col,'Frame '+fmtLen(G.W))+dim(xF,G.H,xF,y0,col,'Frame '+fmtLen(Ht),true);
+      const A=G.photoArea,wb=G.coll?{x0:A.x,x1:A.x+A.w,y0:A.y,y1:A.y+A.h}:bbox(G.wins[0].win),pw=G.coll?'Photo sheet ':'Opening ';
+      s+=dim(wb.x0,yP,wb.x1,yP,pc,pw+fmtLen(wb.x1-wb.x0))+dim(xP,wb.y1,xP,wb.y0,pc,pw+fmtLen(wb.y1-wb.y0),true);
+      // light guides from the opening out to its arrows
+      s+=`<path d="M${f2(wb.x0)} ${f2(yP+fs*0.55)}V${f2(y0)}M${f2(wb.x1)} ${f2(yP+fs*0.55)}V${f2(y0)}M${f2(xP+fs*0.55)} ${f2(wb.y0)}H0M${f2(xP+fs*0.55)} ${f2(wb.y1)}H0" stroke="${pc}" stroke-width="${f2(sw*0.6)}" opacity=".45"/>`;
+      const pl=`${G.coll?'Photo sheet':'Photo print'} ${fmtLen(A.w)} × ${fmtLen(A.h)}`+(G.coll?'':` · visible ${fmtLen(G.wins[0].ww)} × ${fmtLen(G.wins[0].wh)}`);
+      s+=`<text x="${f2(G.W/2)}" y="${f2(G.H+m*0.32)}" text-anchor="middle" dominant-baseline="central" fill="${pc}" font-weight="600" font-size="${f2(fs*1.15)}">${pl}</text>`;
       s+=`</g>`;
     }
   }
   if(o.hit)G.slots.forEach((sl,i)=>{const R=sl.ph;s+=`<path class="win-hit" data-i="${i}" d="${G.printed?`M${f2(R.x)} ${f2(R.y)}h${f2(R.w)}v${f2(R.h)}h${f2(-R.w)}Z`:pd(G.wins[sl.wi].win)}" fill="transparent"/>`;});
+  if(o.hit&&o.preview)s+=aoHitSVG(P,G,k);
   if(!o.inner)s+=`</svg>`;
-  if(o.idp)s=s.replace(/id="(fc|wc\d+|sky|sc|rl|bl|sheen)"/g,`id="${o.idp}$1"`).replace(/url\(#(fc|wc\d+|sky|sc|rl|bl|sheen)\)/g,`url(#${o.idp}$1)`);
+  if(o.idp)s=s.replace(/id="(fc|oc|wc\d+|sky|sc|rl|bl|sheen)"/g,`id="${o.idp}$1"`).replace(/url\(#(fc|oc|wc\d+|sky|sc|rl|bl|sheen)\)/g,`url(#${o.idp}$1)`);
   return s;
 }
 function fmtLen(mm){return P.units==='in'?`${(mm/MM_IN).toFixed(2)} in`:`${(Math.round(mm*10)/10)} mm`;}
@@ -1840,7 +1899,7 @@ function syncControls(){
 function secSubs(){
   const sub={styles:activeStyle,photo:LIB[curPhoto]?.name||'',collage:layoutById(P.layout).name,size:G?`${fmtLen(G.W)} × ${fmtLen(G.H-G.y0)}`:'',
     shape:(SHAPES_OUT.find(s=>s[0]===P.outerShape)||[])[1]||'',mats:hasMats(P)?'on':'off',colours:`${P.nCol} colour${P.nCol>1?'s':''}`,
-    pattern:(PATTERNS.find(s=>s[0]===P.pattern)||[])[1]||'',lines:P.linesWhere==='none'&&P.ornament==='none'?'none':'on',caption:P.capText?'“'+P.capText+'”':'none',
+    pattern:(PATTERNS.find(s=>s[0]===P.pattern)||[])[1]||'',lines:P.ornament==='none'?'none':'on',caption:P.capText?'“'+P.capText+'”':'none',
     hang:{none:'none',stand:'stand leg',loop:'top loop',keyhole1:'1 keyhole',keyhole2:'2 keyholes',string:'string'}[P.hang]||'',print:P.printStyle==='raised'?'raised colours':'flat colours'};
   for(const id in SECEL)SECEL[id].sub.textContent=sub[id]||'';
 }
@@ -1857,7 +1916,7 @@ function setParam(id,v){
   if(id==='colPhoto'||id==='colPW'||id==='colPH')applyColPhoto();
   if((id==='colW'||id==='colH')&&P.colPhoto!=='free')P.colPhoto='free';
   if(id==='nCol')for(const s of SLOT_FIELDS)if(P[s]>P.nCol)P[s]=Math.min(P[s],P.nCol);
-  if(id==='units'){buildControls();}
+  if(id==='units'){buildControls();renderAoPanel();}
   if(['capText','capPos','capSize','capText2','capSize2'].includes(id))captionRoom(id);
   if(id==='sizeMode'&&v==='outer'&&G){P.outerW=f2(G.W);P.outerH=f2(G.H);}
   syncControls();schedule();
@@ -1910,7 +1969,7 @@ function positionColorBar(){
   const sr=svg.getBoundingClientRect();
   let fb=frameBoxInView;const sc=sr.width/viewBox[2];
   const right=sr.left+(fb[0]+fb[2]-viewBox[0])*sc,midY=sr.top+(fb[1]+fb[3]/2-viewBox[1])*sc;
-  let left=right-mr.left+16;left=clamp(left,12,mr.width-bw-12);
+  let left=right-mr.left+16;left=clamp(left,12,mr.width-bw-12-(view==='front'&&aoUI.open&&innerWidth>820?262:0));
   let top=midY-mr.top-bh/2;top=clamp(top,70,Math.max(70,mr.height-bh-70));
   if(innerWidth<=820){left=mr.width-bw-8;top=56;}
   bar.style.left=left+'px';bar.style.top=top+'px';
@@ -2055,7 +2114,8 @@ function render(){
   for(const[id,on]of[['vFront',view==='front'],['vReal',view==='real'],['v3d',is3d]])$('#'+id).classList.toggle('on',on);
   $('#designOpts').hidden=view!=='front';$('#realOpts').hidden=view!=='real';$('#opts3d').hidden=!is3d;
   $('#sizePod').hidden=view!=='front';syncSizePod();
-  renderColorBar();sizeSVG();if(svg)bindDrag(svg);info();secSubs();
+  $('#aoPanel').hidden=view!=='front';$('#view').classList.toggle('aoopen',view==='front'&&aoUI.open&&innerWidth>820);if(selAo&&!aoGet(selAo))selAo=null;
+  renderColorBar();sizeSVG();if(svg)bindDrag(svg);info();secSubs();syncCutBar();histRecord();
   if(is3d)queue3D();else $('#gl3dMsg').hidden=true;
   clearTimeout(render._g);render._g=setTimeout(()=>{renderGallery(false);renderPatterns();},250);
   clearTimeout(saveT);saveT=setTimeout(()=>{lsSet('pfg-v4',JSON.stringify(P));},400);
@@ -2063,7 +2123,7 @@ function render(){
 function sizeSVG(){
   if(view==='3d'){$('#zVal').textContent='3D';positionColorBar();draw3D();return;}
   const svg=$('#canvasWrap svg');if(!svg)return;const v=$('#view');
-  const narrow=innerWidth<=820,aw=v.clientWidth-(narrow?90:view==='front'?340:130),ah=v.clientHeight-(narrow?140:220);const sc=Math.max(0.05,Math.min(aw/viewBox[2],ah/viewBox[3]))*zoom;
+  const narrow=innerWidth<=820,aw=v.clientWidth-(narrow?90:view==='front'?340+(aoUI.open?250:0):130),ah=v.clientHeight-(narrow?140:220);const sc=Math.max(0.05,Math.min(aw/viewBox[2],ah/viewBox[3]))*zoom;
   svg.style.width=f2(viewBox[2]*sc)+'px';svg.style.height=f2(viewBox[3]*sc)+'px';
   $('#zVal').textContent=zoom===1?'Fit':Math.round(zoom*100)+'%';
   positionColorBar();
@@ -2079,6 +2139,7 @@ function info(){
   el.innerHTML=g.warn.map(w=>`<div class="warn">${esc(w)}</div>`).join('')+`<dl class="stats"><dt>Outer size</dt><dd>${fmtLen(g.W)} × ${fmtLen(g.H-g.y0)}</dd><dt>${g.coll?'Collage':'Visible opening'}</dt><dd>${op}</dd>${g.coll?'':`<dt>Photo print</dt><dd>${fmtLen(g.photoArea.w)} × ${fmtLen(g.photoArea.h)}</dd>`}<dt>Printed pieces</dt><dd>${pieces.join(' + ')}</dd><dt>Colours / filament changes</dt><dd>${si.k} / ${si.approx&&si.changes?'≈':''}${si.changes}</dd><dt>Plastic (about)</dt><dd>${grams} g</dd></dl>`;
 }
 function bindDrag(svg){
+  bindAddons(svg);
   const hits=svg.querySelectorAll('.win-hit');
   svg.classList.toggle('can-drag',true);
   hits.forEach(hit=>hit.addEventListener('pointerdown',e=>{
@@ -2093,6 +2154,241 @@ function bindDrag(svg){
     const up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);const s2=$('#canvasWrap svg');if(s2)s2.classList.remove('dragging');};
     window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);
   }));
+}
+
+/* ---------- v9 add-ons: clip art and text placed on the front of the frame ---------- */
+// every clip art is drawn in a 100 × 100 box from filled outlines; holes run the other way (nonzero fill)
+const CLIPS=(()=>{
+  const PI=Math.PI,L=[];
+  const rot=(p,a,cx=50,cy=50)=>{const c=Math.cos(a),s=Math.sin(a);return p.map(([x,y])=>[cx+(x-cx)*c-(y-cy)*s,cy+(x-cx)*s+(y-cy)*c]);};
+  const E=(cx,cy,rx,ry,a=0,n=48)=>{const p=[];for(let i=0;i<n;i++){const t=i/n*2*PI;p.push([cx+rx*Math.cos(t),cy+ry*Math.sin(t)]);}return a?rot(p,a,cx,cy):p;};
+  const C=(cx,cy,r,n=40)=>E(cx,cy,r,r,0,n);
+  const Rc=(x0,y0,x1,y1)=>[[x0,y0],[x1,y0],[x1,y1],[x0,y1]];
+  const arc=(cx,cy,r,a0,a1,n=40)=>{const p=[];for(let i=0;i<=n;i++){const t=a0+(a1-a0)*i/n;p.push([cx+r*Math.cos(t),cy+r*Math.sin(t)]);}return p;};
+  const heart=(cx,cy,w,a=0)=>{const q=heartUnit(80).map(([x,y])=>[cx+x*w,cy+y*w]);return a?rot(q,a,cx,cy):q;};
+  const add=(id,name,parts)=>{// parts: [pts, hole?]
+    const d=parts.map(([p,h])=>{let q=norm(p);if(h)q=q.slice().reverse();return'M'+q.map(([x,y])=>(Math.round(x*10)/10)+' '+(Math.round(y*10)/10)).join('L')+'Z';}).join('');
+    L.push({id,name,d});};
+  add('heart','Heart',[[heart(50,50,92)]]);
+  add('star','Star',[[starPts(50,54,48,21)]]);
+  add('sparkle','Sparkle',[[starPts(50,50,48,11,4)],[starPts(84,18,13,3.5,4)]]);
+  {const p=[];for(let i=0;i<120;i++){const t=i/120*2*PI,r=27+19*Math.abs(Math.cos(2.5*t));p.push([50+r*Math.cos(t-PI/2),50+r*Math.sin(t-PI/2)]);}add('flower','Flower',[[p],[C(50,50,10),1]]);}
+  {const ps=[[C(50,50,24)]];for(let i=0;i<12;i++){const a=i/12*2*PI;ps.push([[[50+29*Math.cos(a-0.12),50+29*Math.sin(a-0.12)],[50+47*Math.cos(a),50+47*Math.sin(a)],[50+29*Math.cos(a+0.12),50+29*Math.sin(a+0.12)]]]);}add('sun','Sun',ps);}
+  {// crescent moon: the outer circle minus a second, offset circle
+    const c1=[46,52],r1=42,c2=[64,38],r2=34,dx=c2[0]-c1[0],dy=c2[1]-c1[1],d=Math.hypot(dx,dy),a=(r1*r1-r2*r2+d*d)/(2*d),h=Math.sqrt(r1*r1-a*a),ux=dx/d,uy=dy/d;
+    const P1=[c1[0]+a*ux-h*uy,c1[1]+a*uy+h*ux],P2=[c1[0]+a*ux+h*uy,c1[1]+a*uy-h*ux],ang=(c,p)=>Math.atan2(p[1]-c[1],p[0]-c[0]);
+    let a0=ang(c1,P1),a1=ang(c1,P2);const away=Math.atan2(-uy,-ux);// the outer arc goes round the side away from c2
+    while(a1<a0)a1+=2*PI;const mid=(a0+a1)/2;const outer=Math.cos(mid-away)>0?arc(c1[0],c1[1],r1,a0,a1,60):arc(c1[0],c1[1],r1,a0,a1-2*PI,60);
+    let b0=ang(c2,P2),b1=ang(c2,P1);while(b1<b0)b1+=2*PI;const midb=(b0+b1)/2,toward=Math.atan2(-uy,-ux);
+    const inner=Math.cos(midb-toward)>0?arc(c2[0],c2[1],r2,b0,b1,50):arc(c2[0],c2[1],r2,b0,b1-2*PI,50);
+    add('moon','Moon',[[[...outer,...inner.slice(1,-1)]],[starPts(78,74,9,3.5),0]]);}
+  add('cloud','Cloud',[[C(28,62,16)],[C(48,46,22)],[C(70,52,18)],[C(84,66,11)],[Rc(28,56,84,77)]]);
+  add('balloon','Balloon',[[E(50,40,30,36)],[[[43,82],[57,82],[50,74]]],[Rc(48.6,81,51.4,98)]]);
+  add('butterfly','Butterfly',[[E(31,34,21,16,-0.55)],[E(69,34,21,16,0.55)],[E(35,66,15,12,0.5)],[E(65,66,15,12,-0.5)],[E(50,52,5,28)],[[[46,26],[38,8],[41,7],[49,25]]],[[[54,26],[62,8],[59,7],[51,25]]]]);
+  add('paw','Paw print',[[E(50,68,22,18)],[E(24,42,8,11,-0.35)],[E(41,26,8,11,-0.12)],[E(59,26,8,11,0.12)],[E(76,42,8,11,0.35)]]);
+  add('crown','Crown',[[[[10,78],[10,36],[30,56],[50,26],[70,56],[90,36],[90,78]]],[C(10,32,6)],[C(50,22,6)],[C(90,32,6)],[Rc(10,83,90,92)]]);
+  add('note','Music note',[[E(34,80,15,10.5,-0.4)],[Rc(43,16,50,80)],[[[50,16],[80,28],[80,42],[50,30]]]]);
+  {const up=[],lo=[];for(let i=0;i<=40;i++){const t=i/40,x=12+76*t,w=26*Math.sin(PI*t)*(0.75+0.25*t);up.push([x,50-w]);lo.push([x,50+w]);}
+    add('leaf','Leaf',[[rot([...up,...lo.reverse()],-0.6)],[rot(Rc(2,48.5,16,51.5),-0.6)]]);}
+  add('bow','Bow',[[[[50,50],[14,26],[8,50],[14,74]]],[[[50,50],[86,26],[92,50],[86,74]]],[C(50,50,10)],[[[46,54],[34,92],[44,90],[50,58]]],[[[54,54],[66,92],[56,90],[50,58]]]]);
+  {const smile=[...arc(50,50,30,0.35,PI-0.35,30),...arc(50,46,23,PI-0.3,0.3,30)];
+    add('smiley','Smiley',[[C(50,50,46,60)],[E(35,37,5.5,8),1],[E(65,37,5.5,8),1],[smile,1]]);}
+  add('rainbow','Rainbow',[46,36,26].map(r=>[[...arc(50,82,r,PI,2*PI,40),...arc(50,82,r-8,2*PI,PI,40)]]));
+  {const ps=[[C(50,50,9,6)]];for(let i=0;i<6;i++){const a=i/6*2*PI;ps.push([rot(Rc(47,4,53,50),a)]);ps.push([rot(rot(Rc(47.5,14,52.5,32),0.8,50,30),a)]);ps.push([rot(rot(Rc(47.5,14,52.5,32),-0.8,50,30),a)]);}add('snow','Snowflake',ps);}
+  add('tree','Pine tree',[[[[50,4],[78,38],[22,38]]],[[[50,22],[84,60],[16,60]]],[[[50,42],[90,82],[10,82]]],[Rc(43,80,57,97)]]);
+  add('bunny','Bunny',[[C(50,64,27)],[E(38,26,8,22,-0.16)],[E(62,26,8,22,0.16)],[C(40,60,3.6),1],[C(60,60,3.6),1],[E(50,70,3.4,2.6),1]]);
+  add('cat','Cat',[[E(50,60,36,30)],[[[17,48],[20,10],[44,34]]],[[[83,48],[80,10],[56,34]]],[E(37,57,4,6.5),1],[E(63,57,4,6.5),1],[[[46,67],[54,67],[50,72]],1]]);
+  add('teddy','Teddy bear',[[C(50,57,32)],[C(23,28,12)],[C(77,28,12)],[C(39,50,4),1],[C(61,50,4),1],[E(50,70,13,10),1],[E(50,66,4.5,3.2)]]);
+  add('bolt','Lightning',[[[[60,3],[22,56],[46,56],[36,97],[80,40],[55,40],[68,3]]]]);
+  add('gem','Gem',[[[[24,14],[76,14],[95,38],[50,92],[5,38]]],[[[30,22],[44,22],[40,36],[20,36]],1],[[[56,22],[70,22],[80,36],[60,36]],1]]);
+  add('clover','Clover',[0,1,2,3].map(i=>[heart(50+Math.sin(i*PI/2)*19,46-Math.cos(i*PI/2)*19,40,i*PI/2)]).concat([[[[48,58],[52,58],[62,96],[58,97]]]]));
+  add('rocket','Rocket',[[E(50,44,16,40)],[[[35,58],[18,86],[37,78]]],[[[65,58],[82,86],[63,78]]],[[[43,86],[57,86],[50,99]]],[C(50,38,6.5),1]]);
+  add('house','House',[[[[50,8],[92,46],[8,46]]],[[[20,46],[80,46],[80,92],[57,92],[57,68],[43,68],[43,92],[20,92]]],[Rc(26,54,38,64),1],[Rc(62,54,74,64),1]]);
+  add('car','Car',[[[[8,66],[8,52],[22,48],[34,32],[66,32],[78,48],[92,54],[92,66]]],[[[38,37],[48,37],[48,48],[28,48]],1],[[[52,37],[63,37],[72,48],[52,48]],1],[C(28,68,10)],[C(72,68,10)]]);
+  add('dino','Dinosaur',[[[[10,80],[24,58],[30,40],[44,30],[62,30],[72,18],[86,16],[94,24],[92,32],[80,34],[76,48],[70,62],[66,82],[58,82],[56,68],[42,70],[40,82],[32,82],[30,70],[16,80]]],[C(84,22,2.2),1]]);
+  add('fish','Fish',[[E(44,50,32,20)],[[[70,50],[94,30],[90,50],[94,70]]],[C(28,46,3.5),1]]);
+  add('anchor','Anchor',[[C(50,14,9)],[C(50,14,4.5),1],[Rc(46.5,22,53.5,86)],[Rc(32,30,68,36)],[[...arc(50,60,32,0.15,PI-0.15,40),...arc(50,60,25,PI-0.2,0.2,40)]],[[[14,62],[24,60],[20,50]]],[[[86,62],[76,60],[80,50]]]]);
+  return L;
+})();
+const clipById=id=>CLIPS.find(c=>c.id===id)||CLIPS[0];
+const _clipPaths={};function clipPath2D(id){return _clipPaths[id]||(_clipPaths[id]=new Path2D(clipById(id).d));}
+let selAo=null,aoSeq=Date.now()%1e6;
+const _mctx=document.createElement('canvas').getContext('2d');
+// size of an add-on in mm (w × h before rotation)
+function aoBox(a){
+  if(a.k==='text'){_mctx.font=`${a.b?'bold ':''}${a.i?'italic ':''}100px ${a.f}`;const lines=String(a.t||' ').split('\n');const w=Math.max(...lines.map(l=>_mctx.measureText(l||' ').width))/100*a.s;return{w:Math.max(w,a.s*0.5),h:a.s*1.2*lines.length};}
+  return{w:a.s,h:a.s};
+}
+function aoCentre(a,G){return[a.x*G.W,G.y0+a.y*(G.H-G.y0)];}
+function aoSVG(P,G,fc){
+  let s='';
+  for(const a of P.addons||[]){const[cx,cy]=aoCentre(a,G),col=fc(a.slot);
+    if(a.k==='text'){const lines=String(a.t||'').split('\n'),lh=a.s*1.2,top=-(lines.length-1)*lh/2;
+      s+=`<g transform="translate(${f2(cx)} ${f2(cy)}) rotate(${f2(a.r||0)})"><text text-anchor="middle" dominant-baseline="central" font-family="${esc(a.f)}" font-size="${f2(a.s)}" fill="${col}"${a.b?' font-weight="700"':''}${a.i?' font-style="italic"':''}>${lines.map((l,i)=>`<tspan x="0" y="${f2(top+i*lh)}">${esc(l)}</tspan>`).join('')}</text></g>`;}
+    else s+=`<path d="${clipById(a.a).d}" fill="${col}" transform="translate(${f2(cx)} ${f2(cy)}) rotate(${f2(a.r||0)}) scale(${f2(a.s/100*1000)/1000}) translate(-50 -50)"/>`;
+  }
+  return s;
+}
+// canvas version in frame millimetres (used by the 3D model and the photo print)
+function aoDraw(c,a,G){
+  const[cx,cy]=aoCentre(a,G);c.save();c.translate(cx,cy);c.rotate((a.r||0)*Math.PI/180);
+  if(a.k==='text'){c.textAlign='center';c.textBaseline='middle';c.font=`${a.i?'italic ':''}${a.b?'bold ':''}${a.s}px ${a.f}`;const lines=String(a.t||'').split('\n'),lh=a.s*1.2,top=-(lines.length-1)*lh/2;lines.forEach((l,i)=>c.fillText(l,0,top+i*lh));}
+  else{c.scale(a.s/100,a.s/100);c.translate(-50,-50);c.fill(clipPath2D(a.a),'nonzero');}
+  c.restore();
+}
+async function aoFonts(P){for(const a of P.addons||[])if(a.k==='text'){try{await document.fonts.load(`${a.b?'bold ':''}40px ${a.f}`,a.t||'A');}catch(e){}}}
+// handles drawn over the selected add-on in the design view
+function aoHitSVG(P,G,k){
+  let s='';const hr=k*0.014;
+  for(const a of P.addons||[]){const[cx,cy]=aoCentre(a,G),b=aoBox(a),pad=Math.max(1,a.s*0.04),w=b.w+2*pad,h=b.h+2*pad;
+    s+=`<g transform="translate(${f2(cx)} ${f2(cy)}) rotate(${f2(a.r||0)})">`;
+    s+=`<rect class="ao-hit" data-id="${a.id}" x="${f2(-w/2)}" y="${f2(-h/2)}" width="${f2(w)}" height="${f2(h)}" fill="transparent"/>`;
+    if(a.id===selAo){const sw=k*0.0022;
+      s+=`<rect x="${f2(-w/2)}" y="${f2(-h/2)}" width="${f2(w)}" height="${f2(h)}" fill="none" stroke="#2b78c5" stroke-width="${f2(sw)}" pointer-events="none"/>`;
+      s+=`<path d="M0 ${f2(-h/2)}V${f2(-h/2-hr*2.2)}" stroke="#2b78c5" stroke-width="${f2(sw)}" pointer-events="none"/>`;
+      s+=`<circle class="ao-rot" data-id="${a.id}" cx="0" cy="${f2(-h/2-hr*2.8)}" r="${f2(hr)}" fill="#fff" stroke="#2b78c5" stroke-width="${f2(sw*1.4)}"><title>Drag to turn</title></circle>`;
+      s+=`<rect class="ao-rs" data-id="${a.id}" x="${f2(w/2-hr)}" y="${f2(h/2-hr)}" width="${f2(hr*2)}" height="${f2(hr*2)}" rx="${f2(hr*0.4)}" fill="#2b78c5" stroke="#fff" stroke-width="${f2(sw)}"><title>Drag to resize</title></rect>`;
+      s+=`<g class="ao-del" data-id="${a.id}" transform="translate(${f2(w/2)} ${f2(-h/2)})"><circle r="${f2(hr*1.15)}" fill="#e4572e" stroke="#fff" stroke-width="${f2(sw)}"/><path d="M${f2(-hr*0.45)} ${f2(-hr*0.45)}L${f2(hr*0.45)} ${f2(hr*0.45)}M${f2(hr*0.45)} ${f2(-hr*0.45)}L${f2(-hr*0.45)} ${f2(hr*0.45)}" stroke="#fff" stroke-width="${f2(sw*1.6)}" stroke-linecap="round"/><title>Remove</title></g>`;}
+    s+=`</g>`;}
+  return s;
+}
+function aoGet(id){return(P.addons||[]).find(a=>a.id===id);}
+function aoDefaultSlot(){if(P.nCol<2)return P.frameFil;let best=P.frameFil,bd=-1;for(const s of SLOTS){if(s>P.nCol||s===P.frameFil)continue;const d=cdist(P['fil'+s],P['fil'+P.frameFil]);if(d>bd){bd=d;best=s;}}return best;}
+// a free spot on the border below the photo (or the middle, if there is no border)
+function aoSpot(){const wb=G.coll?{y1:G.photoArea.y+G.photoArea.h}:bbox(G.wins[0].win),y=(wb.y1+G.H)/2,v=(y-G.y0)/(G.H-G.y0);
+  for(const u of[0.5,0.22,0.78,0.36,0.64,0.12,0.88])if(!(P.addons||[]).some(a=>Math.abs(a.x-u)<0.1&&Math.abs(a.y-v)<0.08))return[u,v];return[0.5,v];}
+function aoAdd(o,at){
+  const[x,y]=at||aoSpot(),bw=Math.max(8,Math.min(G.H-(G.coll?G.photoArea.y+G.photoArea.h:bbox(G.wins[0].win).y1),G.W)*0.8);
+  const a={id:'ao'+(++aoSeq),x:f2(clamp(x,0,1)*1e4)/1e4,y:f2(clamp(y,0,1)*1e4)/1e4,r:0,slot:aoDefaultSlot(),...o};
+  if(a.s==null)a.s=a.k==='text'?clamp(bw*0.45,6,30):f2(clamp(bw,10,45));
+  P.addons=[...(P.addons||[]),a];selAo=a.id;if(activeStyle){activeStyle='';markGallery();}renderAoPanel();schedule();
+}
+function aoUpdate(id,ch){const a=aoGet(id);if(!a)return;P.addons=P.addons.map(b=>b.id===id?{...b,...ch}:b);schedule();}
+function aoRemove(id){P.addons=(P.addons||[]).filter(a=>a.id!==id);if(selAo===id)selAo=null;renderAoPanel();schedule();}
+function aoSelect(id){if(selAo===id)return;selAo=id;renderAoPanel();schedule();}
+function svgPoint(svg,cx,cy){const m=svg.getScreenCTM();if(!m)return[0,0];const p=new DOMPoint(cx,cy).matrixTransform(m.inverse());return[p.x,p.y];}
+function bindAddons(svg){
+  svg.addEventListener('pointerdown',e=>{
+    const t=e.target.closest('.ao-hit,.ao-rs,.ao-rot,.ao-del');
+    if(!t){if(selAo){selAo=null;renderAoPanel();schedule();}return;}
+    e.preventDefault();e.stopPropagation();const id=t.dataset.id,a=aoGet(id);if(!a)return;
+    if(t.classList.contains('ao-del')){aoRemove(id);return;}
+    if(selAo!==id){selAo=id;renderAoPanel();}
+    const [px,py]=svgPoint(svg,e.clientX,e.clientY),[cx,cy]=aoCentre(a,G),H=G.H-G.y0;
+    const kind=t.classList.contains('ao-rs')?'rs':t.classList.contains('ao-rot')?'rot':'mv';
+    const d0=Math.hypot(px-cx,py-cy)||1,s0=a.s,x0=a.x,y0=a.y;
+    const mv=ev=>{const s2=$('#canvasWrap svg');if(!s2)return;const[qx,qy]=svgPoint(s2,ev.clientX,ev.clientY);
+      if(kind==='mv')aoUpdate(id,{x:clamp(x0+(qx-px)/G.W,0,1),y:clamp(y0+(qy-py)/H,0,1)});
+      else if(kind==='rs')aoUpdate(id,{s:f2(clamp(s0*Math.hypot(qx-cx,qy-cy)/d0,3,400))});
+      else{let r=Math.atan2(qy-cy,qx-cx)*180/Math.PI+90;if(!ev.shiftKey)r=Math.round(r/5)*5;r=((r%360)+540)%360-180;aoUpdate(id,{r:f2(r)});}
+      syncAoPanel();};
+    const up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);renderAoPanel();};
+    window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);
+  },true);
+}
+/* ---------- add-ons panel on the right ---------- */
+const aoUI={open:true,tab:'clip'};
+function renderAoPanel(){
+  const el=$('#aoPanel');if(!el)return;el.classList.toggle('shut',!aoUI.open);
+  if(!aoUI.open){el.innerHTML=`<button class="ao-toggle" id="aoOpen" data-tip="Show the clip art and text add-ons">Add-ons ‹</button>`;$('#aoOpen').onclick=()=>{aoUI.open=true;renderAoPanel();sizeSVG();};return;}
+  const a=selAo?aoGet(selAo):null;if(a&&a.k==='text'&&aoUI.lastSel!==a.id)aoUI.tab='text';aoUI.lastSel=a?a.id:null;
+  let h=`<div class="ao-head"><b>Add-ons</b><button class="ao-x" id="aoClose" data-tip="Hide this panel" aria-label="Hide add-ons">›</button></div>`;
+  h+=`<div class="ao-tabs"><button data-tab="clip" class="${aoUI.tab==='clip'?'on':''}">Clip art</button><button data-tab="text" class="${aoUI.tab==='text'?'on':''}">Text</button></div><!--SEL-->`;
+  if(aoUI.tab==='clip')h+=`<p class="ao-hint">Drag a picture onto the frame, or click it to add it. Drag the corner square to resize.</p><div class="ao-grid">${CLIPS.map(c=>`<button class="ao-clip" draggable="true" data-clip="${c.id}" data-tip="${esc(c.name)}" aria-label="${esc(c.name)}"><svg viewBox="-4 -4 108 108"><path d="${c.d}" fill="currentColor"/></svg></button>`).join('')}</div>`;
+  else h+=`<p class="ao-hint">Type your words, pick a font and size, then drag the text where you want it.</p>
+    <textarea id="aoT" rows="2" placeholder="Your text">${a&&a.k==='text'?esc(a.t):''}</textarea>
+    <div class="ao-row"><select id="aoF" aria-label="Font">${FONTS.map(f=>`<option value="${esc(f[0])}" style="font-family:${esc(f[0])}">${esc(f[1])}</option>`).join('')}</select></div>
+    <div class="ao-row"><label>Size</label><input id="aoS" type="number" min="3" max="200" step="0.5" aria-label="Text size"><span class="ao-u">${P.units==='in'?'in':'mm'}</span><button id="aoB" class="ao-tog" data-tip="Bold" aria-label="Bold"><b>B</b></button><button id="aoI" class="ao-tog" data-tip="Italic" aria-label="Italic"><i>I</i></button></div>
+    ${a&&a.k==='text'?'':`<button class="ao-add" id="aoAddT">Add text to the frame</button>`}`;
+  let sh='';
+  if(a){sh+=`<div class="ao-sel"><div class="ao-sh">Selected: ${a.k==='text'?'text':esc(clipById(a.a).name)}</div>`;
+    if(a.k!=='text')sh+=`<div class="ao-row"><label>Size</label><input id="aoSz" type="range" min="3" max="${Math.round(Math.max(60,Math.min(G.W,G.H)))}" step="0.5"><span class="ao-v" id="aoSzV"></span></div>`;
+    sh+=`<div class="ao-row"><label>Turn</label><input id="aoR" type="range" min="-180" max="180" step="1"><span class="ao-v" id="aoRV"></span></div>`;
+    sh+=`<div class="ao-row"><label>Colour</label><span class="ao-slots">${SLOTS.filter(s=>s<=P.nCol).map(s=>`<button data-s="${s}" class="${a.slot===s?'on':''}" style="background:${P['fil'+s]};color:${textOn(P['fil'+s])}" data-tip="${esc(slotName(s))} (colour ${s})">${s}</button>`).join('')}</span></div>`;
+    sh+=`<div class="ao-row ao-btns"><button id="aoDup">Duplicate</button><button id="aoFront">To front</button><button id="aoDel" class="ao-danger">Remove</button></div>`;
+    if(a.slot===P.frameFil)sh+=`<p class="ao-hint">Same colour as the frame: it prints as raised texture. Pick another colour to make it stand out.</p>`;
+    sh+=`</div>`;}
+  else if((P.addons||[]).length)sh+=`<p class="ao-hint">${P.addons.length} add-on${P.addons.length>1?'s':''} on the frame. Click one to change it.</p>`;
+  h=h.replace('<!--SEL-->',sh);
+  h+=`<p class="ao-hint ao-foot">On the frame they print in filament as raised colour. Over the photo they are printed on the photo print.</p>`;
+  el.innerHTML=h;
+  $('#aoClose').onclick=()=>{aoUI.open=false;renderAoPanel();sizeSVG();};
+  el.querySelectorAll('.ao-tabs button').forEach(b=>b.onclick=()=>{aoUI.tab=b.dataset.tab;renderAoPanel();});
+  el.querySelectorAll('.ao-clip').forEach(b=>{b.onclick=()=>aoAdd({k:'clip',a:b.dataset.clip});
+    b.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/x-pfg-clip',b.dataset.clip);e.dataTransfer.effectAllowed='copy';});});
+  if(aoUI.tab==='text'){
+    const tx=a&&a.k==='text'?a:aoUI.textDef||(aoUI.textDef={f:FONTS[2][0],s:10,b:false,i:false});
+    const fs=$('#aoF'),ss=$('#aoS');fs.value=tx.f;ss.value=f2(P.units==='in'?tx.s/MM_IN:tx.s);ss.step=P.units==='in'?0.02:0.5;
+    $('#aoB').classList.toggle('on',!!tx.b);$('#aoI').classList.toggle('on',!!tx.i);
+    const setT=ch=>{if(a&&a.k==='text'){aoUpdate(a.id,ch);}else Object.assign(aoUI.textDef,ch);};
+    fs.onchange=()=>{setT({f:fs.value});fs.style.fontFamily=fs.value;};fs.style.fontFamily=tx.f;
+    ss.onchange=()=>{const v=parseFloat(ss.value);if(v>0)setT({s:clamp(P.units==='in'?v*MM_IN:v,3,200)});};
+    $('#aoB').onclick=()=>{const v=!(a&&a.k==='text'?a.b:aoUI.textDef.b);setT({b:v});$('#aoB').classList.toggle('on',v);};
+    $('#aoI').onclick=()=>{const v=!(a&&a.k==='text'?a.i:aoUI.textDef.i);setT({i:v});$('#aoI').classList.toggle('on',v);};
+    if(a&&a.k==='text')$('#aoT').oninput=e=>aoUpdate(a.id,{t:e.target.value});
+    const addB=$('#aoAddT');if(addB)addB.onclick=()=>{const t=$('#aoT').value.trim();if(!t){$('#aoT').focus();toast('Type some text first');return;}
+      const d=aoUI.textDef;aoAdd({k:'text',t,f:d.f,s:d.s,b:d.b,i:d.i});};
+  }
+  if(a){
+    const sz=$('#aoSz');if(sz)sz.oninput=()=>aoUpdate(a.id,{s:+sz.value});
+    $('#aoR').oninput=()=>aoUpdate(a.id,{r:+$('#aoR').value});
+    el.querySelectorAll('.ao-slots button').forEach(b=>b.onclick=()=>{aoUpdate(a.id,{slot:+b.dataset.s});renderAoPanel();});
+    $('#aoDup').onclick=()=>{const c=aoGet(a.id);aoAdd({...c,id:undefined,x:c.x+0.04,y:c.y+0.04},[clamp(c.x+0.04,0,1),clamp(c.y+0.04,0,1)]);};
+    $('#aoFront').onclick=()=>{const c=aoGet(a.id);P.addons=[...P.addons.filter(b=>b.id!==a.id),c];schedule();};
+    $('#aoDel').onclick=()=>aoRemove(a.id);
+  }
+  syncAoPanel();
+}
+function syncAoPanel(){
+  const a=selAo?aoGet(selAo):null;if(!a)return;
+  const sz=$('#aoSz');if(sz){sz.value=a.s;$('#aoSzV').textContent=fmtLen(a.s);}
+  const r=$('#aoR');if(r){r.value=a.r||0;$('#aoRV').textContent=Math.round(a.r||0)+'°';}
+  const ss=$('#aoS');if(ss&&a.k==='text'&&document.activeElement!==ss)ss.value=f2(P.units==='in'?a.s/MM_IN:a.s);
+}
+/* ---------- undo / redo: every change to the design is a step ---------- */
+const HIST={list:[],i:-1,t:0};
+function histChange(A,B){// what changed between two designs, so a slider drag or a move merges into one step
+  const k=[];for(const key in B){if(key==='addons')continue;if(JSON.stringify(A[key])!==JSON.stringify(B[key]))k.push(key);}
+  const x=A.addons||[],y=B.addons||[];
+  if(x.length!==y.length)k.push('ao#'+Math.random());
+  else y.forEach((o,i)=>{const p=x[i];if(!p||p.id!==o.id){k.push('ao#'+Math.random());return;}for(const f in o)if(o[f]!==p[f])k.push('ao:'+o.id+':'+f);});
+  return k.sort().join(',');
+}
+function histRecord(){
+  const j=JSON.stringify(P);if(HIST.list[HIST.i]===j)return;
+  const now=Date.now(),ch=HIST.i>=0?histChange(JSON.parse(HIST.list[HIST.i]),P):'';
+  if(HIST.i>0&&HIST.merge&&HIST.i===HIST.list.length-1&&now-HIST.t<800&&ch&&ch===HIST.ch)HIST.list[HIST.i]=j;// same thing still changing
+  else{const base=HIST.list[HIST.i];HIST.list=HIST.list.slice(0,HIST.i+1);HIST.list.push(j);if(HIST.list.length>150)HIST.list.shift();HIST.i=HIST.list.length-1;
+    HIST.ch=base?histChange(JSON.parse(base),P):'';}
+  HIST.t=now;HIST.merge=true;syncHistBtns();
+}
+function histGo(d){
+  const j=HIST.list[HIST.i+d];if(j==null){toast(d<0?'Nothing to undo':'Nothing to redo');return;}
+  HIST.i+=d;HIST.merge=false;P={...DEFAULTS,...JSON.parse(j)};
+  if(selAo&&!aoGet(selAo))selAo=null;activeStyle='';markGallery();buildControls();renderAoPanel();schedule();syncHistBtns();
+}
+function syncHistBtns(){const u=$('#btnUndo'),r=$('#btnRedo');if(u)u.disabled=HIST.i<=0;if(r)r.disabled=HIST.i>=HIST.list.length-1;}
+/* ---------- photo cut-out shape buttons ---------- */
+const CUT_SHAPES=[['rect','Rectangle','<rect x="4" y="6" width="16" height="12" rx="1"/>'],['circle','Circle','<circle cx="12" cy="12" r="8"/>'],['heart','Heart','<path d="M12 20s-8-5.2-8-10.6A4.4 4.4 0 0 1 12 7a4.4 4.4 0 0 1 8 2.4C20 14.8 12 20 12 20z"/>'],['star','Star','<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>']];
+function syncCutBar(){
+  const cur=isSingle(P)?P.winShape:P.cellShape;
+  document.querySelectorAll('#cutOpts [data-cut]').forEach(b=>{const on=b.dataset.cut===cur;b.classList.toggle('on',on);b.setAttribute('aria-checked',on);});
+}
+function initCutBar(){
+  const box=$('#cutOpts');
+  box.innerHTML=`<span class="cut-l">Photo cut-out</span>`+CUT_SHAPES.map(([id,name,ic])=>`<button role="checkbox" data-cut="${id}" data-tip="Cut the photo opening as a ${name.toLowerCase()}" aria-label="${name}"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">${ic}</svg></button>`).join('');
+  box.addEventListener('click',e=>{const b=e.target.closest('[data-cut]');if(!b)return;
+    const v=b.dataset.cut;
+    if(isSingle(P))setParam('winShape',v);else setParam('cellShape',v);syncCutBar();});
+  $('#btnUndo').onclick=()=>histGo(-1);$('#btnRedo').onclick=()=>histGo(1);
+  document.addEventListener('keydown',e=>{
+    const tg=e.target,typing=tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'||tg.tagName==='SELECT'||tg.isContentEditable);
+    if(typing)return;
+    const mod=e.ctrlKey||e.metaKey,k=e.key.toLowerCase();
+    if(mod&&k==='z'){e.preventDefault();histGo(e.shiftKey?1:-1);}
+    else if(mod&&k==='y'){e.preventDefault();histGo(1);}
+    else if((e.key==='Delete'||e.key==='Backspace')&&selAo){e.preventDefault();aoRemove(selAo);}
+  });
 }
 
 /* ---------- 3D export: rasterise the front into colour regions ---------- */
@@ -2110,6 +2406,7 @@ async function rasterFront(P,G,kMax=10,budget=6e6){
   const cv=document.createElement('canvas');cv.width=w;cv.height=h;
   const ctx=cv.getContext('2d',{willReadFrequently:true});
   if(P.capText){try{await document.fonts.load(`${P.capStyle==='normal'?'':P.capStyle} 40px ${P.capFont}`,P.capText);if(P.capText2)await document.fonts.load(`40px ${P.capFont2}`,P.capText2);}catch(e){}}
+  await aoFonts(P);
   const bodyP=new Path2D();polyPath(bodyP,G.outer);G.wins.forEach(w=>polyPath(bodyP,w.holeF));G.holes.forEach(q=>polyPath(bodyP,q));
   const els=[];
   for(const w of G.wins){
@@ -2119,6 +2416,7 @@ async function rasterFront(P,G,kMax=10,budget=6e6){
   els.push({slot:P.frameFil,raised:0,draw:c=>c.fill(bodyP,'evenodd')});
   for(const sh of decoShapes(P,G))els.push({slot:sh.slot,raised:1,clip:1,draw:c=>drawShape(c,sh)});
   if(P.capText)for(const l of captionLines(P,G))els.push({slot:P.capFil,raised:1,clip:1,draw:c=>{c.textAlign='center';c.textBaseline='middle';c.font=`${l.it?'italic ':''}${l.bold?'bold ':''}${l.size}px ${l.font}`;if('letterSpacing' in c)c.letterSpacing=`${l.sp}px`;c.fillText(l.t,l.x,l.y);if('letterSpacing' in c)c.letterSpacing='0px';}});
+  for(const a of P.addons||[])els.push({slot:a.slot,raised:1,clip:1,draw:c=>aoDraw(c,a,G)});
   const pass=want=>{
     ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);ctx.setTransform(k,0,0,k,pad,pad);
     let clipped=false;
@@ -2232,16 +2530,16 @@ function frontParts(P,G,M,kind){
   for(let i=0;i<cuts.length-1;i++){const u0=cuts[i],u1=Math.min(cuts[i+1],uMax);if(u1<=u0)continue;
     const holes=[...wins,...G.holes,...(u1<=pegD+1e-9?pegHoles:[]),...(u1<=cavD+1e-9?cav:[])];
     extrude(body,[{outer:G.outer,holes}],flat?fT-u1:u0,flat?fT-u0:u1,tf,true);}
-  const parts=[{name:`Frame (colour ${P.frameFil})`,slot:P.frameFil,tris:body}],R=p=>M.raised[p]>=128&&M.lab[p]>0;
+  const parts=[{name:`${slotName(P.frameFil)} - frame (colour ${P.frameFil})`,slot:P.frameFil,tris:body}],R=p=>M.raised[p]>=128&&M.lab[p]>0;
   if(kind==='single'){extrude(body,maskPolys(M,R),fT,fT+rH,tf);return{parts,fT,rH,iD,flat:false,tiers:[]};}
   if(flat){
     const seen=new Set();for(let p=0;p<M.lab.length;p+=7)if(M.lab[p])seen.add(M.lab[p]);
-    for(const s of[...seen].sort()){const T=s===P.frameFil?body:[];extrude(T,maskPolys(M,p=>M.lab[p]===s),0,iD,tf);if(T!==body)parts.push({name:`Colour ${s} face`,slot:s,tris:T});}
+    for(const s of[...seen].sort()){const T=s===P.frameFil?body:[];extrude(T,maskPolys(M,p=>M.lab[p]===s),0,iD,tf);if(T!==body)parts.push({name:`${slotName(s)} - face (colour ${s})`,slot:s,tris:T});}
     return{parts,fT,rH,iD,flat:true,tiers:[]};
   }
   const count=new Map();for(let p=0;p<M.lab.length;p++)if(M.raised[p]>=128&&M.lab[p])count.set(M.lab[p],(count.get(M.lab[p])||0)+1);
   const tiers=[...count.keys()].filter(s=>count.get(s)>8).sort((a,b)=>a===P.frameFil?-1:b===P.frameFil?1:a-b);
-  tiers.forEach((s,t)=>{const T=s===P.frameFil?body:[];extrude(T,maskPolys(M,p=>M.raised[p]>=128&&M.lab[p]===s),fT,fT+(t+1)*rH,tf);if(T!==body)parts.push({name:`Colour ${s} raised`,slot:s,tris:T});});
+  tiers.forEach((s,t)=>{const T=s===P.frameFil?body:[];extrude(T,maskPolys(M,p=>M.raised[p]>=128&&M.lab[p]===s),fT,fT+(t+1)*rH,tf);if(T!==body)parts.push({name:`${slotName(s)} - raised (colour ${s})`,slot:s,tris:T});});
   return{parts,fT,rH,iD,flat:false,tiers:tiers.map((s,t)=>({slot:s,start:fT+t*rH,top:fT+(t+1)*rH}))};
 }
 // the layer around the photo: the outline with the pocket cut out, or for a slide-in slot a U shape open on one side
@@ -2301,14 +2599,14 @@ function meshXML(id,name,tris,pindex){
 }
 function build3MF(objects,multi){
   const slots=multi?[...new Set(objects.flatMap(o=>o.parts.map(p=>p.slot)))].sort():[];
-  const x=[`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">Photo frame</metadata><metadata name="Application">Photo Frame Generator v8</metadata><resources>`];
-  if(multi)x.push(`<basematerials id="1">${slots.map(s=>`<base name="Colour ${s}" displaycolor="${P['fil'+s].toUpperCase()}FF"/>`).join('')}</basematerials>`);
+  const x=[`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">Photo frame</metadata><metadata name="Application">Photo Frame Generator v9</metadata><resources>`];
+  if(multi)x.push(`<basematerials id="1">${slots.map(s=>`<base name="${esc(slotName(s))} (colour ${s})" displaycolor="${P['fil'+s].toUpperCase()}FF"/>`).join('')}</basematerials>`);
   let id=2;const build=[];
   for(const o of objects){
     const parts=o.parts.filter(p=>p.tris.length);if(!parts.length)continue;
     if(multi&&parts.length>1){const ids=[];for(const p of parts){x.push(meshXML(id,p.name,p.tris,slots.indexOf(p.slot)));ids.push(id++);}
-      x.push(`<object id="${id}" type="model" name="${esc(o.name)}"><components>${ids.map(i=>`<component objectid="${i}"/>`).join('')}</components></object>`);build.push(id++);}
-    else{const all=[];for(const p of parts)for(const v of p.tris)all.push(v);x.push(meshXML(id,o.name,all,multi?slots.indexOf(parts[0].slot):null));build.push(id++);}
+      x.push(`<object id="${id}" type="model" name="${esc(o.name+' - '+[...new Set(parts.map(p=>slotName(p.slot)))].join(', '))}"><components>${ids.map(i=>`<component objectid="${i}"/>`).join('')}</components></object>`);build.push(id++);}
+    else{const all=[];for(const p of parts)for(const v of p.tris)all.push(v);x.push(meshXML(id,multi?`${o.name} - ${slotName(parts[0].slot)}`:o.name,all,multi?slots.indexOf(parts[0].slot):null));build.push(id++);}
   }
   x.push(`</resources><build>${build.map(i=>`<item objectid="${i}"/>`).join('')}</build></model>`);
   return zipStore([
@@ -2339,6 +2637,8 @@ async function exportPhoto(){
   const photos=windowPhotos(P,G);
   for(const p of photos)if(p&&!p.ph.img.complete)await new Promise(r=>{p.ph.img.onload=r;p.ph.img.onerror=r;});
   paintPhotos(c,G,photos,A,k);
+  if((P.addons||[]).length){await aoFonts(P);c.save();c.setTransform(k,0,0,k,-A.x*k,-A.y*k);const wp=new Path2D();G.wins.forEach(w=>polyPath(wp,w.win));c.clip(wp);
+    for(const a of P.addons){c.fillStyle=P['fil'+a.slot]||'#888';aoDraw(c,a,G);}c.restore();}
   if(G.cuts){const path=()=>{c.beginPath();for(const q of G.cuts){q.forEach(([x,y],i)=>i?c.lineTo((x-A.x)*k,(y-A.y)*k):c.moveTo((x-A.x)*k,(y-A.y)*k));c.closePath();}};
     c.save();path();c.rect(0,0,cw,ch);c.fillStyle='#fff';c.fill('evenodd');c.restore();
     path();c.strokeStyle='#888';c.lineWidth=3;c.setLineDash([18,12]);c.stroke();c.setLineDash([]);}
@@ -2357,12 +2657,12 @@ function showPrintGuide(kind,F,Bk){
   if(Bk.some(p=>p.leg))h+=`<tr><td>Stand leg</td><td>Lying flat. Glue its long straight edge to the middle of the back, with the short edge on the table.</td></tr>`;
   h+=`</table>`;
   if(kind==='multi'){
-    h+=`<h3>Colours</h3><table>${Object.keys(u).map(Number).filter(s=>s<=P.nCol).map(s=>`<tr><td>${dot(s)}Colour ${s} <code>${P['fil'+s]}</code></td><td>${esc(u[s].join(', '))}</td></tr>`).join('')}</table>`;
+    h+=`<h3>Colours</h3><table>${Object.keys(u).map(Number).filter(s=>s<=P.nCol).map(s=>`<tr><td>${dot(s)}${esc(slotName(s))} (colour ${s}) <code>${P['fil'+s]}</code></td><td>${esc(u[s].join(', '))}</td></tr>`).join('')}</table>`;
     if(F.flat)h+=`<p>Every colour is its own part of the front. Assign a filament to each part. The colours fill the first ${fmtLen(F.iD)} (${Math.round(F.iD/lh)} layers), so an AMS or multi-material unit only swaps on those layers; the rest prints in colour ${P.frameFil}.</p>`;
     else{
       const swaps=F.tiers.filter((t,i)=>!(i===0&&t.slot===P.frameFil));
-      h+=`<p><b>With an AMS / multi-material unit:</b> assign a filament to each part and print. <b>With a single nozzle:</b> start with colour ${P.frameFil} ${dot(P.frameFil)}and add a filament change (pause, M600 or “Add pause / Change filament” on the layer slider) at each height below. That is only ${swaps.length} change${swaps.length===1?'':'s'}.</p>`;
-      if(swaps.length)h+=`<table><tr><th>At height</th><th>Layer</th><th>Change to</th></tr>${swaps.map(t=>`<tr><td>${f2(t.start)} mm</td><td>${layer(t.start)}</td><td>${dot(t.slot)}Colour ${t.slot}</td></tr>`).join('')}</table><p class="tips">Heights assume ${lh} mm layers. Each colour stands ${fmtLen(F.rH)} above the one before it, so from the front you see every colour on top.</p>`;
+      h+=`<p><b>With an AMS / multi-material unit:</b> assign a filament to each part and print. <b>With a single nozzle:</b> start with ${esc(slotName(P.frameFil))} (colour ${P.frameFil}) ${dot(P.frameFil)}and add a filament change (pause, M600 or “Add pause / Change filament” on the layer slider) at each height below. That is only ${swaps.length} change${swaps.length===1?'':'s'}.</p>`;
+      if(swaps.length)h+=`<table><tr><th>At height</th><th>Layer</th><th>Change to</th></tr>${swaps.map(t=>`<tr><td>${f2(t.start)} mm</td><td>${layer(t.start)}</td><td>${dot(t.slot)}${esc(slotName(t.slot))} (colour ${t.slot})</td></tr>`).join('')}</table><p class="tips">Heights assume ${lh} mm layers. Each colour stands ${fmtLen(F.rH)} above the one before it, so from the front you see every colour on top.</p>`;
     }
   }else h+=`<p>Everything prints in one colour. The pattern, mats, lines and text stand ${fmtLen(F.rH)} proud as raised texture.</p>`;
   h+=`<h3>Put it together</h3><ol><li>Download <b>Photo print, actual size</b> and print it at 100 % scale (no “fit to page”). Trim on the grey line.</li>${G.slot?`<li>${G.back.pegs.length?'Press the front onto the back so the pins click into their holes, and add a few drops of glue around the edge if you like. The back stays on for good.':'Glue the back to the front around the edges (keep glue away from the slot).'}</li><li>Slide the photo, face forward, into the slot on the ${P.load} side (seen from the front) until it stops. To change it, push it back out with a finger through the hole in the back.</li>`:`<li>Lay the photo face down in the back’s pocket.</li><li>${G.back.pegs.length?'Press the front onto the back so the pins click into their holes. Pull the back off again to change the photo.':'Glue the back to the front around the edges.'}</li>`}`;
@@ -2373,7 +2673,7 @@ function showPrintGuide(kind,F,Bk){
 function showHelp(){
   $('#modalCard').innerHTML=`<button class="btn small close" id="mClose">Close</button><h2>Photo Frame Generator</h2>
   <p>Design a frame for your 3D printer, see it on a wall at true size, and download files for your slicer.</p>
-  <h3>1. Design</h3><ul><li>Start from a <b>Frame style</b>, or use <b>Single photo</b> / <b>Collage</b> at the top of the left panel.</li><li>Pick a sample kid photo or upload your own. In a collage, choose many photos at once; click an opening in the preview to choose which photo goes there.</li><li>The round buttons to the right of the frame are your <b>filament colours</b>. Click one to change it, or + to add a colour.</li><li>The <b>Frame size</b> box makes the frame wider, narrower, taller or shorter. Pick your <b>photo size</b> there too, or type its width and height if you already have the print; <b>Resize frame to fit Photo</b> picks good borders for it. In a collage the photo size sets the size of the main opening and the collage grows around it. <b>Surprise me</b> tries a random style.</li><li>Under <b>Collage</b>, the shaped layouts (elephant, bunny, heart, wine bottle, flower, LOVE and more) put several photos inside one silhouette. Print the photo sheet and cut along the dashed lines.</li><li><b>Photo walls</b> and <b>Wall frames</b>: a heart photo mosaic with names and a date, a printed photo grid with a cut-out of one person stuck on top, a family tree with the family name, and a tree of life with eight photos. Captions can have a small second line for a date.</li><li><b>Photo cut-out</b> (an opening shape) makes the frame follow the outline of the person or pet in your photo. The app finds them with a small AI model that runs in your browser (nothing is uploaded), or uses the see-through part of a PNG. It works best with one clear subject on a plain background. Opened as a local file without internet, only plain backgrounds and transparent PNGs work.</li><li>The photo slides into a slot in the side of the back, so you can change it any time without opening the frame (or choose a removable back under <b>Photo slot &amp; hanging</b>).</li></ul>
+  <h3>1. Design</h3><ul><li>Start from a <b>Frame style</b>, or use <b>Single photo</b> / <b>Collage</b> at the top of the left panel.</li><li>Pick a sample kid photo or upload your own. In a collage, choose many photos at once; click an opening in the preview to choose which photo goes there.</li><li>The round buttons to the right of the frame are your <b>filament colours</b>. Click one to change it, or + to add a colour.</li><li>The <b>Frame size</b> box makes the frame wider, narrower, taller or shorter. Pick your <b>photo size</b> there too, or type its width and height if you already have the print; <b>Resize frame to fit Photo</b> picks good borders for it. In a collage the photo size sets the size of the main opening and the collage grows around it. <b>Surprise me</b> tries a random style.</li><li><b>Photo cut-out</b> buttons above the preview cut the photo opening as a rectangle, circle, heart or star. <b>Undo</b> and <b>Redo</b> sit next to them (Ctrl+Z, Ctrl+Shift+Z).</li><li><b>Add-ons</b> on the right: drag clip art onto the frame (or click it), drag the corner square to resize, the round handle to turn it, and pick its filament colour. Under <b>Text</b>, type words in any font and size and drag them where you want. On the frame they print as raised colour; over the photo they are printed on the photo print.</li><li>Under <b>Collage</b>, the shaped layouts (elephant, bunny, heart, wine bottle, flower, LOVE and more) put several photos inside one silhouette. Print the photo sheet and cut along the dashed lines.</li><li><b>Photo walls</b> and <b>Wall frames</b>: a heart photo mosaic with names and a date, a printed photo grid with a cut-out of one person stuck on top, a family tree with the family name, and a tree of life with eight photos. Captions can have a small second line for a date.</li><li><b>Photo cut-out</b> (an opening shape) makes the frame follow the outline of the person or pet in your photo. The app finds them with a small AI model that runs in your browser (nothing is uploaded), or uses the see-through part of a PNG. It works best with one clear subject on a plain background. Opened as a local file without internet, only plain backgrounds and transparent PNGs work.</li><li>The photo slides into a slot in the side of the back, so you can change it any time without opening the frame (or choose a removable back under <b>Photo slot &amp; hanging</b>).</li></ul>
   <h3>2. Check</h3><ul><li><b>3D</b> shows the real printed pieces in their colours; drag to turn them. <b>Real world</b> shows the frame at true size on a wall or shelf. In 3D, <b>Back</b> shows the photo slot and hanger, and <b>Photo going in</b> shows how the photo slides in.</li><li>Yellow notes at the bottom left warn about anything that may not print well.</li></ul>
   <h3>3. Print</h3><ul><li><b>Raised colours</b> (default) work on any printer: the frame prints face up and each extra colour stands a little higher, so you change filament only once per colour.</li><li><b>Flat colours</b> print face down for a smooth front, for printers with an AMS or multi-material unit.</li><li>The multicolour 3MF has one part per colour. The single colour 3MF and STL turn the decorations into raised texture.</li></ul>
   <p class="tips">Hover over any button for a short explanation.</p>`;
@@ -2390,13 +2690,13 @@ function randomize(){
     outerShape:pick(['rect','rounded','rounded','octagon','ticket','arch','stadium','oval']),outerR:Math.round(6+r()*20),
     outerEdge:r()<0.55?'plain':pick(EDGES.slice(1)).at(0),outerEdgeSize:Math.round(10+r()*14),outerEdgeDepth:f2(2+r()*3),
     winEdge:r()<0.8?'plain':pick(['scallop','wave']),
-    mat1On:r()<0.55,mat2On:r()<0.3,linesWhere:pick(['none','inner','outer','both']),linesDash:pick(['solid','dashed','dotted']),
+    mat1On:r()<0.55,mat2On:r()<0.3,
     ornament:r()<0.6?'none':pick(ORNAMENTS.slice(1)).at(0)});
   if(isSingle(P))P.winShape=pick(['rect','rect','rounded','oval','arch','octagon','circle','heart','stadium']);else P.cellShape=pick(['rect','rounded','oval','circle','arch']);
   activeStyle='';markGallery();syncControls();schedule();toast('Random style: click Surprise me again for another');
 }
 let activeStyle='',galleryKey='';
-const KEEP=['mode','layout','colW','colH','colPhoto','colPW','colPH','colGap','cellShape','cellR','units','photoPreset','photoW','photoH','orient','sizeMode','outerW','outerH','photoFit','photoZoom','photoX','photoY','hang','holeD','holeSpacing','pegs','load','printStyle','frontT','reliefH','inlayD','backT','pocketD','pocketClear','layerH'];
+const KEEP=['addons','mode','layout','colW','colH','colPhoto','colPW','colPH','colGap','cellShape','cellR','units','photoPreset','photoW','photoH','orient','sizeMode','outerW','outerH','photoFit','photoZoom','photoX','photoY','hang','holeD','holeSpacing','pegs','load','printStyle','frontT','reliefH','inlayD','backT','pocketD','pocketClear','layerH'];
 function presetParams(name){const keep={};for(const k of KEEP)keep[k]=P[k];
   // a style without its own text keeps the names and date you typed
   const pr=PRESETS[name],kc=!pr.capText&&P.capText?{capText:P.capText,capText2:P.capText2,capFont:P.capFont,capFont2:P.capFont2,capSize:P.capSize,capSize2:P.capSize2,capPos:P.capPos,capStyle:P.capStyle}:{};
@@ -2418,6 +2718,7 @@ function renderGallery(force){
   markGallery();
 }
 function applySettings(obj){
+  selAo=null;setTimeout(renderAoPanel,0);
   const src=obj&&'frameColor' in obj?{...obj,...legacyToSlots(obj)}:obj||{};
   P={...DEFAULTS};for(const k in src)if(k in DEFAULTS)P[k]=src[k];
   activeStyle='';buildControls();schedule();
@@ -2564,9 +2865,8 @@ function init(){
   if(prefs.view==='back'){prefs.view='3d';prefs.lay3d='back';}
   view=['front','real','3d'].includes(prefs.view)?prefs.view:'front';
   syncCur();
-  $('#tDims').checked=prefs.dims;$('#tGuides').checked=prefs.guides;$('#tScene').value=prefs.scene;$('#tWall').value=prefs.wall;
+  $('#tDims').checked=prefs.dims;$('#tScene').value=prefs.scene;$('#tWall').value=prefs.wall;
   $('#tDims').onchange=e=>{prefs.dims=e.target.checked;savePrefs();};
-  $('#tGuides').onchange=e=>{prefs.guides=e.target.checked;savePrefs();};
   $('#tScene').onchange=e=>{prefs.scene=e.target.value;if(e.target.value==='kids'&&prefs.wall==='#eeeae3'){prefs.wall='#cfe3f3';$('#tWall').value=prefs.wall;}zoom=1;savePrefs();};
   $('#tWall').onchange=e=>{prefs.wall=e.target.value;savePrefs();};
   const setView=v=>{view=v;prefs.view=v;zoom=1;savePrefs();};
@@ -2574,7 +2874,7 @@ function init(){
   $('#modeSingle').onclick=()=>setMode('single');$('#modeCollage').onclick=()=>setMode('collage');
   buildControls();initTips();
   $('#btnSurprise').onclick=()=>{const b=$('#btnSurprise');b.classList.remove('spin');void b.offsetWidth;b.classList.add('spin');randomize();};
-  initSizePod();$('#btnHelp').onclick=showHelp;
+  initSizePod();initCutBar();if(innerWidth<=820)aoUI.open=false;renderAoPanel();$('#btnHelp').onclick=showHelp;
   $('#btnReset').onclick=()=>{applySettings({});toast('Reset to defaults');};
   const menu=$('#dlMenu'),dlBtn=$('#download');
   const showMenu=on=>{menu.hidden=!on;dlBtn.setAttribute('aria-expanded',on);};
@@ -2587,15 +2887,17 @@ function init(){
   $('#colorBar').addEventListener('click',e=>{e.stopPropagation();const b=e.target.closest('.sw');if(b){const s=+b.dataset.s;if(popSlot===s)closeColorPop();else openColorPop(s);return;}if(e.target.closest('#cbAdd'))addSlot();});
   try{const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}
   $('#themeBtn').onclick=()=>{const de=document.documentElement;const dark=de.dataset.theme?de.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;de.dataset.theme=dark?'light':'dark';lsSet('theme',de.dataset.theme);schedule();};
-  $('#btnSave').onclick=()=>download('photo-frame-settings.json',JSON.stringify({v:8,...P},null,2),'application/json');
+  $('#btnSave').onclick=()=>download('photo-frame-settings.json',JSON.stringify({v:9,...P},null,2),'application/json');
   $('#btnLoad').onclick=()=>$('#fileSettings').click();
   $('#fileSettings').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{applySettings(JSON.parse(t));toast('Settings loaded');}catch(err){toast('That file is not a settings file.');}});e.target.value='';};
   $('#btnLink').onclick=()=>{const url=location.href.split('#')[0]+'#s='+encodeHash();history.replaceState(null,'',url);(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast('Link copied (photos not included)'),()=>toast('Link is in the address bar'));};
   $('#filePhoto').onchange=e=>{loadFiles(e.target.files);e.target.value='';};
   const v=$('#view');
-  v.addEventListener('dragover',e=>{e.preventDefault();v.classList.add('drop');});
+  v.addEventListener('dragover',e=>{e.preventDefault();if(![...e.dataTransfer.types].includes('text/x-pfg-clip'))v.classList.add('drop');else e.dataTransfer.dropEffect='copy';});
   v.addEventListener('dragleave',()=>v.classList.remove('drop'));
-  v.addEventListener('drop',e=>{e.preventDefault();v.classList.remove('drop');loadFiles(e.dataTransfer.files);});
+  v.addEventListener('drop',e=>{e.preventDefault();v.classList.remove('drop');const clip=e.dataTransfer.getData('text/x-pfg-clip');
+    if(clip){const svg=$('#canvasWrap svg');if(!svg||view!=='front'){aoAdd({k:'clip',a:clip});return;}const[x,y]=svgPoint(svg,e.clientX,e.clientY);aoAdd({k:'clip',a:clip},[x/G.W,(y-G.y0)/(G.H-G.y0)]);return;}
+    loadFiles(e.dataTransfer.files);});
   $('#zIn').onclick=()=>{if(view==='3d'){V3D.dist/=1.25;draw3D();return;}zoom=Math.min(8,zoom*1.25);sizeSVG();};
   $('#zOut').onclick=()=>{if(view==='3d'){V3D.dist*=1.25;draw3D();return;}zoom=Math.max(0.2,zoom/1.25);sizeSVG();};
   $('#zFit').onclick=()=>{if(view==='3d'){fit3D(true);draw3D();return;}zoom=1;sizeSVG();};
