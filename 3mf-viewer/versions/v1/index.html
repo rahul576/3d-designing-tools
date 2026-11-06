@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>3MF Viewer v1</title>
-<meta name="description" content="Open 3MF and STL 3D print files in your browser and turn them in 3D with their filament colours. Nothing is uploaded.">
+<title>Quick 3MF Viewer v1</title>
+<meta name="description" content="A quick 3MF file viewer for Mac and the browser: see 3MF print files in 3D in their filament colours without opening a slicer. Nothing is uploaded.">
 <style>
 :root{
   --bg-canvas:#eceef1; --grid:#cdd1d7; --grid-major:#a9afb8;
@@ -120,7 +120,7 @@ kbd{font:11px var(--mono);background:var(--panel-2);border:1px solid var(--line)
 <aside>
   <div class="brand">
     <svg class="logo" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f08a24" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2.5 20.5 7v10L12 21.5 3.5 17V7Z"/><path d="M3.5 7 12 11.5 20.5 7M12 11.5v10"/></svg>
-    <h1>3MF VIEWER <span>v1</span></h1>
+    <h1>QUICK 3MF VIEWER <span>v1</span></h1>
     <a class="home" href="../../../" title="All tools">Tools</a>
     <button class="icon-btn" id="helpBtn" type="button" title="How to use" aria-label="How to use"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.5 9.3a2.6 2.6 0 0 1 5 .9c0 1.7-2.5 2.3-2.5 3.8"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg></button>
     <button class="icon-btn" id="themeBtn" type="button" title="Dark mode" aria-label="Toggle dark mode"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button>
@@ -211,7 +211,7 @@ brew uninstall --cask 3mf-viewer</span><button type="button" title="Copy" aria-l
 </div>
 
 <dialog id="help">
-  <h3>3MF Viewer</h3>
+  <h3>Quick 3MF Viewer</h3>
   <div class="tips" style="font-size:13px">
     Open a <b>.3mf</b> or <b>.stl</b> file with the Open button, or drop it on the page.
     <ul>
@@ -997,7 +997,7 @@ function show(m, label, bytes) {
   $("iObjs").textContent = m.objects ? fmtN(m.objects) : "–";
   $("iBytes").textContent = bytes ? fmtBytes(bytes) : "–";
   $("modelSub").textContent = label;
-  document.title = label + " · 3MF Viewer";
+  document.title = label + " · Quick 3MF Viewer";
 
   const list = $("colorList");
   list.innerHTML = S.gpu.map((g, i) => `<label title="Show or hide the ${hex(g.color)} parts"><input type="checkbox" data-i="${i}" checked><span class="sw" style="background:${hex(g.color)}"></span><span class="hex">${hex(g.color)}</span><span class="pct">${(g.tris / m.tris * 100).toFixed(g.tris / m.tris < 0.1 ? 1 : 0)}%</span></label>`).join("")

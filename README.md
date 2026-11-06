@@ -12,7 +12,7 @@ Each tool has its own folder with a short README describing what it does and how
 
 - [Tray Generator](tray-generator/) — parametric stackable trays and boxes with lids, exported as STL/3MF. [Open it online](https://rahul576.github.io/3d-designing-tools/tray-generator/).
 - [Photo Frame Generator](photo-frame-generator/) — 3D printable photo and collage frames in up to four filament colours, with a slide-in photo slot, a real-world preview, a turnable 3D view, wall hangers and a snap-on back, exported as multicolour or single colour 3MF/STL. [Open it online](https://rahul576.github.io/3d-designing-tools/photo-frame-generator/).
-- [3MF Viewer](3mf-viewer/) — view 3MF and STL print files in 3D in their filament colours, in the browser or as a Mac app with Finder thumbnails and Quick Look. [Open it online](https://rahul576.github.io/3d-designing-tools/3mf-viewer/). Mac app: `brew tap rahul576/3d-designing-tools https://github.com/rahul576/3d-designing-tools && brew install --cask 3mf-viewer`.
+- [Quick 3MF Viewer for Mac](3mf-viewer/) — like Preview for STL files, but for 3MF: Finder thumbnails and a Space-bar 3D preview in filament colours, so you don't have to open Bambu Studio or another slicer (5 to 10 seconds per file) just to see a model. Also works in the browser. [Open it online](https://rahul576.github.io/3d-designing-tools/3mf-viewer/). Mac app: `brew tap rahul576/3d-designing-tools https://github.com/rahul576/3d-designing-tools && brew install --cask 3mf-viewer`.
 
 ## Home page
 

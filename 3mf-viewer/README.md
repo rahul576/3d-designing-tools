@@ -1,6 +1,6 @@
-# 3MF Viewer (v1)
+# Quick 3MF Viewer for Mac (v1)
 
-Look at 3MF print files (Bambu Studio, OrcaSlicer, PrusaSlicer, Cura and others) in 3D, in their filament colours, without opening a slicer. Comes in two forms:
+A quick 3MF file viewer for Mac, like Preview is for STL files. Your 3MF print files (Bambu Studio, OrcaSlicer, PrusaSlicer, Cura and others) show up as **Finder thumbnails** in their filament colours, and pressing **Space** gives a 3D preview you can turn and zoom. No need to open a heavy slicer that takes 5 to 10 seconds per file just to see what is in it. Comes in two forms:
 
 - **In the browser:** https://rahul576.github.io/3d-designing-tools/3mf-viewer/ (works on any computer, nothing is uploaded)
 - **As a Mac app:** Finder thumbnails, Space-bar Quick Look and a viewer window for .3mf files, installed with Homebrew
