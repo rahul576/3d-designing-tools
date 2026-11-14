@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tray Generator v8</title>
+<title>Tray Generator v9</title>
 <style>
 :root{
   --bg-canvas:#cfd1d4; --grid:#b9bcc0; --grid-major:#a9adb2;
@@ -37,7 +37,8 @@
 .menu .fmt{display:grid;grid-template-columns:1fr 1fr;margin:2px 2px 6px}
 .menu .fmt button{justify-content:center;padding:6px;font:600 12px var(--mono)}
 .patinfo{font-size:12px;margin-top:10px;color:var(--muted)} .patinfo b{color:var(--text)}
-.seg.five{grid-template-columns:repeat(5,1fr)}
+.seg.five{grid-template-columns:repeat(5,1fr)} .seg.three{grid-template-columns:repeat(3,1fr)}
+.seg.three button:nth-child(n+4){border-top:1px solid var(--line)}
 .ptime{font:600 18px var(--mono);margin:-4px 0 10px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;white-space:nowrap} .ptime small{font-size:11px;color:var(--muted);font-weight:400;flex-basis:100%;padding-left:23px;margin-top:-2px}
 .pset{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:6px;margin-top:10px}
 .pset label{font-size:11px;color:var(--muted)} .pset select{margin-top:3px;height:26px;font-size:12px;padding:0 4px}
@@ -154,13 +155,13 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 <aside>
   <div class="brand">
     <svg width="34" height="24" viewBox="0 0 34 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M2 9 17 2l15 7-15 7z"/><path d="M2 9v5l15 7 15-7V9"/><path d="M9.5 5.5 24.5 12.5"/></svg>
-    <h1>Tray <span style="font-weight:400;color:var(--muted)">v8</span></h1>
+    <h1>Tray <span style="font-weight:400;color:var(--muted)">v9</span></h1>
     <button class="icon-btn" id="undo" title="Undo (Ctrl+Z)" aria-label="Undo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
     <button class="icon-btn" id="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button>
   </div>
 
   <div class="sec" style="border-top:0">
-    <div class="field" data-f="t"><label>Thickness <small>(mm)</small> <span class="help" title="Wall, floor, partition and lid thickness. 0.8 mm = two lines with a 0.4 mm nozzle.">?</span></label>
+    <div class="field" data-f="t"><label>Thickness <small>(mm)</small> <span class="help" title="Wall, partition and lid thickness. 0.8 mm = two lines with a 0.4 mm nozzle. The bottom has its own thickness (see Bottom).">?</span></label>
       <div class="slider"><input type="range" min="0.4" max="3" step="0.1" aria-label="Thickness"><input type="number" min="0.4" max="5" step="0.1" aria-label="Thickness value"></div></div>
     <div class="field" data-f="f"><label>Fillet <small>(mm)</small> <span class="help" title="Rounds the inside corners and the bottom edges of each compartment.">?</span></label>
       <div class="slider"><input type="range" min="0.2" max="10" step="0.1" aria-label="Fillet"><input type="number" min="0.2" max="20" step="0.1" aria-label="Fillet value"></div></div>
@@ -209,6 +210,32 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
         <div class="slider"><input type="range" min="10" max="80" step="1" aria-label="Pattern density"><input type="number" min="10" max="80" step="1" aria-label="Pattern density value"></div></div>
       <label class="hint" style="display:flex;gap:6px;align-items:center;margin-top:8px;color:var(--text);cursor:pointer"><input type="checkbox" id="patInner"> Inner walls too <span class="help" title="Also cut the pattern through the partitions between compartments, not just the outer walls. Saves more filament; small items can pass between compartments.">?</span></label>
       <div class="patinfo" id="patInfo"></div>
+    </div>
+  </div>
+
+  <div class="sec" id="bottomSec">
+    <h2>Bottom <span>thickness · pattern</span></h2>
+    <div class="field" data-f="tb"><label>Bottom thickness <small>(mm)</small> <span class="help" title="Thickness of the floor, set separately from the walls. Thicker = stiffer base; thinner = lighter. Use a multiple of your layer height.">?</span></label>
+      <div class="slider"><input type="range" min="0.4" max="5" step="0.1" aria-label="Bottom thickness"><input type="number" min="0.4" max="10" step="0.1" aria-label="Bottom thickness value"></div></div>
+    <div class="hint" style="margin:12px 0 6px">Bottom pattern <span class="help" title="Holes straight through the floor of every compartment, chosen separately from the wall pattern. Saves filament and lets dust or water drain out.">?</span></div>
+    <div class="seg three" role="group" aria-label="Bottom pattern">
+      <button data-bpat="none" aria-pressed="true"><svg width="20" height="18" viewBox="0 0 20 18" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="16" height="14" rx="1"/></svg>none</button>
+      <button data-bpat="hex" aria-pressed="false"><svg width="20" height="18" viewBox="0 0 20 18" fill="currentColor"><path d="M6 2l3 1.7v3.5L6 9 3 7.2V3.7zM14 2l3 1.7v3.5L14 9l-3-1.8V3.7zM10 9l3 1.7v3.5L10 16l-3-1.8v-3.5z"/></svg>hex</button>
+      <button data-bpat="circle" aria-pressed="false"><svg width="20" height="18" viewBox="0 0 20 18" fill="currentColor"><circle cx="6" cy="5" r="2.6"/><circle cx="14" cy="5" r="2.6"/><circle cx="10" cy="12.5" r="2.6"/></svg>circle</button>
+      <button data-bpat="square" aria-pressed="false"><svg width="20" height="18" viewBox="0 0 20 18" fill="currentColor"><path d="M3 2h5v5H3zM12 2h5v5h-5zM3 11h5v5H3zM12 11h5v5h-5z"/></svg>square</button>
+      <button data-bpat="diamond" aria-pressed="false"><svg width="20" height="18" viewBox="0 0 20 18" fill="currentColor"><path d="M6 1.5 9 5 6 8.5 3 5zM14 1.5 17 5l-3 3.5L11 5zM10 9l3 3.5-3 3.5-3-3.5z"/></svg>diamond</button>
+      <button data-bpat="slots" aria-pressed="false"><svg width="20" height="18" viewBox="0 0 20 18" fill="currentColor"><rect x="2.5" y="2" width="3" height="14" rx="1.5"/><rect x="8.5" y="2" width="3" height="14" rx="1.5"/><rect x="14.5" y="2" width="3" height="14" rx="1.5"/></svg>slots</button>
+    </div>
+    <div id="bpatFields">
+      <div class="field" data-f="bs" style="margin-top:12px"><label>Hole size <small>(mm)</small> <span class="help" title="Width of each hole in the floor (slots are 3x as long as they are wide).">?</span></label>
+        <div class="slider"><input type="range" min="2" max="20" step="0.5" aria-label="Bottom hole size"><input type="number" min="2" max="40" step="0.5" aria-label="Bottom hole size value"></div></div>
+      <div class="field" data-f="bd"><label>Density <small>(% open)</small> <span class="help" title="How much of the floor is cut away. Higher = lighter, but bars between holes never go below 1.5x the wall thickness.">?</span></label>
+        <div class="slider"><input type="range" min="10" max="80" step="1" aria-label="Bottom pattern density"><input type="number" min="10" max="80" step="1" aria-label="Bottom pattern density value"></div></div>
+      <div class="field" data-f="bm"><label>Solid border <small>(mm)</small> <span class="help" title="Solid strip kept around the edge of every compartment floor (measured from where the corner fillet ends).">?</span></label>
+        <div class="slider"><input type="range" min="0.5" max="10" step="0.5" aria-label="Bottom solid border"><input type="number" min="0.5" max="30" step="0.5" aria-label="Bottom solid border value"></div></div>
+      <div class="field" data-f="ba"><label>Rotation <small>(°)</small> <span class="help" title="Turns the hole pattern. 0° lines it up with the walls; 90° turns slots crosswise; 45° turns squares into diamonds.">?</span></label>
+        <div class="slider"><input type="range" min="0" max="90" step="1" aria-label="Bottom pattern rotation"><input type="number" min="0" max="180" step="1" aria-label="Bottom pattern rotation value"></div></div>
+      <div class="patinfo" id="bpatInfo"></div>
     </div>
   </div>
 
@@ -312,7 +339,7 @@ const fmt = v => String(Math.round(v * 100) / 100);
 const clone = o => JSON.parse(JSON.stringify(o));
 
 /* ---------------- state + history ---------------- */
-const DEF = { W: 80, D: 160, H: 20, t: 0.8, f: 1, hp: 18, stack: false, s: 2.4, flush: true, layout: G.gridTree(1, 2), lid: { style: 'none', c: 0.2, L: 4 }, pattern: { type: 'none', size: 6, density: 50, inner: false } };
+const DEF = { W: 80, D: 160, H: 20, t: 0.8, f: 1, hp: 18, stack: false, s: 2.4, flush: true, layout: G.gridTree(1, 2), lid: { style: 'none', c: 0.2, L: 4 }, pattern: { type: 'none', size: 6, density: 50, inner: false }, tb: 0.8, bpattern: { type: 'none', size: 6, density: 50, margin: 2, angle: 0 } };
 let state = clone(DEF);
 try {
   const v2 = JSON.parse(localStorage.getItem('tray-gen-v2') || 'null');
@@ -321,6 +348,9 @@ try {
   if (v3) state = Object.assign(clone(DEF), v3);
   else if (v2) state = Object.assign(clone(DEF), v2);
   else if (v1) { state = Object.assign(clone(DEF), v1); state.layout = G.gridTree(v1.nx, v1.ny); delete state.nx; delete state.ny; }
+  const old = v3 || v2 || v1;
+  if (old && old.tb === undefined) state.tb = state.t;      // saved before v9: the floor was as thick as the walls
+  state.bpattern = Object.assign(clone(DEF.bpattern), state.bpattern || {});
 } catch (e) {}
 let density = 1.24, prefs = { price: 1200, cur: '₹', fmt: 'stl', printer: 'standard', layer: 0.2, nozzle: 0.4, factor: 1, calOpen: false };
 try { prefs = Object.assign(prefs, JSON.parse(localStorage.getItem('tray-gen-prefs') || '{}')); } catch (e) {}
@@ -348,8 +378,9 @@ addEventListener('keydown', e => {
 });
 
 /* ---------------- sidebar bindings ---------------- */
-const getF = k => k === 'lc' ? state.lid.c : k === 'lL' ? state.lid.L : k === 'ps' ? state.pattern.size : k === 'pd' ? state.pattern.density : state[k];
-const setF = (k, v) => { if (k === 'lc') state.lid.c = v; else if (k === 'lL') state.lid.L = v; else if (k === 'ps') state.pattern.size = v; else if (k === 'pd') state.pattern.density = v; else state[k] = v; };
+const BKEY = { bs: 'size', bd: 'density', bm: 'margin', ba: 'angle' };
+const getF = k => k === 'lc' ? state.lid.c : k === 'lL' ? state.lid.L : k === 'ps' ? state.pattern.size : k === 'pd' ? state.pattern.density : BKEY[k] ? state.bpattern[BKEY[k]] : state[k];
+const setF = (k, v) => { if (k === 'lc') state.lid.c = v; else if (k === 'lL') state.lid.L = v; else if (k === 'ps') state.pattern.size = v; else if (k === 'pd') state.pattern.density = v; else if (BKEY[k]) state.bpattern[BKEY[k]] = v; else state[k] = v; };
 $$('.field[data-f]').forEach(el => {
   const k = el.dataset.f, [range, num] = el.querySelectorAll('input');
   range.addEventListener('input', () => { setF(k, Number(range.value)); num.value = fmt(getF(k)); rebuild(); });
@@ -367,6 +398,7 @@ $('#flush').onchange = e => { state.flush = e.target.checked; syncUI(); rebuild(
 $('#patInner').onchange = e => { state.pattern.inner = e.target.checked; syncUI(); rebuild(); commit(); };
 $$('[data-lid]').forEach(b => b.onclick = () => { state.lid.style = b.dataset.lid; syncUI(); rebuild(); commit(); });
 $$('[data-pat]').forEach(b => b.onclick = () => { state.pattern.type = b.dataset.pat; syncUI(); rebuild(); commit(); });
+$$('[data-bpat]').forEach(b => b.onclick = () => { state.bpattern.type = b.dataset.bpat; syncUI(); rebuild(); commit(); });
 $('#price').value = prefs.price; $('#cur').value = prefs.cur;
 $('#printer').value = prefs.printer; $('#layerH').value = String(prefs.layer); $('#nozzle').value = String(prefs.nozzle);
 for (const [id, k, num] of [['printer', 'printer', false], ['layerH', 'layer', true], ['nozzle', 'nozzle', true]])
@@ -412,6 +444,8 @@ function syncUI() {
   $$('[data-pat]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.pat === state.pattern.type)));
   $('#patFields').hidden = state.pattern.type === 'none';
   $('#patInner').checked = !!state.pattern.inner;
+  $$('[data-bpat]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.bpat === state.bpattern.type)));
+  $('#bpatFields').hidden = state.bpattern.type === 'none';
   $('#optLidL').classList.toggle('off', state.lid.style === 'none');
   $('#optStackL').classList.toggle('off', !state.stack);
   for (const p of $$('.pill:not(.cpill)')) { const inp = p.querySelector('input'); if (document.activeElement !== inp) inp.value = fmt(state[p.dataset.k]); }
@@ -716,7 +750,7 @@ function rebuild() {
   if (lastBuildMs > 120) { clearTimeout(slowTimer); slowTimer = setTimeout(doRebuild, 220); return; }   // heavy patterns: wait until input settles
   if (rebuildQueued) return; rebuildQueued = true; requestAnimationFrame(() => { rebuildQueued = false; doRebuild(); });
 }
-function params() { return Object.assign({}, state, { lid: state.lid.style === 'none' ? null : state.lid, pattern: state.pattern.type === 'none' ? null : state.pattern }); }
+function params() { return Object.assign({}, state, { lid: state.lid.style === 'none' ? null : state.lid, pattern: state.pattern.type === 'none' ? null : state.pattern, bottomPattern: state.bpattern.type === 'none' ? null : state.bpattern }); }
 function doRebuild() {
   const p = params(), tb = performance.now();
   mesh = G.build(p);
@@ -742,6 +776,7 @@ function updateStats() {
     ['Outer', `${fmt(q.W)} × ${fmt(q.D)} × ${fmt(q.H)}`],
     ['Compartments', String(q.leaves.length)],
     ['Partitions', q.single ? '—' : `${fmt(q.hp)} mm high`],
+    ['Walls · bottom', `${fmt(q.t)} mm · ${fmt(q.tb)} mm`],
   ];
   if (q.stack) rows.push(['Nest depth', `${fmt(q.nest)} mm`]);
   rows.push(['Tray', `${gt.toFixed(1)} g · ${(mesh.volume / 1000).toFixed(2)} cm³`]);
@@ -764,6 +799,12 @@ function updateStats() {
     $('#patInfo').innerHTML = `<b>${pi.holes}</b> holes · ${(pi.openArea / Math.max(1, pi.panelArea) * 100).toFixed(0)}% of wall open · saves <b>${gs.toFixed(1)} g</b> (${pct.toFixed(0)}% of tray) = <b>${money(gs)}</b>` +
       (state.pattern.inner ? (pi.innerHoles ? ` · ${pi.innerHoles} in inner walls` : mesh.params.single ? ' · no inner walls in this tray' : ' · inner walls too low for the pattern') : '');
   } else $('#patInfo').textContent = state.pattern.type === 'none' ? '' : 'Pattern does not fit – try smaller holes or a taller tray.';
+  const bi = mesh.bottomInfo;
+  if (bi && bi.holes) {
+    const gs = bi.savedVolume / 1000 * density, pct = gs / (gt + gs) * 100;
+    rows.push(['Bottom pattern saves', `${gs.toFixed(1)} g · ${money(gs)}`]);
+    $('#bpatInfo').innerHTML = `<b>${bi.holes}</b> holes in ${bi.compartments} of ${q.leaves.length} floor${q.leaves.length === 1 ? '' : 's'} · ${(bi.openArea / Math.max(1, bi.floorArea) * 100).toFixed(0)}% of the bottom open · saves <b>${gs.toFixed(1)} g</b> (${pct.toFixed(0)}% of tray) = <b>${money(gs)}</b>`;
+  } else $('#bpatInfo').textContent = state.bpattern.type === 'none' ? '' : bi && bi.tooMany ? 'Too many holes (over 6000) – use bigger holes or a lower density.' : 'Pattern does not fit – try smaller holes or a narrower border.';
   $('#stats').innerHTML = rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join('');
 }
 
@@ -1068,7 +1109,7 @@ function updateSection(q, show, items) {
     const zJ = q.H + (lidOn && stacked ? mesh.stackOffset : 0);
     half = Math.max(3.4, (q.stack ? q.s * 1.35 : 0) + 0.8, lidOn ? (lid.L || 0) * 0.75 + 1.2 : 0);
     cx = q.t + half * 0.3; cz = zJ - (lidOn && lid.style !== 'stack' ? half * 0.2 : 0.3);
-  } else { half = Math.max(3.2, (q.stack ? q.s + 1.6 : q.fb + q.t + 2.2)); cx = half * 0.75 - 0.6; cz = half * 0.75 - 0.6; }
+  } else { half = Math.max(3.2, (q.stack ? q.s + 1.6 : q.fb + Math.max(q.t, q.tb) + 2.2), q.tb + 2); cx = half * 0.75 - 0.6; cz = half * 0.75 - 0.6; }
   const x0 = cx - half, z1 = cz + half, size = half * 2, sw = size / 220;
   let out = '';
   for (const p of parts_) out += `<path d="${p.loops.map(l => 'M' + l.map(v => `${v[0].toFixed(4)} ${(-v[1]).toFixed(4)}`).join('L') + 'Z').join('')}" fill="${p.color}" fill-opacity=".9" fill-rule="evenodd" stroke="${css('--text')}" stroke-width="${sw}"/>`;
@@ -1081,7 +1122,7 @@ function updateSection(q, show, items) {
   }
   const svg = $('#secSvg'); svg.setAttribute('viewBox', `${x0} ${-z1} ${size} ${size}`); svg.innerHTML = out;
   $('#secTitle').textContent = lidOn ? 'Section · lid fit' : stacked ? 'Section · stacking joint' : q.stack ? 'Section · chamfered wall' : 'Section · wall & floor';
-  $('#secLegend').innerHTML = parts_.filter((p, i, a) => a.findIndex(x => x.label === p.label) === i).map(p => `<span><i style="background:${p.color}"></i>${p.label}</span>`).join('') + `<span>wall ${fmt(q.t)} mm</span>` + (lidOn && lid.c ? `<span>gap ${fmt(lid.c)} mm</span>` : '');
+  $('#secLegend').innerHTML = parts_.filter((p, i, a) => a.findIndex(x => x.label === p.label) === i).map(p => `<span><i style="background:${p.color}"></i>${p.label}</span>`).join('') + `<span>wall ${fmt(q.t)} mm</span><span>bottom ${fmt(q.tb)} mm</span>` + (lidOn && lid.c ? `<span>gap ${fmt(lid.c)} mm</span>` : '');
 }
 
 function place(id, p) {

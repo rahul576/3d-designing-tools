@@ -1,5 +1,5 @@
-TRAY GENERATOR v8  —  parametric, stackable, lightweight trays for 3D printing
-==========================================================================
+TRAY GENERATOR v9  —  parametric, stackable, lightweight trays for 3D printing
+===========================================================================
 
 Open  index.html  (the latest version) in any browser (Chrome, Edge, Firefox, Safari).
 It works fully offline: no install, no internet, nothing is uploaded.
@@ -37,8 +37,8 @@ Preview tab
     stacking joint and lid fit), edges on/off.
 
 Sidebar
-  * Thickness (default 0.8 mm = 2 lines with a 0.4 nozzle), Fillet,
-    Partition height.
+  * Thickness (default 0.8 mm = 2 lines with a 0.4 nozzle) for walls,
+    partitions and lid, Fillet, Partition height.
   * Stack: stackable trays get a 45-degree chamfer on the bottom edge and drop
     into the tray below. The chamfered wall keeps the same thickness.
   * NEW in v7 – Flush rim (on by default for stackable trays): the INSIDE top
@@ -58,6 +58,21 @@ Sidebar
     own centred holes, with the same solid border as the outer walls. The info
     line shows how many holes are in the inner walls. Note: small items can
     then pass between compartments. See inner-walls-pattern.png.
+  * NEW in v9 – Bottom section:
+      - Bottom thickness: the floor has its own thickness, separate from the
+        walls (0.4 to 10 mm). Thicker = stiffer base, thinner = lighter.
+        Trays saved by older versions keep a floor as thick as the walls.
+      - Bottom pattern: holes straight through the floor of every
+        compartment, picked separately from the wall pattern:
+        none / hex / circle / square / diamond / slots.
+        Options: Hole size, Density (% open), Solid border (strip kept around
+        each compartment floor) and Rotation (0-180 degrees; 0 = lined up
+        with the walls, 90 turns slots crosswise, 45 turns squares into
+        diamonds). Bars between holes never go below 1.5 x wall thickness.
+        Holes stay out from under the partitions and the stacking chamfer.
+        The info line shows holes, % of the bottom open, grams and money
+        saved; the time estimate includes the extra retractions.
+        See bottom-pattern.png.
   * Lid: inset (plugs inside), cap (slips over the walls), or stacking
     (a shallow tray, so you can keep stacking). Clearance + skirt depth.
   * Estimate: weight per material, filament price per kg -> cost.
@@ -88,14 +103,15 @@ FOLDERS
   index.html               the latest version of the app (single file, everything built in)
   stacking-before-after.png  close-up of the stacking joint, v6 vs v7
   inner-walls-pattern.png    v8: wall pattern on the inner walls too
-  versions/vN/index.html   every version, unchanged (v2 to v8; v8 = latest)
+  bottom-pattern.png         v9: bottom thickness and bottom pattern
+  versions/vN/index.html   every version, unchanged (v2 to v9; v9 = latest)
   python/                  the first Python box+lid generator and its tests
                            (python parametric_box.py --size 50 --height 30 --stackable)
   source/                  the source the app is built from, plus tests:
                              tray-geom.js     geometry engine (also runs in Node)
                              template.html    the app UI
-                             build.js         node build.js -> tray-generator-v8.html
+                             build.js         node build.js -> tray-generator-v9.html
                              test-geom.js     geometry, stacking and lid-fit tests
-                             fuzz.js          random-layout / pattern / lid fuzz test
+                             fuzz.js          random-layout / wall + bottom pattern / lid fuzz test
                              ui-test.js       browser test (needs Playwright)
                              check3mf.py      3MF validator used by ui-test.js

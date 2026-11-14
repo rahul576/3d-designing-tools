@@ -12,9 +12,10 @@
   'use strict';
   const SQ2 = Math.SQRT2, PI = Math.PI, EPS = 1e-6, MIN_LEAF = 3;
   const PATTERNS = ['hex', 'circle', 'diamond', 'slots'];
+  const FLOOR_PATTERNS = ['hex', 'circle', 'square', 'diamond', 'slots'];
 
   const DEFAULTS = {
-    W: 80, D: 160, H: 20, t: 0.8, f: 1, hp: 18,
+    W: 80, D: 160, H: 20, t: 0.8, tb: null, f: 1, hp: 18,
     layout: null, nx: 1, ny: 2,
     stack: false, s: 2.4, seg: 0,
     lid: null            // { style: 'inset'|'cap'|'stack', c: 0.2, L: 4 }
@@ -68,6 +69,8 @@
     num('t', 0.4, 5); num('W', 10, 600); num('D', 10, 600); num('H', 0.1, 300);
     q.stack = !!q.stack;
     const t = q.t;
+    if (q.tb === null || q.tb === undefined || q.tb === '') q.tb = t; else num('tb', 0.4, 10);   // bottom (floor) thickness, v9
+    const tb = q.tb;
     q.tree = q.layout ? q.layout : gridTree(q.nx, q.ny);
     const lay = layoutTree(q.tree, [t, q.W - t, t, q.D - t], t);
     if (lay.hidden) warn.push('some partitions skipped – their compartments would be smaller than 3 mm');
@@ -96,6 +99,7 @@
         if (nx) need = Math.min(need, (w - 1.2) / nx);
         if (ny) need = Math.min(need, (h - 1.2) / ny);
       }
+      need -= Math.max(0, t - tb);     // a floor thinner than the wall starts the inner chamfer a little lower
       if (q.cin > need) {
         q.cin = Math.max(0.2, need); q.s = q.cin - (SQ2 - 2) * t;
         if (q.s < t + 0.2) { q.stack = false; q.s = 0; q.cin = 0; q.nest = 0; warn.push('stacking disabled – compartments too small'); }
@@ -105,13 +109,14 @@
     q.fb = q.f;
 
     const depth = Math.max(q.fb, q.stack ? q.cin : 0);
-    const Hmin = t + depth + 1.5 + (q.stack ? q.nest : 0);
+    const fz = Math.max(t, tb) + depth;      // top of the floor fillet / inner stacking chamfer
+    const Hmin = fz + 1.5 + (q.stack ? q.nest : 0);
     if (q.H < Hmin) { if (!q._quietH) warn.push(`height raised to ${r2(Hmin)}`); q.H = Hmin; }
     // flush stacking: inner top edge chamfered at 45° from inset t (at zc) to inset wtop (at H)
     q.zc = q.stack && q.flush ? q.H - (t - q.wtop) : q.H;
     if (q.single) q.hp = q.H;
     else {
-      const hpMax = q.stack ? q.H - q.nest - 0.2 : q.H, hpMin = t + depth + 0.5;
+      const hpMax = q.stack ? q.H - q.nest - 0.2 : q.H, hpMin = fz + 0.5;
       let hp = Number(q.hp); if (!isFinite(hp)) hp = q.H;
       const c = clamp(hp, hpMin, Math.max(hpMin, hpMax));
       if (Math.abs(c - hp) > 1e-9) warn.push(q.stack && hp > hpMax ? `partition height limited to ${r2(c)} so trays can stack` : `partition height limited to ${r2(c)}`);
@@ -131,6 +136,20 @@
       else bar = size * (1 / dens - 1);
       q.pat = { type: pt.type, size, bar: Math.max(bmin, bar), barLimited: bar < bmin, inner: !!pt.inner };
     } else q.pat = null;
+    // bottom (floor) pattern, v9: holes straight through the floor of every compartment
+    const bp = q.bottomPattern;
+    if (bp && FLOOR_PATTERNS.includes(bp.type)) {
+      const size = clamp(Number(bp.size) || 6, 2, 40), dens = clamp(Number(bp.density) || 50, 10, 80) / 100;
+      const margin = clamp(isFinite(Number(bp.margin)) && bp.margin !== null && bp.margin !== '' ? Number(bp.margin) : 2, 0.5, 30);
+      const angle = ((Number(bp.angle) || 0) % 180 + 180) % 180;
+      const bmin = Math.max(1.0, 1.5 * t);
+      let bar;
+      if (bp.type === 'hex' || bp.type === 'square') bar = size * (1 / Math.sqrt(dens) - 1);
+      else if (bp.type === 'circle') bar = size * (Math.sqrt(Math.min(0.9, PI / (2 * Math.sqrt(3))) / dens) - 1);
+      else if (bp.type === 'diamond') bar = size * (1 / Math.sqrt(dens) - 1) / SQ2;
+      else bar = size * (Math.sqrt(1 + 3 / dens) - 2);
+      q.bpat = { type: bp.type, size, bar: Math.max(bmin, bar), barLimited: bar < bmin, margin, angle };
+    } else q.bpat = null;
     q.warnings = warn;
     return q;
   }
@@ -168,7 +187,7 @@
       if (x * x + y * y + z * z < 1e-16) return; tris.push(a, b, c);
     };
     return {
-      tri,
+      tri, triRaw: (a, b, c) => tris.push(a, b, c),
       loftOut(L, U) { const n = L.length; for (let i = 0; i < n; i++) { const j = (i + 1) % n; tri(L[i], L[j], U[j]); tri(L[i], U[j], U[i]); } },
       loftIn(L, U) { const n = L.length; for (let i = 0; i < n; i++) { const j = (i + 1) % n; tri(L[i], U[j], L[j]); tri(L[i], U[i], U[j]); } },
       zipUp(E, C) { const n = E.length; for (let i = 0; i < n; i++) { const j = (i + 1) % n; tri(E[i], E[j], C[j]); tri(E[i], C[j], C[i]); } },
@@ -197,14 +216,14 @@
 
   /* ---------------- compartment profiles ---------------- */
   function cupLevels(q) {
-    const { t, fb, Nf, stack, cin } = q, ztop = q.single ? q.zc : q.hp, s = [ztop, t];
-    for (let k = 0; k < Nf; k++) s.push(t + fb * (1 - Math.sin((k / Nf) * PI / 2)));
+    const { t, tb, fb, Nf, stack, cin } = q, ztop = q.single ? q.zc : q.hp, s = [ztop, tb];
+    for (let k = 0; k < Nf; k++) s.push(tb + fb * (1 - Math.sin((k / Nf) * PI / 2)));
     if (stack) s.push(t + cin);
-    return s.filter(z => z <= ztop + 1e-9 && z >= t - 1e-9).sort((a, b) => b - a).filter((z, i, a) => i === 0 || a[i - 1] - z > 1e-6);
+    return s.filter(z => z <= ztop + 1e-9 && z >= tb - 1e-9).sort((a, b) => b - a).filter((z, i, a) => i === 0 || a[i - 1] - z > 1e-6);
   }
   function cupProfile(q, outer) {
-    const { t, fb, f, stack, cin } = q;
-    const roundIn = R => z => { if (R <= 0 || z >= t + R) return 0; const dz = t + R - z; return R - Math.sqrt(Math.max(R * R - dz * dz, 0)); };
+    const { t, tb, fb, f, stack, cin } = q;
+    const roundIn = R => z => { if (R <= 0 || z >= tb + R) return 0; const dz = tb + R - z; return R - Math.sqrt(Math.max(R * R - dz * dz, 0)); };
     const chamIn = C => z => (z >= t + C ? 0 : C - (z - t));
     const prof = outer.map(o => (stack && o ? chamIn(cin) : roundIn(fb)));
     return z => {
@@ -261,7 +280,12 @@
     const Q = v => Math.round(v * 1e5) / 1e5;
     let holes = holesIn.map(hh => hh.map(p => [Q(p[0]), Q(p[1])]));
     let xs = [zn.U0, zn.U1]; for (const hh of holes) for (const p of hh) xs.push(p[0]);
-    xs.sort((a, b) => a - b); xs = xs.filter((x, i, a) => i === 0 || x - a[i - 1] > 1e-6);
+    xs.sort((a, b) => a - b); xs = xs.filter((x, i, a) => i === 0 || x - a[i - 1] > (fr.merge || 1e-6));   // fr.merge: weld nearly equal xs (v9 floor)
+    if (fr.xs) {     // extra conforming points (v9 floor pattern): kept exactly, nearby hole xs snap onto them
+      const fx = fr.xs.filter(x => x > zn.U0 + 1e-9 && x < zn.U1 - 1e-9).map(Q);
+      xs = xs.filter(x => !fx.some(f => Math.abs(f - x) < (fr.merge || 1e-6)) || x === zn.U0 || x === zn.U1).concat(fx);
+      xs.sort((a, b) => a - b); xs = xs.filter((x, i, a) => i === 0 || x - a[i - 1] > 1e-9);
+    }
     const snapU = u => { let lo = 0, hi = xs.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (xs[m] < u) lo = m; else hi = m; } return Math.abs(xs[lo] - u) <= Math.abs(xs[hi] - u) ? xs[lo] : xs[hi]; };
     holes = holes.map(hh => hh.map(p => [snapU(p[0]), p[1]]).filter((p, i, a) => { const q = a[(i + a.length - 1) % a.length]; return Math.abs(p[0] - q[0]) > 1e-9 || Math.abs(p[1] - q[1]) > 1e-9; }));
     const xIndex = new Map(xs.map((x, i) => [x, i]));
@@ -321,7 +345,7 @@
     zip([[ua, zb], [ub, zb]], xs.map(x => [x, Z1]), 0);
     zip([[ua, za], ...fr.leftZ.map(z => [ua, z]), [ua, zb]], [[U0, Z0], [U0, Z1]], 1);
     zip([[ub, za], ...fr.rightZ.map(z => [ub, z]), [ub, zb]], [[U1, Z0], [U1, Z1]], 1);
-    return { tris, holes: aug };
+    return { tris, holes: aug, xs };
   }
 
   // cut the pattern into every straight outer-wall segment (one per wall-touching compartment)
@@ -453,6 +477,241 @@
     return { holes: holeCount, openArea, savedVolume: openArea * t, panelArea, holeHeight };
   }
 
+
+  /* ---------------- bottom (floor) pattern, v9 ---------------- */
+  const q5 = v => Math.round(v * 1e5) / 1e5, CL = 5e-4;
+  // Holes of a (rotated) lattice that fit fully inside rect Z = [X0,X1,Y0,Y1].
+  // Returns { holes, map }: hole polygons (CCW) in lattice coordinates (u,v) and map(u,v) -> (x,y).
+  // With no rotation (u,v) = (x,y), so the lattice stays aligned with the walls.
+  function floorHoles(bp, Z) {
+    const w = bp.size, b = bp.bar, th = bp.angle * PI / 180, rot = bp.angle !== 0;
+    const ca = Math.cos(th), sa = Math.sin(th), cx = (Z[0] + Z[1]) / 2, cy = (Z[2] + Z[3]) / 2;
+    const map = rot ? p => [cx + p[0] * ca - p[1] * sa, cy + p[0] * sa + p[1] * ca] : p => p;
+    let shape, px, pz, stagger = true;
+    if (bp.type === 'hex') { const R = w / Math.sqrt(3); px = w + b; pz = px * Math.sqrt(3) / 2; shape = [30, 90, 150, 210, 270, 330].map(a => [R * Math.cos(a * PI / 180), R * Math.sin(a * PI / 180)]); }
+    else if (bp.type === 'circle') { const n = w >= 10 ? 24 : w >= 4 ? 16 : 12; px = w + b; pz = px * Math.sqrt(3) / 2; shape = Array.from({ length: n }, (_, k) => { const a = -PI / 2 + k * 2 * PI / n; return [w / 2 * Math.cos(a), w / 2 * Math.sin(a)]; }); }
+    else if (bp.type === 'square') { px = pz = w + b; stagger = false; shape = [[-w / 2, -w / 2], [w / 2, -w / 2], [w / 2, w / 2], [-w / 2, w / 2]]; }
+    else if (bp.type === 'diamond') { px = w + b * SQ2; pz = px / 2; shape = [[0, -w / 2], [w / 2, 0], [0, w / 2], [-w / 2, 0]]; }
+    else {      // slots: rounded ends, 3x as long as wide
+      const L = 3 * w, e = (L - w) / 2, n = 6; px = w + b; pz = L + b; shape = [];
+      for (let k = 0; k <= n; k++) { const a = PI + k * PI / n; shape.push([w / 2 * Math.cos(a), -e + w / 2 * Math.sin(a)]); }
+      for (let k = 0; k <= n; k++) { const a = k * PI / n; shape.push([w / 2 * Math.cos(a), e + w / 2 * Math.sin(a)]); }
+    }
+    shape = shape.map(([x, y]) => [Math.round(x * 1e9) / 1e9, Math.round(y * 1e9) / 1e9]);     // mirror-equal offsets exactly equal
+    const rs = shape.map(([x, y]) => [x * ca - y * sa, x * sa + y * ca]);    // rotated shape, for the fit test
+    let sx0 = Infinity, sx1 = -Infinity, sy0 = Infinity, sy1 = -Infinity;
+    for (const [x, y] of rs) { sx0 = Math.min(sx0, x); sx1 = Math.max(sx1, x); sy0 = Math.min(sy0, y); sy1 = Math.max(sy1, y); }
+    const e = 0.05;
+    if (Z[1] - Z[0] < sx1 - sx0 + 2 * e || Z[3] - Z[2] < sy1 - sy0 + 2 * e) return { holes: [], map };
+    const Rz = Math.hypot(Z[1] - Z[0], Z[3] - Z[2]) / 2 + w;
+    const ni = Math.ceil(Rz / px) + 1, nj = Math.ceil(Rz / pz) + 1;
+    let best = [];
+    for (const [ox, oy] of [[0, 0], [px / 2, 0], [0, pz / 2], [px / 2, pz / 2]]) {
+      const out = [];
+      for (let j = -nj; j <= nj; j++) for (let i = -ni; i <= ni; i++) {
+        const kx = 2 * i + (stagger && (j & 1) ? 1 : 0), lx = ox + kx * px / 2, ly = oy + j * pz;   // same column -> bit-identical x
+        const hx = cx + lx * ca - ly * sa, hy = cy + lx * sa + ly * ca;
+        if (hx + sx0 < Z[0] + e || hx + sx1 > Z[1] - e || hy + sy0 < Z[2] + e || hy + sy1 > Z[3] - e) continue;
+        const ux = rot ? lx : cx + lx, uy = rot ? ly : cy + ly;
+        out.push(shape.map(([x, y]) => [q5(ux + x), q5(uy + y)]));
+      }
+      if (out.length > best.length) best = out;
+    }
+    return { holes: best, map };
+  }
+  // clip a convex polygon to the axis-aligned rect Z (Sutherland–Hodgman). Cut points are computed from the
+  // edge's endpoints in a fixed order, so the two triangles sharing an edge get exactly the same point.
+  function clipToRect(poly, Z) {
+    const planes = [[0, Z[0], 1], [0, Z[1], -1], [1, Z[2], 1], [1, Z[3], -1]];
+    let P = poly;
+    for (const [ax, c, sg] of planes) {
+      if (!P.length) break;
+      const out = [], sd = p => sg * (p[ax] - c);      // points near the edge were snapped onto it, so sd is 0 there
+      for (let i = 0; i < P.length; i++) {
+        const a = P[i], b = P[(i + 1) % P.length], da = sd(a), db = sd(b);
+        if (da >= 0) out.push(a);
+        if ((da > 0 && db < 0) || (da < 0 && db > 0)) {
+          const [p, r] = (a[0] < b[0] || (a[0] === b[0] && a[1] < b[1])) ? [a, b] : [b, a];
+          const t = (c - p[ax]) / (r[ax] - p[ax]), o = 1 - ax;
+          const pt = []; pt[ax] = c; pt[o] = q5(p[o] + t * (r[o] - p[o]));
+          out.push(pt);
+        }
+      }
+      P = out;
+    }
+    return P;
+  }
+  // Step 1: holes of the zone and, when the pattern is rotated, its triangulation in lattice coordinates
+  // (hole edges line up there). The zone's edges are then nudged inward (< 0.04 mm, holes keep clear)
+  // so that no mesh vertex lies within CL of an edge – clipping then never makes needle slivers.
+  function zonePrep(bp, Z) {
+    const { holes, map } = floorHoles(bp, Z);
+    if (!holes.length) return null;
+    if (bp.angle === 0) return { Z, holes };
+    const th = bp.angle * PI / 180, ca = Math.cos(th), sa = Math.sin(th), cx = (Z[0] + Z[1]) / 2, cy = (Z[2] + Z[3]) / 2;
+    let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity;
+    for (const [x, y] of [[Z[0], Z[2]], [Z[1], Z[2]], [Z[1], Z[3]], [Z[0], Z[3]]]) {
+      const u = (x - cx) * ca + (y - cy) * sa, v = -(x - cx) * sa + (y - cy) * ca;
+      u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, v); v1 = Math.max(v1, v);
+    }
+    const bb = [q5(u0 - 1), q5(u1 + 1), q5(v0 - 1), q5(v1 + 1)];
+    const pm = panelMesh({ ua: bb[0], ub: bb[1], za: bb[2], zb: bb[3], leftZ: [], rightZ: [], merge: CL }, { U0: bb[0], U1: bb[1], Z0: bb[2], Z1: bb[3] }, holes);
+    const cache = new Map(), mp = p => { const k = p[0] + ',' + p[1]; let r = cache.get(k); if (!r) { r = map(p); cache.set(k, r); } return r; };
+    const tris = pm.tris.map(T => T.map(mp)), aug = pm.holes.map(h => h.map(mp));
+    const vx = [], vy = []; for (const r of cache.values()) { vx.push(r[0]); vy.push(r[1]); }
+    vx.sort((a, b) => a - b); vy.sort((a, b) => a - b);
+    const clear = (vs, c) => { let lo = 0, hi = vs.length; while (lo < hi) { const m = (lo + hi) >> 1; if (vs[m] < c - CL) lo = m + 1; else hi = m; } return lo >= vs.length || vs[lo] > c + CL; };
+    const nudge = (vs, c, dir) => { for (let k = 0; k < 40; k++) { const cc = q5(c + dir * k * 0.001); if (clear(vs, cc)) return cc; } return c; };
+    const Zn = [nudge(vx, Z[0], 1), nudge(vx, Z[1], -1), nudge(vy, Z[2], 1), nudge(vy, Z[3], -1)];
+    return { Z: Zn, holes, tris, aug };
+  }
+  // Step 2: triangles of the zone with the holes cut out, plus the vertices that ended up on each edge of the zone.
+  // extraXs = the other zones' corner xs, added on top / bottom so both sides of each edge conform.
+  function zoneFinish(zp, extraXs) {
+    const Z = zp.Z;
+    let tris, aug;
+    if (!zp.tris) {
+      const pm = panelMesh({ ua: Z[0], ub: Z[1], za: Z[2], zb: Z[3], leftZ: [], rightZ: [], xs: extraXs, merge: CL }, { U0: Z[0], U1: Z[1], Z0: Z[2], Z1: Z[3] }, zp.holes);
+      tris = pm.tris; aug = pm.holes;
+    } else {
+      aug = zp.aug; tris = [];
+      for (const P of zp.tris) {
+        let inside = true; for (const p of P) if (p[0] < Z[0] || p[0] > Z[1] || p[1] < Z[2] || p[1] > Z[3]) inside = false;
+        if (inside) { tris.push(P); continue; }
+        const C = clipToRect(P, Z);
+        if (C.length < 3) continue;
+        if (C.length === 3) { tris.push(C); continue; }
+        let gx = 0, gy = 0; for (const p of C) { gx += p[0]; gy += p[1]; } const g = [gx / C.length, gy / C.length];
+        for (let i = 0; i < C.length; i++) tris.push([g, C[i], C[(i + 1) % C.length]]);
+      }
+    }
+    const eb = new Set([Z[0], Z[1]]), et = new Set([Z[0], Z[1]]), el = new Set([Z[2], Z[3]]), er = new Set([Z[2], Z[3]]);
+    for (const T of tris) for (const p of T) {
+      if (p[1] === Z[2]) eb.add(p[0]); if (p[1] === Z[3]) et.add(p[0]);
+      if (p[0] === Z[0]) el.add(p[1]); if (p[0] === Z[1]) er.add(p[1]);
+    }
+    for (const x of extraXs) if (x > Z[0] && x < Z[1]) { eb.add(x); et.add(x); }
+    const srt = s => [...s].sort((a, b) => a - b);
+    return { tris, holes: aug, ex: { b: srt(eb), t: srt(et), l: srt(el), r: srt(er) } };
+  }
+  // Triangulate the ring between a convex rounded contour (built from desc) and an axis-aligned
+  // rectangle inside its straight part. ex = vertices on the rectangle edges:
+  // { b: xs on the bottom edge, t: xs on the top edge, l / r: ys on the left / right edge } (ascending, with corners).
+  function ringToRect(P, desc, rect, ex) {
+    const n = desc.length, cnt = [0, 0, 0, 0], jOf = [];
+    for (let i = 0; i < n; i++) { const d = desc[i]; if (d.k !== undefined) jOf[i] = cnt[d.k]++; }
+    const mid = [-1, -1, -1, -1];
+    for (let i = 0; i < n; i++) { const d = desc[i]; if (d.k !== undefined && jOf[i] === Math.floor((cnt[d.k] - 1) / 2)) mid[d.k] = i; }
+    const [X0, X1, Y0, Y1] = rect, tris = [];
+    const zip = (A, B, ax) => {
+      let i = 0, j = 0;
+      while (i < A.length - 1 || j < B.length - 1) {
+        if (j >= B.length - 1 || (i < A.length - 1 && A[i + 1][ax] <= B[j + 1][ax])) { tris.push([A[i], A[i + 1], B[j]]); i++; }
+        else { tris.push([A[i], B[j + 1], B[j]]); j++; }
+      }
+    };
+    for (let k = 0; k < 4; k++) {
+      const A = []; for (let i = mid[k]; ; i = (i + 1) % n) { A.push([P[i][0], P[i][1]]); if (i === mid[(k + 1) % 4]) break; }
+      if (k === 0) zip(A, ex.b.map(x => [x, Y0]), 0);
+      else if (k === 1) zip(A, ex.r.map(y => [X1, y]), 1);
+      else if (k === 2) zip(A.reverse(), ex.t.map(x => [x, Y1]), 0);
+      else zip(A.reverse(), ex.l.map(y => [X0, y]), 1);
+    }
+    return tris;
+  }
+  // split triangles whose edges run along a line that carries extra vertices (removes T-junctions).
+  // lines[ax]: Map(key of the fixed coordinate -> [{lo, hi, pts}]), ax 1 = horizontal (y fixed), 0 = vertical (x fixed)
+  function splitOnEdges(tris, lines) {
+    const out = [];
+    for (const T of tris) {
+      const poly = []; let split = false;
+      for (let e = 0; e < 3; e++) {
+        const a = T[e], b = T[(e + 1) % 3]; poly.push(a);
+        for (const ax of [0, 1]) {
+          if (a[ax] !== b[ax]) continue;
+          const L = lines[ax].get(a[ax]); if (!L) continue;
+          const o = 1 - ax, lo = Math.min(a[o], b[o]), hi = Math.max(a[o], b[o]);
+          for (const seg of L) {
+            if (hi < seg.lo - 1e-9 || lo > seg.hi + 1e-9) continue;
+            const ins = seg.pts.filter(v => v > lo + 1e-7 && v < hi - 1e-7);
+            if (!ins.length) continue;
+            if (b[o] < a[o]) ins.reverse();
+            for (const v of ins) { const p = []; p[ax] = a[ax]; p[o] = v; poly.push(p); }
+            split = true;
+          }
+        }
+      }
+      if (!split) { out.push(T); continue; }
+      let cx = 0, cy = 0; for (const p of T) { cx += p[0]; cy += p[1]; } const c = [cx / 3, cy / 3];
+      for (let i = 0; i < poly.length; i++) out.push([c, poly[i], poly[(i + 1) % poly.length]]);
+    }
+    return out;
+  }
+  // cut the floor pattern: replaces the outer bottom face (z=0) and every compartment floor (z=tb) that gets holes
+  function applyFloorPattern(M, q, cells, bottomRing, R) {
+    const { W, D, t, f, tb, bpat } = q, rbMin = 0.2;
+    const lim = q.stack ? q.s + Math.max(f + t - q.s, rbMin) : f + t;     // straight part of the outer bottom outline
+    const BR = [q5(lim + 0.05), q5(W - lim - 0.05), q5(lim + 0.05), q5(D - lim - 0.05)];
+    const info = { holes: 0, openArea: 0, savedVolume: 0, holeHeight: 0, floorArea: 0, compartments: 0, tooMany: false };
+    const cand = [];
+    let total = 0;
+    for (const C of cells) {
+      const F = C.floor, m = Math.max(...F.rad) + bpat.margin, b = F.b;
+      info.floorArea += (b[1] - b[0]) * (b[3] - b[2]);
+      const Z = [Math.max(b[0] + m, BR[0] + 0.2), Math.min(b[1] - m, BR[1] - 0.2), Math.max(b[2] + m, BR[2] + 0.2), Math.min(b[3] - m, BR[3] - 0.2)].map(q5);
+      if (Z[1] - Z[0] < 1 || Z[3] - Z[2] < 1) continue;
+      const zp = zonePrep(bpat, Z);
+      if (zp) { cand.push({ C, Z: zp.Z, zp }); total += zp.holes.length; if (total > 6000) break; }
+    }
+    if (total > 6000) { info.tooMany = true; cand.length = 0; }
+    const emit = (tris, z, up) => {
+      for (let [a, b, c] of tris) {
+        const ar = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+        if (Math.abs(ar) < 1e-11) continue;           // only exactly flat (collinear) triangles; keep real slivers
+        if ((ar < 0) === up) [b, c] = [c, b];
+        M.triRaw([a[0], a[1], z], [b[0], b[1], z], [c[0], c[1], z]);
+      }
+    };
+    const holed = new Set();
+    if (cand.length) {
+      const cornerXs = []; for (const zn of cand) cornerXs.push(zn.Z[0], zn.Z[1]);
+      const lines = [new Map(), new Map()];
+      const addLine = (ax, c, lo, hi, pts) => { if (!lines[ax].has(c)) lines[ax].set(c, []); lines[ax].get(c).push({ lo, hi, pts }); };
+      const zones = [];
+      for (const zn of cand) {
+        const [X0, X1, Y0, Y1] = zn.Z, zm = zoneFinish(zn.zp, cornerXs);
+        const own = [new Map(), new Map()];
+        own[1].set(Y0, [{ lo: X0, hi: X1, pts: zm.ex.b }]); own[1].set(Y1, [{ lo: X0, hi: X1, pts: zm.ex.t }]);
+        zm.tris = splitOnEdges(zm.tris, own);     // add the other zones' corner xs to this zone's top / bottom edges
+        addLine(1, Y0, X0, X1, zm.ex.b); addLine(1, Y1, X0, X1, zm.ex.t); addLine(0, X0, Y0, Y1, zm.ex.l); addLine(0, X1, Y0, Y1, zm.ex.r);
+        zones.push(Object.assign(zn, zm));
+      }
+      for (const zn of zones) {
+        emit(zn.tris, tb, true); emit(zn.tris, 0, false);                               // floor top + underside inside the zone
+        emit(ringToRect(zn.C.floor.P, zn.C.floor.desc, zn.Z, zn.ex), tb, true);          // floor top around the zone
+        for (const hh of zn.holes) {                                                     // hole walls
+          for (let i = 0; i < hh.length; i++) {
+            const a = hh[i], b = hh[(i + 1) % hh.length];
+            M.tri([a[0], a[1], 0], [a[0], a[1], tb], [b[0], b[1], tb]); M.tri([a[0], a[1], 0], [b[0], b[1], tb], [b[0], b[1], 0]);
+          }
+          info.holes++; info.openArea += Math.abs(polyArea(hh));
+        }
+        holed.add(zn.C); info.compartments++;
+      }
+      if (zones.length) {
+        // underside outside the zones: big rectangle with the zones as rectangular holes, then the ring to the outline
+        const rects = zones.map(zn => { const [X0, X1, Y0, Y1] = zn.Z; return [[X0, Y0], [X1, Y0], [X1, Y1], [X0, Y1]]; });
+        const pm = panelMesh({ ua: BR[0], ub: BR[1], za: BR[2], zb: BR[3], leftZ: [], rightZ: [] }, { U0: BR[0], U1: BR[1], Z0: BR[2], Z1: BR[3] }, rects);
+        emit(splitOnEdges(pm.tris, lines), 0, false);
+        emit(ringToRect(bottomRing, R, BR, { b: pm.xs, t: pm.xs, l: [BR[2], BR[3]], r: [BR[2], BR[3]] }), 0, false);
+      }
+    }
+    if (!holed.size) M.fan(bottomRing, false);
+    for (const C of cells) if (!holed.has(C)) M.fan(C.floor.P, true);
+    info.savedVolume = info.openArea * tb; info.holeHeight = info.holes * tb;
+    return info;
+  }
+
   /* ---------------- tray ---------------- */
   function build(params) {
     const q = resolve(params);
@@ -504,7 +763,7 @@
     if (stack) { const zs = s - (f + t - rbMin); if (zs > 1e-6 && zs < s - 1e-6) zl.push(zs); zl.push(s); }
     zl.push(H);
     const rings = zl.map(outerAt);
-    M.fan(rings[0], false);
+    if (!q.bpat) M.fan(rings[0], false);
     for (let i = 0; i + 1 < rings.length; i++) M.loftOut(rings[i], rings[i + 1]);
     const zc = q.zc, rinTop = contour(R, rinB, f, zc);
     if (zc < H - 1e-9) {          // flush rim: narrow flat + inner 45° chamfer the next tray sits on
@@ -535,7 +794,8 @@
       const pf = cupProfile(q, C.o), r = C.r;
       const rs = levels.map(z => { const { i, rad } = pf(z); return contour(desc, [r[0] + i[3], r[1] - i[1], r[2] + i[0], r[3] - i[2]], rad, z); });
       for (let k = 0; k + 1 < rs.length; k++) M.loftIn(rs[k + 1], rs[k]);
-      M.fan(rs[rs.length - 1], true);
+      { const zf = levels[levels.length - 1], { i, rad } = pf(zf); C.floor = { P: rs[rs.length - 1], desc, b: [r[0] + i[3], r[1] - i[1], r[2] + i[0], r[3] - i[2]], rad }; }
+      if (!q.bpat) M.fan(rs[rs.length - 1], true);
       if (!q.single) {
         const top = rs[0];
         M.zipUp(Emap.map((e, i) => (e ? [e[0], e[1], ztop] : top[i])), top);
@@ -549,8 +809,12 @@
     }
     if (q.pat && patternInfo && !patternInfo.holes) q.warnings.push('wall pattern does not fit – make holes smaller or the tray taller');
     if (q.pat && q.pat.barLimited) q.warnings.push(`pattern density limited so bars stay ≥ ${r2(q.pat.bar)} mm`);
+    const bottomInfo = q.bpat ? applyFloorPattern(M, q, cells, rings[0], R) : null;
+    if (bottomInfo && bottomInfo.tooMany) q.warnings.push('bottom pattern skipped – more than 6000 holes, use bigger holes or a lower density');
+    else if (bottomInfo && !bottomInfo.holes) q.warnings.push('bottom pattern does not fit – make holes smaller or the border narrower');
+    if (bottomInfo && bottomInfo.holes && q.bpat.barLimited) q.warnings.push(`bottom pattern density limited so bars stay ≥ ${r2(q.bpat.bar)} mm`);
     const m = M.finish();
-    return Object.assign(m, { params: q, warnings: q.warnings, stackOffset: q.stack ? q.H - q.nest : q.H, kind: 'tray', patternInfo });
+    return Object.assign(m, { params: q, warnings: q.warnings, stackOffset: q.stack ? q.H - q.nest : q.H, kind: 'tray', patternInfo, bottomInfo });
   }
 
   /* ---------------- lid ---------------- */
@@ -565,12 +829,12 @@
     const c = clamp(Number(lp.c) || 0.2, 0.05, 1), t = q.t, f = q.f, W = q.W, D = q.D, H = q.H, N = q.N;
     if (style === 'stack' && !q.stack) { style = 'inset'; warn.push('stacking lid needs a stackable tray – using inset lid'); }
     if (style === 'inset') {
-      const room = q.single ? H - t - 1 : H - q.hp - 0.3;
+      const room = q.single ? H - q.tb - 1 : H - q.hp - 0.3;
       if (room < 1) { style = 'cap'; warn.push('partitions reach the rim – using a cap lid instead of an inset lid'); }
     }
     let L = Number(lp.L) || 4;
     if (style === 'inset') {
-      const Lmax = q.single ? H - t - 1 : H - q.hp - 0.3;
+      const Lmax = q.single ? H - q.tb - 1 : H - q.hp - 0.3;
       if (L > Lmax) { warn.push(`lid skirt shortened to ${r2(Lmax)} mm to clear the partitions`); L = Lmax; }
       L = Math.max(1, L);
     } else if (style === 'cap') {
@@ -663,7 +927,7 @@
     const speedScale = Math.min(1.6, Math.max(0.6, o.nozzle / 0.4)) * (lh / 0.2) ** 0.15;  // bigger nozzle / layers flow a bit faster
     const extrude = path / (pr.speed * speedScale);
     const layerT = layers * pr.layer;
-    const holeT = mesh.patternInfo ? (mesh.patternInfo.holeHeight / lh) * pr.hole : 0;
+    const holeT = ((mesh.patternInfo ? mesh.patternInfo.holeHeight : 0) + (mesh.bottomInfo ? mesh.bottomInfo.holeHeight : 0)) / lh * pr.hole;
     const raw = extrude + layerT + holeT;
     return { seconds: raw * (o.factor || 1), raw, extrude, layerT, holeT, layers, path };
   }
@@ -703,7 +967,7 @@
     for (const { mesh } of objects) { const P = mesh.positions; for (let i = 0; i < P.length; i += 3) { mx = Math.min(mx, P[i]); my = Math.min(my, P[i + 1]); mz = Math.min(mz, P[i + 2]); } }
     const num = v => String(Math.round(v * 1e5) / 1e5);
     const esc = s => String(s).replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
-    const chunks = [`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n<metadata name="Title">${esc(title || 'Tray')}</metadata>\n<metadata name="Application">Tray Generator v7</metadata>\n<resources>\n`];
+    const chunks = [`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n<metadata name="Title">${esc(title || 'Tray')}</metadata>\n<metadata name="Application">Tray Generator v9</metadata>\n<resources>\n`];
     objects.forEach(({ name, mesh }, k) => {
       const P = mesh.positions, I = mesh.indices, v = [], t = [];
       for (let i = 0; i < P.length; i += 3) v.push(`<vertex x="${num(P[i] - mx)}" y="${num(P[i + 1] - my)}" z="${num(P[i + 2] - mz)}"/>`);
@@ -719,7 +983,7 @@
     ]);
   }
 
-  const api = { printTime, fmtTime, PRINTERS, to3MF, crc32, PATTERNS, panelMesh, build, buildLid, resolve, toSTL, transformMesh, mergeMeshes, gridTree, layoutTree, isSplit, DEFAULTS, MIN_LEAF };
+  const api = { printTime, fmtTime, PRINTERS, to3MF, crc32, PATTERNS, FLOOR_PATTERNS, panelMesh, build, buildLid, resolve, toSTL, transformMesh, mergeMeshes, gridTree, layoutTree, isSplit, DEFAULTS, MIN_LEAF };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TrayGeom = api;
 })(typeof window !== 'undefined' ? window : globalThis);

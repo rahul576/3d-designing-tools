@@ -19,20 +19,23 @@ function check(m, holes = 0) {
   }
   return { bad, eul, badR, minT, vol: m.volume, holes };
 }
-let fails = 0, leaves = 0, n = 0, totalHoles = 0;
+let fails = 0, leaves = 0, n = 0, totalHoles = 0, bottomHoles = 0;
 for (; n < 500; n++) {
   const p = { W: 20 + rnd() * 230, D: 20 + rnd() * 230, H: 3 + rnd() * 70, t: 0.4 + rnd() * 2.2, f: rnd() * 8, hp: rnd() * 80,
     layout: randTree(0), stack: rnd() < 0.5, s: rnd() * 7, flush: rnd() < 0.7,
     lid: { style: ['inset', 'cap', 'stack'][Math.floor(rnd() * 3)], c: 0.1 + rnd() * 0.5, L: 1 + rnd() * 10 },
     pattern: rnd() < 0.7 ? { type: G.PATTERNS[Math.floor(rnd() * 4)], size: 2 + rnd() * 14, density: 10 + rnd() * 70, inner: rnd() < 0.5 } : null };
+  if (rnd() < 0.5) p.tb = 0.4 + rnd() * 4;
+  if (rnd() < 0.6) p.bottomPattern = { type: G.FLOOR_PATTERNS[Math.floor(rnd() * 5)], size: 2 + rnd() * 14, density: 10 + rnd() * 70, margin: 0.5 + rnd() * 6, angle: rnd() < 0.5 ? 0 : rnd() * 180 };
   const m = G.build(p); leaves += m.params.leaves.length;
   const lid = G.buildLid(p, m);
-  const holes = m.patternInfo ? m.patternInfo.holes : 0; totalHoles += holes;
-  if (m.params.pat && holes) { const m0 = G.build(Object.assign({}, p, { pattern: null })); if (Math.abs(m0.volume - m.volume - m.patternInfo.savedVolume) > 1e-3 * Math.max(1, m.patternInfo.savedVolume)) { fails++; console.log('VOLFAIL', JSON.stringify(p)); } }
+  const bholes = m.bottomInfo ? m.bottomInfo.holes : 0, holes = (m.patternInfo ? m.patternInfo.holes : 0) + bholes; totalHoles += holes; bottomHoles += bholes;
+  if (m.params.bpat && bholes) { const m0 = G.build(Object.assign({}, p, { bottomPattern: null })); if (Math.abs(m0.volume - m.volume - m.bottomInfo.savedVolume) > 1e-3 * Math.max(1, m.bottomInfo.savedVolume)) { fails++; console.log('BVOLFAIL', JSON.stringify(p)); } }
+  if (m.params.pat && m.patternInfo.holes) { const m0 = G.build(Object.assign({}, p, { pattern: null })); if (Math.abs(m0.volume - m.volume - m.patternInfo.savedVolume) > 1e-3 * Math.max(1, m.patternInfo.savedVolume)) { fails++; console.log('VOLFAIL', JSON.stringify(p)); } }
   for (const [nm, mm, hh] of [['tray', m, holes], ['lid', lid, 0]]) {
     const r = check(mm, hh);
-    const tmin = nm === 'tray' && m.params.pat ? Math.min(m.params.t, m.params.pat.bar) : m.params.t;
+    const tmin = nm === 'tray' ? Math.min(m.params.t, m.params.tb, m.params.pat ? m.params.pat.bar : 1e9) : m.params.t;
     if (r.bad || r.eul !== 2 - 2 * hh || !(r.vol > 0) || r.badR || r.minT < tmin - 1e-3) { fails++; console.log('FAIL', nm, JSON.stringify(r), JSON.stringify(p)); }
   }
 }
-console.log(fails ? fails + ' fuzz failures' : `FUZZ: ${n} random trays (${leaves} compartments, random nested layouts) + ${n} random lids, ${totalHoles} pattern holes: all watertight, manifold, no internal faces/holes, nothing thinner than t`);
+console.log(fails ? fails + ' fuzz failures' : `FUZZ: ${n} random trays (${leaves} compartments, random nested layouts) + ${n} random lids, ${totalHoles} pattern holes (${bottomHoles} in the bottom): all watertight, manifold, no internal faces/holes, nothing thinner than t`);

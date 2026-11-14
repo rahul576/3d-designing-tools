@@ -54,15 +54,26 @@ const shift = (m, dx, dy, dz) => G.transformMesh(m, { dx, dy, dz });
 function run(params) {
   const fails = [];
   const m = G.build(params), q = m.params;
-  const holes = m.patternInfo ? m.patternInfo.holes : 0;
-  const { cast, minT, T } = solidChecks(m, q.pat ? Math.min(q.t, q.pat.bar) : q.t, 'tray', fails, holes);
+  const holes = m.patternInfo ? m.patternInfo.holes : 0, bholes = m.bottomInfo ? m.bottomInfo.holes : 0;
+  const { cast, minT, T } = solidChecks(m, Math.min(q.t, q.tb, q.pat ? q.pat.bar : 1e9), 'tray', fails, holes + bholes);
+  if (q.bpat) {
+    const m0 = G.build(Object.assign({}, params, { bottomPattern: null }));
+    const dv = m0.volume - m.volume, exp = m.bottomInfo.savedVolume;
+    if (!(bholes > 0)) fails.push('bottom pattern produced no holes');
+    if (Math.abs(dv - exp) > 1e-3 * Math.max(1, exp)) fails.push(`bottom pattern volume mismatch ${dv.toFixed(3)} vs ${exp.toFixed(3)}`);
+  }
+  if (params.tb !== undefined) {
+    const C = cast(q.W / 2 + 0.1234, q.D / 2 + 0.3456);
+    if (!bholes && C.length >= 2 && Math.abs(C[1].z - C[0].z - q.tb) > 1e-4 && q.single) fails.push(`floor thickness ${(C[1].z - C[0].z).toFixed(3)} vs tb ${q.tb}`);
+  }
   if (q.pat) {
     const m0 = G.build(Object.assign({}, params, { pattern: null }));
     const dv = m0.volume - m.volume, exp = m.patternInfo.savedVolume;
     if (!(holes > 0)) fails.push('pattern produced no holes');
     if (Math.abs(dv - exp) > 1e-3 * Math.max(1, exp)) fails.push(`pattern volume mismatch ${dv.toFixed(3)} vs ${exp.toFixed(3)}`);
   }
-  let info = `tris=${T.F} ${(m.volume / 1000 * 1.24).toFixed(1)}g minT=${minT.toFixed(3)}` + (q.pat ? ` | ${q.pat.type}: ${holes} holes, saves ${(m.patternInfo.savedVolume / 1000 * 1.24).toFixed(1)}g` : '');
+  let info = `tris=${T.F} ${(m.volume / 1000 * 1.24).toFixed(1)}g minT=${minT.toFixed(3)}` + (q.pat ? ` | ${q.pat.type}: ${holes} holes, saves ${(m.patternInfo.savedVolume / 1000 * 1.24).toFixed(1)}g` : '') +
+    (q.bpat ? ` | bottom ${q.bpat.type}: ${bholes} holes, saves ${(m.bottomInfo.savedVolume / 1000 * 1.24).toFixed(1)}g` : '') + (q.tb !== q.t ? ` | floor ${q.tb}` : '');
   const pts = samplePts(q.W, q.D, 2);
 
   if (q.stack) {
@@ -153,6 +164,20 @@ const cases = [
   { name: 'diamond inner T stack', W: 120, D: 90, H: 25, t: 0.8, f: 1.5, hp: 20, layout: tShape, stack: true, pattern: { type: 'diamond', size: 5, density: 50, inner: true } },
   { name: 'slots inner nested+cap', W: 150, D: 120, H: 30, t: 1.2, f: 2, hp: 30, layout: nested, pattern: { type: 'slots', size: 4, density: 50, inner: true }, lid: { style: 'cap', c: 0.25, L: 6 } },
   { name: 'hex inner near-aligned', W: 100, D: 100, H: 20, t: 0.8, f: 1, hp: 15, layout: nearAligned, stack: true, pattern: { type: 'hex', size: 3, density: 50, inner: true }, lid: { style: 'stack' } },
+  // v9: bottom thickness and bottom pattern
+  { name: 'thick floor', W: 60, D: 60, H: 20, t: 0.8, tb: 2, f: 1, nx: 1, ny: 1 },
+  { name: 'thin floor', W: 60, D: 60, H: 20, t: 1.2, tb: 0.6, f: 1, nx: 1, ny: 1 },
+  { name: 'thick floor stack', W: 80, D: 160, H: 20, t: 0.8, tb: 3, f: 1, hp: 18, nx: 1, ny: 2, stack: true },
+  { name: 'thin floor stack', W: 80, D: 160, H: 20, t: 1.2, tb: 0.6, f: 1, hp: 18, nx: 1, ny: 2, stack: true, lid: { style: 'stack' } },
+  { name: 'floor hex', W: 80, D: 160, H: 20, t: 0.8, tb: 1.2, f: 1, hp: 18, nx: 1, ny: 2, bottomPattern: { type: 'hex', size: 6, density: 50, margin: 2, angle: 0 } },
+  { name: 'floor circle 3x3', W: 120, D: 120, H: 25, t: 0.8, f: 1, hp: 20, nx: 3, ny: 3, bottomPattern: { type: 'circle', size: 5, density: 40, margin: 1.5, angle: 0 } },
+  { name: 'floor square rot', W: 100, D: 80, H: 20, t: 0.8, tb: 1, f: 2, nx: 2, ny: 1, bottomPattern: { type: 'square', size: 5, density: 45, margin: 2, angle: 30 } },
+  { name: 'floor diamond T stack', W: 120, D: 90, H: 25, t: 0.8, tb: 1.6, f: 1.5, hp: 20, layout: tShape, stack: true, bottomPattern: { type: 'diamond', size: 6, density: 50, margin: 2, angle: 0 } },
+  { name: 'floor slots nested', W: 150, D: 120, H: 30, t: 0.8, tb: 1.2, f: 2, hp: 24, layout: nested, bottomPattern: { type: 'slots', size: 3, density: 40, margin: 3, angle: 45 } },
+  { name: 'floor hex rot + walls', W: 80, D: 160, H: 30, t: 0.8, tb: 1.2, f: 1, hp: 25, nx: 1, ny: 2, stack: true, pattern: { type: 'hex', size: 6, density: 50, inner: true }, bottomPattern: { type: 'hex', size: 8, density: 60, margin: 2, angle: 17 }, lid: { style: 'stack' } },
+  { name: 'floor circle +aligned cap', W: 100, D: 100, H: 20, t: 0.8, tb: 2, f: 1, hp: 15, layout: aligned, bottomPattern: { type: 'circle', size: 4, density: 60, margin: 1, angle: 0 }, lid: { style: 'cap', c: 0.2, L: 5 } },
+  { name: 'floor single inset lid', W: 60, D: 60, H: 30, t: 0.8, tb: 2.4, f: 3, nx: 1, ny: 1, bottomPattern: { type: 'square', size: 4, density: 50, margin: 2, angle: 0 }, lid: { style: 'inset', c: 0.25, L: 6 } },
+  { name: 'floor near-aligned stack', W: 100, D: 100, H: 20, t: 0.8, f: 1, hp: 15, layout: nearAligned, stack: true, s: 4, bottomPattern: { type: 'hex', size: 3, density: 50, margin: 1, angle: 0 } },
 ];
 let all = true;
 for (const c of cases) all = run(c) && all;

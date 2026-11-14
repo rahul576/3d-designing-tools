@@ -21,7 +21,7 @@ function stlCheck(path) {
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('pageerror', e => errors.push(String(e)));
   await page.route('**/*', r => r.request().url().startsWith('file:') ? r.continue() : (errors.push('NETWORK ' + r.request().url()), r.abort()));
-  await page.goto('file://' + __dirname + '/tray-generator-v8.html');
+  await page.goto('file://' + __dirname + '/tray-generator-v9.html');
   await page.waitForTimeout(700);
   await page.screenshot({ path: 'u1-default.png' });
   const T = () => page.evaluate(() => ({ leaves: window.__tray.mesh.params.leaves.map(l => [l.path, l.r.map(v => Math.round(v * 10) / 10)]), sel: window.__tray.selection, layout: window.__tray.state.layout }));
@@ -223,9 +223,49 @@ function stlCheck(path) {
   ok(pin.inner > 0 && pin.holes === hOut + pin.inner && /inner walls/.test(pin.info), `"Inner walls too" adds ${pin.inner} holes through the partitions: ${pin.info}`);
   await page.screenshot({ path: 'v8-inner.png' });
 
+  // v9) bottom thickness + separate bottom pattern
+  const setField = (k, v) => page.evaluate(([k, v]) => { const n = document.querySelector(`.field[data-f="${k}"] input[type=number]`); n.value = v; n.dispatchEvent(new Event('change')); }, [k, v]);
+  const vol0 = await page.evaluate(() => window.__tray.mesh.volume);
+  await setField('tb', 2); await page.waitForTimeout(400);
+  const tbS = await page.evaluate(() => ({ tb: window.__tray.mesh.params.tb, t: window.__tray.mesh.params.t, vol: window.__tray.mesh.volume, stats: document.querySelector('#stats').textContent }));
+  ok(tbS.tb === 2 && tbS.t === 0.8 && tbS.vol > vol0 && /bottom/i.test(tbS.stats), `Bottom thickness 2 mm (walls stay ${tbS.t}): ${(vol0 / 1000).toFixed(2)} -> ${(tbS.vol / 1000).toFixed(2)} cm3`);
+  ok(await page.evaluate(() => document.querySelector('#bpatFields').hidden), 'bottom pattern fields hidden while "none"');
+  await page.click('[data-bpat="hex"]'); await page.waitForTimeout(500);
+  const b1 = await page.evaluate(() => ({ holes: window.__tray.mesh.bottomInfo && window.__tray.mesh.bottomInfo.holes, wall: window.__tray.mesh.patternInfo.holes, info: document.querySelector('#bpatInfo').textContent, stats: document.querySelector('#stats').textContent }));
+  ok(b1.holes > 0 && /saves/.test(b1.info) && /Bottom pattern saves/.test(b1.stats), `bottom hex pattern: ${b1.info}`);
+  ok(b1.wall === pin.holes, `wall pattern unchanged by the bottom pattern (${b1.wall} holes)`);
+  await page.screenshot({ path: 'v9-bottom-hex.png' });
+  await page.evaluate(() => window.__tray.setView({ el: -0.9 })).catch(() => {});
+  await page.waitForTimeout(200); await page.screenshot({ path: 'v9-bottom-under.png' });
+  await page.evaluate(() => window.__tray.setView({ el: 0.6 })).catch(() => {});
+  await setField('bd', 20); await page.waitForTimeout(400);
+  const b2 = await page.evaluate(() => window.__tray.mesh.bottomInfo.holes);
+  await setField('bs', 4); await page.waitForTimeout(400);
+  const b3 = await page.evaluate(() => window.__tray.mesh.bottomInfo.holes);
+  ok(b3 > b2, `smaller bottom holes -> more holes (${b2} -> ${b3})`);
+  await setField('bm', 8); await page.waitForTimeout(400);
+  const b4 = await page.evaluate(() => window.__tray.mesh.bottomInfo.holes);
+  ok(b4 < b3, `wider solid border -> fewer holes (${b3} -> ${b4})`);
+  await setField('bm', 2); await setField('bd', 50);
+  for (const t of ['circle', 'square', 'diamond', 'slots']) {
+    await page.click(`[data-bpat="${t}"]`); await page.waitForTimeout(350);
+    const h = await page.evaluate(() => window.__tray.mesh.bottomInfo.holes);
+    ok(h > 0, `bottom ${t}: ${h} holes`);
+  }
+  await setField('ba', 30); await page.waitForTimeout(450);
+  const rot = await page.evaluate(() => ({ holes: window.__tray.mesh.bottomInfo.holes, a: window.__tray.state.bpattern.angle }));
+  ok(rot.holes > 0 && rot.a === 30, `slots rotated 30°: ${rot.holes} holes`);
+  await page.screenshot({ path: 'v9-bottom-slots-rot.png' });
+  await page.click('[data-bpat="hex"]'); await page.waitForTimeout(400);
+  // undo goes back to slots
+  await page.keyboard.press('Control+z'); await page.waitForTimeout(400);
+  ok(await page.evaluate(() => window.__tray.state.bpattern.type) === 'slots', 'undo restores the previous bottom pattern');
+  await page.keyboard.press('Control+Shift+z'); await page.waitForTimeout(400);
+
   // 6) downloads
   await page.click('[data-lid="cap"]'); await page.waitForTimeout(150);
-  const holesNow = await page.evaluate(() => window.__tray.mesh.patternInfo ? window.__tray.mesh.patternInfo.holes : 0);
+  const holesNow = await page.evaluate(() => (window.__tray.mesh.patternInfo ? window.__tray.mesh.patternInfo.holes : 0) + (window.__tray.mesh.bottomInfo ? window.__tray.mesh.bottomInfo.holes : 0));
+  ok(holesNow > 0 && await page.evaluate(() => window.__tray.mesh.bottomInfo.holes > 0), `downloads include wall + bottom holes (${holesNow})`);
   for (const fmt of ['stl', '3mf']) for (const kind of ['tray', 'lid', 'both']) {
     await page.click('#download'); await page.click(`[data-fmt="${fmt}"]`);
     const [dl] = await Promise.all([page.waitForEvent('download'), page.click(`[data-dl="${kind}"]`)]);
