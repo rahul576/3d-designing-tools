@@ -1,0 +1,1765 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storage Container Generator v1</title>
+<style>
+:root{
+  --bg-canvas:#cfd1d4; --grid:#b9bcc0; --grid-major:#a9adb2;
+  --panel:#ffffff; --panel-2:#f3f4f6; --line:#e3e5e8; --text:#1d2127; --muted:#6b7280;
+  --accent:#2b78c5; --accent-soft:#d6e7f8; --warn-bg:#fff4d6; --warn-ink:#7a5200; --ok:#1f8a4c;
+  --track:#e6e8eb; --thumb:#ffffff;
+  --model:#2b78c5; --model-2:#4d93d6; --model-inner:#17426d; --edge:#9cc6ef; --lid:#e8a33d; --sel:#f2b544;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg-canvas:#2a2d31; --grid:#363a3f; --grid-major:#41464c;
+    --panel:#17191c; --panel-2:#202327; --line:#2c3035; --text:#e8eaed; --muted:#9aa1ab; --accent-soft:#1d3a57;
+    --warn-bg:#3a2f12; --warn-ink:#f3cf7a; --ok:#5fd08f; --track:#2c3035; --thumb:#e8eaed;
+    --edge:#7fb5ea; --model-inner:#0f2c4a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg-canvas:#2a2d31; --grid:#363a3f; --grid-major:#41464c;
+  --panel:#17191c; --panel-2:#202327; --line:#2c3035; --text:#e8eaed; --muted:#9aa1ab; --accent-soft:#1d3a57;
+  --warn-bg:#3a2f12; --warn-ink:#f3cf7a; --ok:#5fd08f; --track:#2c3035; --thumb:#e8eaed;
+  --edge:#7fb5ea; --model-inner:#0f2c4a;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:var(--bg-canvas);color:var(--text);font:13px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+.app{display:flex;height:100%}
+aside{width:300px;flex:none;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:6px;padding:16px 14px 12px}
+.brand h1{font:600 13px var(--mono);letter-spacing:.06em;margin:0;flex:1}
+.brand a{color:var(--muted);font-size:12px;text-decoration:none;margin-right:4px} .brand a:hover{color:var(--text)}
+.icon-btn{border:0;background:transparent;color:var(--text);width:28px;height:28px;border-radius:7px;cursor:pointer;display:grid;place-items:center}
+.icon-btn:hover{background:var(--panel-2)} .icon-btn:disabled{opacity:.3;cursor:default;background:transparent}
+.sec{padding:12px 14px;border-top:1px solid var(--line)}
+.sec h2{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:2px 0 10px;display:flex;justify-content:space-between;align-items:baseline}
+.sec h2 span{font-weight:400;text-transform:none;letter-spacing:0}
+.field{margin-bottom:12px} .field:last-child{margin-bottom:0}
+.field > label{display:flex;align-items:center;gap:4px;margin-bottom:5px}
+.field label small{color:var(--muted);font-size:10px;margin-left:auto}
+.slider{display:flex;align-items:center;height:24px;border-radius:12px;background:var(--track)}
+.slider input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:0;height:24px;background:transparent;margin:0;padding:0 2px;cursor:pointer}
+.slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--thumb);border:1px solid #c9ccd1;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.slider input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--thumb);border:1px solid #c9ccd1}
+.slider input[type=number]{width:58px;border:0;background:transparent;color:var(--text);font:12px var(--mono);text-align:right;padding-right:10px;-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.tiles.five{grid-template-columns:repeat(5,1fr)} .tiles.three{grid-template-columns:repeat(3,1fr)}
+.tiles button{border:1px solid var(--line);background:var(--panel-2);color:var(--muted);border-radius:8px;padding:6px 2px 5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font:11px system-ui,sans-serif;min-width:0}
+.tiles button svg{width:30px;height:30px}
+.tiles button[aria-pressed=true]{background:var(--panel);color:var(--text);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.tiles button:hover{color:var(--text)}
+.tiles button:disabled{opacity:.35;cursor:not-allowed}
+.tiles svg path{fill:currentColor;fill-opacity:.18;stroke:currentColor;stroke-width:1.4;stroke-linejoin:round}
+.check{display:flex;align-items:center;gap:7px;margin:2px 0 10px;cursor:pointer} .check input{margin:0}
+.hint{color:var(--muted);font-size:11px;margin-top:6px;line-height:1.4}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:8px;height:30px;cursor:pointer;font:inherit;font-size:12px;padding:0 10px}
+.btn:hover:not(:disabled){background:var(--panel-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+select,.txt{width:100%;height:28px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);padding:0 6px;font:inherit}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel-2)}
+.seg.three{grid-template-columns:repeat(3,1fr)}
+.seg button{border:0;background:transparent;color:var(--muted);padding:6px 2px;cursor:pointer;font:12px system-ui,sans-serif}
+.seg button[aria-pressed=true]{background:var(--panel);color:var(--text);box-shadow:0 0 0 1px var(--line)}
+.stats{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:12px;margin:0}
+.stats dt{color:var(--muted)} .stats dd{margin:0;text-align:right;font-family:var(--mono)}
+.weight{font:600 22px var(--mono);margin:2px 0 8px} .weight small{font-size:12px;color:var(--muted);font-weight:400}
+.okline{color:var(--ok);font-weight:600;font-size:12px;margin:8px 0 0;display:flex;gap:6px;align-items:center}
+.okline.bad{color:#c0392b}
+/* decorations */
+.decolist{display:flex;flex-direction:column;gap:4px;margin:8px 0}
+.decolist button{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--text);border-radius:8px;padding:5px 8px;cursor:pointer;text-align:left;font:12px system-ui,sans-serif}
+.decolist button[aria-pressed=true]{border-color:var(--sel);box-shadow:0 0 0 1px var(--sel)}
+.decolist button span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.decolist button small{color:var(--muted);font-family:var(--mono)}
+.wallmap{background:var(--panel-2);border-radius:8px;padding:6px;touch-action:none;margin-top:8px}
+#wallSvg{display:block;width:100%;user-select:none}
+#wallSvg .deco{fill:rgba(43,120,197,.25);stroke:var(--accent);stroke-width:1;cursor:move}
+#wallSvg .deco.sel{fill:rgba(242,181,68,.45);stroke:#d18a00}
+#wallSvg text{font:9px var(--mono);fill:var(--muted);pointer-events:none}
+#wallSvg .bg{fill:var(--panel)} #wallSvg .tick{stroke:var(--line)}
+.clipgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:8px}
+.clipgrid button{aspect-ratio:1;border:1px solid var(--line);background:var(--panel-2);border-radius:7px;cursor:pointer;padding:3px;color:var(--text)}
+.clipgrid button:hover{border-color:var(--accent)}
+.clipgrid canvas{width:100%;height:100%;display:block}
+.editor{border:1px solid var(--line);border-radius:9px;padding:10px;margin-top:6px;background:var(--panel)}
+main{flex:1;position:relative;min-width:0}
+canvas#view{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+canvas#view.over-deco{cursor:move}
+.dl{position:absolute;top:18px;right:18px}
+.btn-dark{border:0;background:#16181b;color:#fff;font:500 14px system-ui,sans-serif;padding:10px 16px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.btn-dark:hover{background:#000}
+.menu{position:absolute;right:0;top:46px;background:var(--panel);border-radius:8px;box-shadow:0 4px 18px rgba(0,0,0,.2);padding:5px;min-width:240px;z-index:5}
+.menu button{display:flex;justify-content:space-between;width:100%;border:0;background:transparent;color:var(--text);padding:9px 10px;border-radius:6px;cursor:pointer;font:inherit;text-align:left}
+.menu button:hover{background:var(--panel-2)} .menu button small{color:var(--muted);font-family:var(--mono)}
+.menu .fmt{display:grid;grid-template-columns:1fr 1fr;margin:2px 2px 6px;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.menu .fmt button{justify-content:center;padding:6px;font:600 12px var(--mono);border-radius:0}
+.menu .fmt button[aria-pressed=true]{background:var(--accent);color:#fff}
+.toolbar{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:14px;background:var(--panel);padding:8px 14px;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.16);white-space:nowrap;font-size:12px}
+.toolbar label{display:flex;align-items:center;gap:5px;cursor:pointer}
+.warns{position:absolute;top:18px;left:18px;display:flex;flex-direction:column;gap:6px;max-width:min(420px,calc(100% - 200px))}
+.warn{background:var(--warn-bg);color:var(--warn-ink);border-radius:8px;padding:7px 10px;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.chip{position:absolute;top:66px;right:18px;background:var(--panel);border-radius:8px;padding:7px 11px;font-size:12px;box-shadow:0 1px 6px rgba(0,0,0,.12);max-width:260px}
+.reset{position:absolute;right:18px;bottom:18px}
+.btn-ghost{border:0;background:var(--panel);color:var(--text);padding:10px;border-radius:6px;cursor:pointer;display:grid;place-items:center;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.busy{position:absolute;top:22px;left:50%;transform:translateX(-50%);background:var(--panel);border-radius:7px;padding:5px 10px;font-size:12px;color:var(--muted);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+@media (max-width:760px){
+  html,body{overflow:auto}
+  .app{flex-direction:column-reverse;height:auto}
+  aside{width:100%;border-right:0;border-top:1px solid var(--line);overflow:visible}
+  main{height:62vh;flex:none}
+  .warns{max-width:calc(100% - 150px)}
+  .toolbar{gap:9px;padding:7px 10px;font-size:11px;bottom:12px}
+  .reset{bottom:62px;right:12px}
+  .chip{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand">
+    <h1>STORAGE CONTAINER <span style="color:var(--muted)">v1</span></h1>
+    <a href="../" title="All tools">All tools</a>
+    <button class="icon-btn" id="undo" title="Undo (Ctrl+Z)" aria-label="Undo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
+    <button class="icon-btn" id="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button>
+  </div>
+
+  <div class="sec">
+    <h2>Shape</h2>
+    <div class="tiles" id="shapeTiles"></div>
+  </div>
+
+  <div class="sec">
+    <h2>Size <span>outside, mm</span></h2>
+    <div class="field" data-f="W"></div>
+    <div class="field" data-f="D"></div>
+    <label class="check" id="lockL"><input type="checkbox" id="lock"> Keep the shape's proportions</label>
+    <div class="field" data-f="H"></div>
+    <div class="field" data-f="R"></div>
+  </div>
+
+  <div class="sec">
+    <h2>Thickness</h2>
+    <div class="field" data-f="t"></div>
+    <div class="field" data-f="tb"></div>
+  </div>
+
+  <div class="sec">
+    <h2>Lid</h2>
+    <div class="tiles five" id="lidTiles"></div>
+    <div class="hint" id="lidHint"></div>
+    <div id="lidFields" style="margin-top:10px">
+      <div class="field" data-f="lid.depth"></div>
+      <div class="field" data-f="lid.top"></div>
+      <div class="field" data-f="lid.pitch"></div>
+      <div class="field" data-f="lid.sh"></div>
+      <div class="field" data-f="lid.c"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Stacking</h2>
+    <label class="check"><input type="checkbox" id="stack"> Stackable <span class="hint" style="margin:0">(foot drops into the one below)</span></label>
+    <div class="field" data-f="sc"></div>
+    <div class="hint" id="stackHint"></div>
+  </div>
+
+  <div class="sec">
+    <h2>Wall texture</h2>
+    <div class="tiles three" id="texTiles"></div>
+    <div id="texFields" style="margin-top:10px">
+      <div class="field" data-f="texture.size"></div>
+      <div class="field" data-f="texture.depth"></div>
+    </div>
+  </div>
+
+  <div class="sec" id="decoSec">
+    <h2>Text &amp; clipart <span>drag on the model</span></h2>
+    <div class="row2">
+      <button class="btn" id="addText">+ Text</button>
+      <button class="btn" id="addClip">+ Clipart</button>
+    </div>
+    <div class="clipgrid" id="clipGrid" hidden></div>
+    <div class="row2" style="margin-top:6px" id="clipMore" hidden>
+      <label class="btn" style="display:grid;place-items:center">Upload image<input type="file" id="upload" accept="image/png,image/jpeg,image/svg+xml,image/webp" hidden></label>
+      <button class="btn" id="clipClose">Close</button>
+    </div>
+    <div class="decolist" id="decoList"></div>
+    <div class="editor" id="decoEditor" hidden>
+      <div class="field" id="txtField"><label>Text</label><input class="txt" id="decoText" maxlength="40"></div>
+      <div class="field" id="fontField"><label>Font</label><select id="decoFont"></select></div>
+      <div class="field" id="invField" hidden><label class="check" style="margin:0"><input type="checkbox" id="decoInvert"> Invert image (use the light parts)</label></div>
+      <div class="field" data-f="deco.size"></div>
+      <div class="field" data-f="deco.depth"></div>
+      <div class="field" data-f="deco.rot"></div>
+      <div class="field"><div class="seg" id="decoMode"><button data-m="raise">Raised</button><button data-m="engrave">Engraved</button></div></div>
+      <div class="row2"><button class="btn" id="decoFront">Move to front</button><button class="btn" id="decoDel">Delete</button></div>
+    </div>
+    <div class="wallmap" id="wallWrap" hidden>
+      <svg id="wallSvg" viewBox="0 0 100 20" preserveAspectRatio="none" aria-label="Unrolled outer wall: drag text and clipart here or on the model"></svg>
+    </div>
+    <div class="hint" id="decoHint">Raised text and pictures are bevelled at 45°, so they print on the wall without supports.</div>
+  </div>
+
+  <div class="sec">
+    <h2>Detail</h2>
+    <div class="seg three" id="resSeg"><button data-r="0.8">Draft</button><button data-r="0.5">Normal</button><button data-r="0.3">Fine</button></div>
+    <div class="hint">Finer detail = smoother texture and text, bigger files.</div>
+  </div>
+
+  <div class="sec">
+    <h2>Estimate <span>PLA</span></h2>
+    <div class="weight" id="wTotal">–</div>
+    <dl class="stats" id="stats"></dl>
+    <div class="okline" id="okLine"></div>
+  </div>
+  <div class="sec hint" style="margin:0">Everything runs in your browser. Nothing is uploaded.</div>
+</aside>
+
+<main>
+  <canvas id="view" aria-label="3D preview: drag to rotate, right-drag or shift-drag to pan, scroll to zoom, drag text on the wall to move it"></canvas>
+  <div class="warns" id="warns" aria-live="polite"></div>
+  <div class="busy" id="busy" hidden>Building…</div>
+  <div class="dl">
+    <button class="btn-dark" id="download"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg> Download</button>
+    <div class="menu" id="dlMenu" hidden>
+      <div class="fmt"><button data-fmt="stl">STL</button><button data-fmt="3mf">3MF</button></div>
+      <button data-dl="container">Container <small class="ext">.stl</small></button>
+      <button data-dl="lid">Lid only <small class="ext">.stl</small></button>
+      <button data-dl="both">Container + lid <small class="ext">.stl</small></button>
+    </div>
+  </div>
+  <div class="chip" id="chip" hidden></div>
+  <div class="toolbar">
+    <label id="optLidL"><input type="checkbox" id="optLid" checked> Lid on</label>
+    <label id="optStackL"><input type="checkbox" id="optStack"> 2 stacked</label>
+    <label><input type="checkbox" id="optCut"> Section cut</label>
+    <label><input type="checkbox" id="optEdges" checked> Edges</label>
+  </div>
+  <button class="btn-ghost reset" id="resetView" title="Reset view (double-click canvas)" aria-label="Reset view"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+</main>
+</div>
+
+<script>
+/* Storage container geometry engine: exact, watertight, support-free container + lid meshes.
+ * Units: mm. X = width, Y = depth, Z = up. Works in the browser and in Node.
+ *
+ * Every part is a stack of closed rings that share one angle set around a centre
+ * point (all shapes are star-shaped about their centre). Consecutive rings are
+ * joined by quads and the first and last ring are closed by fans, so every part
+ * is closed and manifold by construction, with no CSG.
+ *
+ * Printability: every surface that faces downward (except the bed face) leans
+ * at most 45 degrees from vertical. Chamfers, shoulders and threads are built
+ * at 45 degrees or steeper, and wall textures, text and clipart are filtered so
+ * that the outer wall never moves outward faster than it rises.
+ */
+(function (root) {
+  'use strict';
+  const PI = Math.PI, TAU = 2 * PI, SQ2 = Math.SQRT2;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const r2 = v => Math.round(v * 100) / 100;
+
+  /* ---------------- shapes ---------------- */
+  // aspect = natural depth / width; corner = uses the corner radius
+  const SHAPES = [
+    { id: 'round', name: 'Round', aspect: 1, corner: false },
+    { id: 'oval', name: 'Oval', aspect: 0.65, corner: false },
+    { id: 'square', name: 'Square', aspect: 1, corner: true },
+    { id: 'rect', name: 'Rectangle', aspect: 0.6, corner: true },
+    { id: 'pill', name: 'Pill', aspect: 0.5, corner: false },
+    { id: 'triangle', name: 'Triangle', aspect: 0, corner: true },
+    { id: 'pentagon', name: 'Pentagon', aspect: 0, corner: true },
+    { id: 'hexagon', name: 'Hexagon', aspect: 0, corner: true },
+    { id: 'octagon', name: 'Octagon', aspect: 1, corner: true },
+    { id: 'heart', name: 'Heart', aspect: 0, corner: true },
+    { id: 'star', name: 'Star', aspect: 0, corner: true },
+    { id: 'flower', name: 'Flower', aspect: 0, corner: false }
+  ];
+  const SHAPE = Object.fromEntries(SHAPES.map(s => [s.id, s]));
+  const LIDS = ['none', 'plug', 'cap', 'screw', 'stack'];
+  const TEXTURES = ['none', 'ribs', 'flutes', 'waves', 'twist', 'knurl', 'bricks', 'honeycomb', 'dots'];
+
+  function ngon(n, rot) { const a = []; for (let k = 0; k < n; k++) { const t = rot + TAU * k / n; a.push([Math.cos(t), Math.sin(t)]); } return a; }
+  function heartPts() {
+    const a = [];
+    for (let i = 0; i < 720; i++) { const t = TAU * i / 720, s = Math.sin(t); a.push([16 * s * s * s, 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)]); }
+    return a.reverse();   // make it counter-clockwise
+  }
+  function rawShape(id) {   // unit-ish outline, any scale, counter-clockwise, plus whether it is a sharp polygon
+    switch (id) {
+      case 'round': case 'oval': return { pts: ngon(720, 0), poly: false };
+      case 'square': case 'rect': case 'pill': return { pts: [[-1, -1], [1, -1], [1, 1], [-1, 1]], poly: true };
+      case 'triangle': return { pts: ngon(3, PI / 2), poly: true };
+      case 'pentagon': return { pts: ngon(5, PI / 2), poly: true };
+      case 'hexagon': return { pts: ngon(6, 0), poly: true };
+      case 'octagon': return { pts: ngon(8, PI / 8), poly: true };
+      case 'star': { const a = []; for (let k = 0; k < 10; k++) { const t = PI / 2 + PI * k / 5, r = k % 2 ? 0.5 : 1; a.push([r * Math.cos(t), r * Math.sin(t)]); } return { pts: a, poly: true }; }
+      case 'flower': { const a = []; for (let i = 0; i < 1440; i++) { const t = TAU * i / 1440, r = 1 + 0.16 * Math.cos(6 * t + PI / 2); a.push([r * Math.cos(t), r * Math.sin(t)]); } return { pts: a, poly: false }; }
+      case 'heart': return { pts: heartPts(), poly: false };
+    }
+    return rawShape('round');
+  }
+  function bbox(pts) { let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; for (const [x, y] of pts) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); } return [x0, x1, y0, y1]; }
+  function naturalAspect(id) { const s = SHAPE[id] || SHAPE.round; if (s.aspect) return s.aspect; const b = bbox(rawShape(id).pts); return (b[3] - b[2]) / (b[1] - b[0]); }
+
+  // classic tangent fillet at every vertex of a simple polygon (convex and concave corners)
+  function fillet(pts, radii) {
+    const n = pts.length, out = [];
+    const tl = new Array(n), rr = new Array(n);
+    for (let i = 0; i < n; i++) {
+      const v = pts[i], a = pts[(i + n - 1) % n], b = pts[(i + 1) % n];
+      const u1 = [a[0] - v[0], a[1] - v[1]], u2 = [b[0] - v[0], b[1] - v[1]], l1 = Math.hypot(...u1), l2 = Math.hypot(...u2);
+      const cosA = clamp((u1[0] * u2[0] + u1[1] * u2[1]) / (l1 * l2), -1, 1), half = Math.acos(cosA) / 2;
+      let r = Math.max(0, radii[i]), L = r / Math.tan(half);
+      const Lmax = 0.499 * Math.min(l1, l2);
+      if (L > Lmax) { L = Lmax; r = L * Math.tan(half); }
+      tl[i] = L; rr[i] = r;
+    }
+    for (let i = 0; i < n; i++) {
+      const v = pts[i], a = pts[(i + n - 1) % n], b = pts[(i + 1) % n];
+      if (rr[i] < 1e-3) { out.push([v[0], v[1]]); continue; }
+      const l1 = Math.hypot(a[0] - v[0], a[1] - v[1]), l2 = Math.hypot(b[0] - v[0], b[1] - v[1]);
+      const u1 = [(a[0] - v[0]) / l1, (a[1] - v[1]) / l1], u2 = [(b[0] - v[0]) / l2, (b[1] - v[1]) / l2];
+      const bis = [u1[0] + u2[0], u1[1] + u2[1]], bl = Math.hypot(...bis);
+      const half = Math.acos(clamp(u1[0] * u2[0] + u1[1] * u2[1], -1, 1)) / 2;
+      const c = [v[0] + bis[0] / bl * rr[i] / Math.sin(half), v[1] + bis[1] / bl * rr[i] / Math.sin(half)];
+      const t1 = [v[0] + u1[0] * tl[i], v[1] + u1[1] * tl[i]], t2 = [v[0] + u2[0] * tl[i], v[1] + u2[1] * tl[i]];
+      const s0 = Math.atan2(t1[1] - c[1], t1[0] - c[0]), s1 = Math.atan2(t2[1] - c[1], t2[0] - c[0]);
+      let d = s1 - s0; while (d > PI) d -= TAU; while (d < -PI) d += TAU;
+      const steps = Math.max(2, Math.ceil(Math.abs(d) / (PI / 60)), Math.ceil(Math.abs(d) * rr[i] / 0.3));
+      for (let k = 0; k <= steps; k++) { const t = s0 + d * k / steps; out.push([c[0] + rr[i] * Math.cos(t), c[1] + rr[i] * Math.sin(t)]); }
+    }
+    return out;
+  }
+  function dedupe(pts, tol) {
+    const out = [];
+    for (const p of pts) { const q = out[out.length - 1]; if (!q || Math.hypot(p[0] - q[0], p[1] - q[1]) > tol) out.push(p); }
+    while (out.length > 2 && Math.hypot(out[0][0] - out[out.length - 1][0], out[0][1] - out[out.length - 1][1]) <= tol) out.pop();
+    return out;
+  }
+  function subdivide(pts, maxLen) {
+    const out = [], n = pts.length;
+    for (let i = 0; i < n; i++) {
+      const a = pts[i], b = pts[(i + 1) % n], L = Math.hypot(b[0] - a[0], b[1] - a[1]), k = Math.max(1, Math.ceil(L / maxLen));
+      for (let j = 0; j < k; j++) out.push([a[0] + (b[0] - a[0]) * j / k, a[1] + (b[1] - a[1]) * j / k]);
+    }
+    return out;
+  }
+  function areaCentroid(pts) {
+    let A = 0, cx = 0, cy = 0; const n = pts.length;
+    for (let i = 0; i < n; i++) { const [x0, y0] = pts[i], [x1, y1] = pts[(i + 1) % n], c = x0 * y1 - x1 * y0; A += c; cx += (x0 + x1) * c; cy += (y0 + y1) * c; }
+    return { A: A / 2, cx: cx / (3 * A), cy: cy / (3 * A) };
+  }
+
+  /* ---------------- distance queries + ray offsets ---------------- */
+  function segIndex(pts, margin) {
+    const n = pts.length, X = new Float64Array(n + 1), Y = new Float64Array(n + 1);
+    for (let i = 0; i <= n; i++) { X[i] = pts[i % n][0]; Y[i] = pts[i % n][1]; }
+    const b = bbox(pts), x0 = b[0] - margin, y0 = b[2] - margin;
+    let per = 0; for (let i = 0; i < n; i++) per += Math.hypot(X[i + 1] - X[i], Y[i + 1] - Y[i]);
+    const h = Math.max(0.5, Math.sqrt((b[1] - b[0] + 2 * margin) * (b[3] - b[2] + 2 * margin) / 3000));
+    const gx = Math.ceil((b[1] - b[0] + 2 * margin) / h) + 1, gy = Math.ceil((b[3] - b[2] + 2 * margin) / h) + 1;
+    const cells = new Array(gx * gy);
+    for (let i = 0; i < n; i++) {
+      const i0 = Math.floor((Math.min(X[i], X[i + 1]) - x0) / h), i1 = Math.floor((Math.max(X[i], X[i + 1]) - x0) / h);
+      const j0 = Math.floor((Math.min(Y[i], Y[i + 1]) - y0) / h), j1 = Math.floor((Math.max(Y[i], Y[i + 1]) - y0) / h);
+      for (let a = i0; a <= i1; a++) for (let c = j0; c <= j1; c++) { const k = c * gx + a; (cells[k] || (cells[k] = [])).push(i); }
+    }
+    function segDist(i, px, py) {
+      const ax = X[i], ay = Y[i], dx = X[i + 1] - ax, dy = Y[i + 1] - ay, L = dx * dx + dy * dy;
+      let t = L > 0 ? ((px - ax) * dx + (py - ay) * dy) / L : 0; t = t < 0 ? 0 : t > 1 ? 1 : t;
+      const ex = ax + t * dx - px, ey = ay + t * dy - py; return ex * ex + ey * ey;
+    }
+    function dist(px, py) {
+      const ci = Math.floor((px - x0) / h), cj = Math.floor((py - y0) / h);
+      let best = Infinity;
+      for (let k = 0; k < Math.max(gx, gy); k++) {
+        for (let a = ci - k; a <= ci + k; a++) for (let c = cj - k; c <= cj + k; c++) {
+          if (Math.max(Math.abs(a - ci), Math.abs(c - cj)) !== k || a < 0 || c < 0 || a >= gx || c >= gy) continue;
+          const L = cells[c * gx + a]; if (!L) continue;
+          for (const i of L) { const d = segDist(i, px, py); if (d < best) best = d; }
+        }
+        if (best <= (k * h) * (k * h)) break;
+      }
+      return Math.sqrt(best);
+    }
+    // outermost crossing of the ray from (cx,cy) at angle th
+    function ray(cx, cy, th) {
+      const ux = Math.cos(th), uy = Math.sin(th); let best = 0;
+      for (let i = 0; i < n; i++) {
+        const ax = X[i] - cx, ay = Y[i] - cy, ex = X[i + 1] - X[i], ey = Y[i + 1] - Y[i];
+        const den = ux * ey - uy * ex; if (Math.abs(den) < 1e-14) continue;
+        const r = (ax * ey - ay * ex) / den, s = (ax * uy - ay * ux) / den;
+        if (s >= -1e-9 && s <= 1 + 1e-9 && r > best) best = r;
+      }
+      return best;
+    }
+    return { dist, ray, per };
+  }
+  // radius along each ray of the contour offset by d (d < 0 inward)
+  function offsetRadii(idx, cx, cy, angles, rB, d) {
+    const n = angles.length, out = new Float64Array(n);
+    if (Math.abs(d) < 1e-9) { out.set(rB); return out; }
+    const D = Math.abs(d), dir = d > 0 ? 1 : -1, minStep = Math.max(0.004, 0.03 * D);
+    for (let j = 0; j < n; j++) {
+      const ux = Math.cos(angles[j]), uy = Math.sin(angles[j]);
+      let prev = rB[j], r = rB[j] + dir * D * 0.999, found = false;
+      for (let it = 0; it < 400; it++) {
+        if (r <= 0) { r = 0; found = true; break; }
+        const del = idx.dist(cx + r * ux, cy + r * uy);
+        if (del >= D) {
+          let lo = prev, hi = r;   // lo: inside the offset band, hi: past it
+          for (let k = 0; k < 40; k++) { const m = (lo + hi) / 2; if (idx.dist(cx + m * ux, cy + m * uy) >= D) hi = m; else lo = m; }
+          r = (lo + hi) / 2; found = true; break;
+        }
+        prev = r; r += dir * Math.max(D - del, minStep);
+      }
+      out[j] = found ? r : prev;
+    }
+    return out;
+  }
+  // morphological rounding of a dense star-shaped outline (closing rounds concave corners, opening convex ones)
+  function roundGeneric(pts, cx, cy, Rconcave, Rconvex) {
+    const A = new Float64Array(1800); for (let i = 0; i < A.length; i++) A[i] = TAU * i / A.length;
+    let cur = pts;
+    const step = d => {
+      const idx = segIndex(cur, Math.abs(d) + 2), rB = new Float64Array(A.length);
+      for (let j = 0; j < A.length; j++) rB[j] = idx.ray(cx, cy, A[j]);
+      const r = offsetRadii(idx, cx, cy, A, rB, d);
+      cur = Array.from(A, (t, j) => [cx + r[j] * Math.cos(t), cy + r[j] * Math.sin(t)]);
+    };
+    if (Rconcave > 0) { step(Rconcave); step(-Rconcave); }
+    if (Rconvex > 0) { step(-Rconvex); step(Rconvex); }
+    return cur;
+  }
+
+  /* outline in mm: bbox W x D centred on the origin, counter-clockwise, dense */
+  const OUTLINE_CACHE = new Map();
+  function outline(id, W, D, R) {
+    const key = [id, W, D, R].join('|');
+    if (OUTLINE_CACHE.has(key)) return OUTLINE_CACHE.get(key);
+    const o = outline_(id, W, D, R);
+    OUTLINE_CACHE.set(key, o); if (OUTLINE_CACHE.size > 12) OUTLINE_CACHE.delete(OUTLINE_CACHE.keys().next().value);
+    return o;
+  }
+  function outline_(id, W, D, R) {
+    const raw = rawShape(id), b = bbox(raw.pts), sx = W / (b[1] - b[0]), sy = D / (b[3] - b[2]);
+    let pts = raw.pts.map(([x, y]) => [(x - (b[0] + b[1]) / 2) * sx, (y - (b[2] + b[3]) / 2) * sy]);
+    const minWD = Math.min(W, D);
+    if (raw.poly) {
+      let radii;
+      if (id === 'pill') radii = pts.map(() => minWD / 2);
+      else if (id === 'star') radii = pts.map((p, i) => i % 2 ? Math.max(3, R * 0.6) : R);
+      else radii = pts.map(() => R);
+      pts = fillet(pts, radii);
+    }
+    pts = dedupe(subdivide(dedupe(pts, 1e-4), 0.4), 1e-4);
+    let c = areaCentroid(pts);
+    if (id === 'heart') { pts = roundGeneric(pts, c.cx, c.cy, Math.max(3, minWD * 0.05), Math.max(R, 1.5)); pts = dedupe(pts, 1e-4); c = areaCentroid(pts); }
+    // rounding shrinks the outline: stretch it back so the outside is exactly W x D
+    { const bb = bbox(pts), kx = W / (bb[1] - bb[0]), ky = D / (bb[3] - bb[2]), mx = (bb[0] + bb[1]) / 2, my = (bb[2] + bb[3]) / 2;
+      pts = pts.map(([x, y]) => [(x - mx) * kx, (y - my) * ky]); c = areaCentroid(pts); }
+    if (c.A < 0) { pts.reverse(); c = areaCentroid(pts); }
+    return { pts, cx: c.cx, cy: c.cy, area: Math.abs(c.A) };
+  }
+
+  /* ---------------- parameters ---------------- */
+  const DEFAULTS = {
+    shape: 'round', W: 80, D: 80, H: 60, R: 6, t: 1.6, tb: 1.2,
+    stack: false, sc: 0.2,
+    lid: { type: 'plug', c: 0.2, depth: 6, top: 1.6, pitch: 4, sh: 8 },
+    texture: { type: 'none', size: 6, depth: 0.8 },
+    decos: [],
+    res: 0.5
+  };
+  function resolve(p) {
+    p = p || {};
+    const q = Object.assign({}, DEFAULTS, p), warn = [];
+    q.lid = Object.assign({}, DEFAULTS.lid, p.lid || {});
+    q.texture = Object.assign({}, DEFAULTS.texture, p.texture || {});
+    q.decos = Array.isArray(p.decos) ? p.decos.filter(d => d && d.sdf && d.w > 0 && d.h > 0).slice(0, 12) : [];
+    if (!SHAPE[q.shape]) q.shape = 'round';
+    if (!LIDS.includes(q.lid.type)) q.lid.type = 'none';
+    if (!TEXTURES.includes(q.texture.type)) q.texture.type = 'none';
+    const num = (o, k, lo, hi, label, dflt) => {
+      let v = Number(o[k]); if (!isFinite(v)) v = dflt;
+      const c = clamp(v, lo, hi); if (Math.abs(c - v) > 1e-9) warn.push(`${label} limited to ${r2(c)} mm`); o[k] = c;
+    };
+    num(q, 'W', 20, 400, 'Width', 80); num(q, 'D', 20, 400, 'Depth', 80); num(q, 'H', 8, 400, 'Height', 60);
+    num(q, 't', 0.8, 5, 'Wall', 1.6); num(q, 'tb', 0.6, 6, 'Bottom', 1.2);
+    num(q, 'R', 0, Math.min(q.W, q.D) / 2 - 0.5, 'Corner radius', 6);
+    num(q, 'sc', 0.05, 1, 'Stack clearance', 0.2);
+    num(q, 'res', 0.25, 1.2, 'Detail', 0.5);
+    const L = q.lid;
+    num(L, 'c', 0.05, 1, 'Lid clearance', 0.2); num(L, 'top', 0.8, 5, 'Lid top', 1.6);
+    num(L, 'depth', 3, 30, 'Lid depth', 6); num(L, 'pitch', 2.5, 8, 'Thread pitch', 4); num(L, 'sh', 4, 60, 'Stacking lid height', 8);
+    const T = q.texture; num(T, 'size', 2, 40, 'Texture size', 6); num(T, 'depth', 0.2, 3, 'Texture depth', 0.8);
+    if (L.type === 'screw') {
+      const o = outline(q.shape, q.W, q.D, SHAPE[q.shape].corner ? q.R : 0), idx = segIndex(o.pts, 2);
+      let rin = Infinity; for (let k = 0; k < 360; k++) rin = Math.min(rin, idx.ray(o.cx, o.cy, TAU * k / 360));
+      const th = threadSpec(L.pitch, Math.max(0.3, L.c + 0.1)), need = 8 + Math.max(1.2, q.t) + th.td + th.cr;
+      if (rin < need) { L.type = 'plug'; warn.push(`too small for a screw lid (it needs about ${Math.ceil(Math.min(q.W, q.D) + 2 * (need - rin))} mm across) – using a push-fit lid`); }
+    }
+    if (q.stack && (L.type === 'cap' || L.type === 'screw')) { q.stack = false; warn.push('stacking needs no lid, a push-fit lid or a stacking lid'); }
+    if (L.type === 'stack') q.stack = true;
+    return { q, warn };
+  }
+
+  /* ---------------- mesh assembly from rings ---------------- */
+  // rings: [{ z, x: Float64Array, y: Float64Array }] all with N points; first and last closed by fans
+  function ringsToMesh(rings, cx, cy) {
+    const R = rings.length, N = rings[0].x.length, V = R * N + 2;
+    const P = new Float32Array(V * 3), I = new Uint32Array((2 * N * (R - 1) + 2 * N) * 3);
+    let o = 0;
+    for (const r of rings) for (let j = 0; j < N; j++) { P[o++] = r.x[j]; P[o++] = r.y[j]; P[o++] = r.z; }
+    const c0 = R * N, c1 = c0 + 1;
+    P[o++] = cx; P[o++] = cy; P[o++] = rings[0].z; P[o++] = cx; P[o++] = cy; P[o++] = rings[R - 1].z;
+    let k = 0;
+    for (let j = 0; j < N; j++) { const j1 = (j + 1) % N; I[k++] = c0; I[k++] = j1; I[k++] = j; }
+    for (let i = 0; i + 1 < R; i++) for (let j = 0; j < N; j++) {
+      const j1 = (j + 1) % N, a = i * N + j, b = i * N + j1, c = (i + 1) * N + j1, d = (i + 1) * N + j;
+      I[k++] = a; I[k++] = b; I[k++] = c; I[k++] = a; I[k++] = c; I[k++] = d;
+    }
+    const L = (R - 1) * N;
+    for (let j = 0; j < N; j++) { const j1 = (j + 1) % N; I[k++] = c1; I[k++] = L + j; I[k++] = L + j1; }
+    const m = { positions: P, indices: I, volume: 0 };
+    m.volume = volumeOf(m);
+    if (m.volume < 0) { for (let t = 0; t < I.length; t += 3) { const s = I[t + 1]; I[t + 1] = I[t + 2]; I[t + 2] = s; } m.volume = -m.volume; }
+    return m;
+  }
+  function volumeOf(m) {
+    const P = m.positions, I = m.indices; let v = 0;
+    for (let t = 0; t < I.length; t += 3) {
+      const a = I[t] * 3, b = I[t + 1] * 3, c = I[t + 2] * 3;
+      v += P[a] * (P[b + 1] * P[c + 2] - P[b + 2] * P[c + 1]) - P[a + 1] * (P[b] * P[c + 2] - P[b + 2] * P[c]) + P[a + 2] * (P[b] * P[c + 1] - P[b + 1] * P[c]);
+    }
+    return v / 6;
+  }
+  function transformMesh(m, o) {   // o: { dx, dy, dz, flip } flip = rotate 180 degrees about X (y -> -y, z -> -z)
+    const P = m.positions, out = new Float32Array(P.length), f = o.flip ? -1 : 1;
+    for (let i = 0; i < P.length; i += 3) { out[i] = P[i] + (o.dx || 0); out[i + 1] = f * P[i + 1] + (o.dy || 0); out[i + 2] = f * P[i + 2] + (o.dz || 0); }
+    return Object.assign({}, m, { positions: out });
+  }
+  function mergeMeshes(list) {
+    let nv = 0, ni = 0; for (const m of list) { nv += m.positions.length; ni += m.indices.length; }
+    const P = new Float32Array(nv), I = new Uint32Array(ni); let po = 0, io = 0, vo = 0;
+    for (const m of list) { P.set(m.positions, po); for (let i = 0; i < m.indices.length; i++) I[io + i] = m.indices[i] + vo; po += m.positions.length; io += m.indices.length; vo += m.positions.length / 3; }
+    return { positions: P, indices: I, volume: list.reduce((a, m) => a + m.volume, 0) };
+  }
+  function bounds(m) {
+    const P = m.positions, b = [1e9, -1e9, 1e9, -1e9, 1e9, -1e9];
+    for (let i = 0; i < P.length; i += 3) for (let k = 0; k < 3; k++) { b[2 * k] = Math.min(b[2 * k], P[i + k]); b[2 * k + 1] = Math.max(b[2 * k + 1], P[i + k]); }
+    return b;
+  }
+  // steepest downward-facing surface, in degrees from vertical (bed faces at the lowest z are ignored)
+  function maxOverhang(m) {
+    const P = m.positions, I = m.indices; let zmin = Infinity, worst = 0, area = 0;
+    for (let i = 2; i < P.length; i += 3) zmin = Math.min(zmin, P[i]);
+    for (let t = 0; t < I.length; t += 3) {
+      const a = I[t] * 3, b = I[t + 1] * 3, c = I[t + 2] * 3;
+      if (P[a + 2] < zmin + 1e-4 && P[b + 2] < zmin + 1e-4 && P[c + 2] < zmin + 1e-4) continue;
+      const ux = P[b] - P[a], uy = P[b + 1] - P[a + 1], uz = P[b + 2] - P[a + 2], vx = P[c] - P[a], vy = P[c + 1] - P[a + 1], vz = P[c + 2] - P[a + 2];
+      const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx, l = Math.hypot(nx, ny, nz);
+      if (l < 1e-9 || nz >= 0) continue;
+      const ang = Math.asin(Math.min(1, -nz / l)) * 180 / PI;
+      if (ang > worst) worst = ang;
+      if (ang > 45.5) area += l / 2;
+    }
+    return { deg: worst, badArea: area };
+  }
+
+  /* ---------------- textures (outward relief, mm) ---------------- */
+  const tri = x => { x = x - Math.floor(x); return 1 - Math.abs(2 * x - 1); };   // 0..1..0 triangle wave
+  function hexSdf(px, py, lam) {   // signed distance inside the nearest pointy-top hexagon, cells lam wide
+    const ap = lam / 2, r = ap * 2 / Math.sqrt(3), sy = 3 * r;
+    let best = Infinity;
+    for (const [ox, oy] of [[0, 0], [ap, 1.5 * r]]) {
+      const gx = Math.round((px - ox) / lam) * lam + ox, gy = Math.round((py - oy) / sy) * sy + oy;
+      const dx = Math.abs(px - gx), dy = Math.abs(py - gy);
+      best = Math.min(best, Math.max(dx, dx * 0.5 + dy * Math.sqrt(3) / 2));
+    }
+    return ap - best;
+  }
+  function textureFn(T, P) {
+    const A = T.depth;
+    let lam = T.size; const nAround = Math.max(3, Math.round(P / lam)); lam = P / nAround;   // seamless around the wall
+    switch (T.type) {
+      case 'ribs': return (s, z) => A * 0.5 * (1 + Math.cos(TAU * s / lam));
+      case 'flutes': return (s, z) => { const u = (s / lam) % 1 * 2 - 1; return A * Math.sqrt(Math.max(0, 1 - u * u)); };
+      case 'waves': { const a = Math.min(A, 0.95 * T.size / PI); return (s, z) => a * 0.5 * (1 + Math.sin(TAU * z / T.size)); }
+      case 'twist': { const a = Math.min(A, 0.95 * lam / PI); return (s, z) => a * 0.5 * (1 + Math.cos(TAU * (s - z) / lam)); }
+      case 'knurl': { const a = Math.min(A, 0.95 * lam / 2); return (s, z) => a * Math.min(tri((s + z) / lam), tri((s - z) / lam)); }
+      case 'bricks': {
+        const bw = lam, bh = Math.max(2, T.size * 0.45), g = Math.max(0.6, T.size * 0.08);
+        return (s, z) => {
+          const row = Math.floor(z / bh), off = row % 2 ? bw / 2 : 0;
+          const u = ((s + off) % bw + bw) % bw, v = z - row * bh;
+          const sd = Math.min(u - g / 2, bw - g / 2 - u, v - g / 2, bh - g / 2 - v);
+          return clamp(sd, 0, A);
+        };
+      }
+      case 'honeycomb': { const g = Math.max(0.6, T.size * 0.08); return (s, z) => clamp(hexSdf(s, z, lam) - g / 2, 0, A); }
+      case 'dots': {
+        const rad = lam * 0.28, rowH = lam * 0.866;
+        return (s, z) => {
+          const row = Math.round(z / rowH), off = row % 2 ? lam / 2 : 0;
+          const cs = Math.round((s - off) / lam) * lam + off, d = Math.hypot(s - cs, z - row * rowH);
+          return clamp(rad - d, 0, A);
+        };
+      }
+    }
+    return null;
+  }
+
+  /* ---------------- thread profile ---------------- */
+  // normalised trapezoid ridge, centred at u = 0, crest half-width hc, base half-width hb (45 degree flanks)
+  function threadSpec(pitch, cr) {
+    const g = 0.35, hc = 0.3, hb = pitch / 2 - g, td = hb - hc;
+    return { pitch, g, hc, hb, td, cr };
+  }
+  const ridge = (u, th) => clamp((th.hb - Math.abs(u)) / (th.hb - th.hc), 0, 1);
+  // ridge height (0..1) of a helix z = z0 + pitch * phi / 2pi, phi in [0, PHI], at angle th and height z
+  function helixAt(th, z, ang, z0, PHI) {
+    const P = th.pitch, ramp = PI / 2;
+    const k = Math.round(((z - z0) / P) - ang / TAU), phi = ang + TAU * k, u = z - (z0 + P * phi / TAU);
+    if (phi < 0 || phi > PHI) {
+      // neighbouring turns can still reach this point
+      let best = 0;
+      for (const kk of [k - 1, k + 1]) { const ph = ang + TAU * kk; if (ph < 0 || ph > PHI) continue; const uu = z - (z0 + P * ph / TAU); best = Math.max(best, ridge(uu, th) * clamp(Math.min(ph, PHI - ph) / ramp, 0, 1)); }
+      return best;
+    }
+    return ridge(u, th) * clamp(Math.min(phi, PHI - phi) / ramp, 0, 1);
+  }
+
+  /* ---------------- build ---------------- */
+  function build(params) {
+    const { q, warn } = resolve(params);
+    const t = q.t, tb = q.tb, L = q.lid, lt = L.type, T = q.texture;
+    const shp = outline(q.shape, q.W, q.D, SHAPE[q.shape].corner ? q.R : 0);
+    const cx = shp.cx, cy = shp.cy, idx = segIndex(shp.pts, 30);
+
+    /* --- angle set: adaptive by arc length and turning, denser for textures and text --- */
+    const pts0 = shp.pts, n0 = pts0.length;
+    const ang0 = pts0.map(([x, y]) => { let a = Math.atan2(y - cy, x - cx); if (a < 0) a += TAU; return a; });
+    let start = 0; for (let i = 1; i < n0; i++) if (ang0[i] < ang0[start]) start = i;
+    const seq = []; for (let i = 0; i < n0; i++) seq.push((start + i) % n0);
+    const sAt = new Float64Array(n0 + 1);
+    for (let k = 1; k <= n0; k++) { const a = pts0[seq[k - 1]], b = pts0[seq[k % n0]]; sAt[k] = sAt[k - 1] + Math.hypot(b[0] - a[0], b[1] - a[1]); }
+    const Ptot0 = sAt[n0];
+    const hasTex = T.type !== 'none';
+    const decoRes = Math.min(q.res, 0.35);
+    // deco s-ranges (on the dense outline; close enough to the final one for sampling density)
+    const decoRanges = q.decos.map(d => { const sc = (((Number(d.u) || 0) % 1) + 1) % 1 * Ptot0; return [sc - d.w / 2 - 2, sc + d.w / 2 + 2]; });
+    const inDeco = s => decoRanges.some(([a, b]) => { for (const o of [-Ptot0, 0, Ptot0]) if (s >= a + o && s <= b + o) return true; return false; });
+    const angles = [];
+    {
+      let lastS = -1e9, lastDir = null, lastA = -1e9;
+      for (let k = 0; k < n0; k++) {
+        const i = seq[k], a = ang0[i], s = sAt[k];
+        const nx = pts0[seq[(k + 1) % n0]], dir = Math.atan2(nx[1] - pts0[i][1], nx[0] - pts0[i][0]);
+        const ds = inDeco(s) ? decoRes : hasTex ? q.res : 1.2;
+        let turn = 0; if (lastDir !== null) { turn = Math.abs(dir - lastDir); if (turn > PI) turn = TAU - turn; }
+        if (k === 0 || s - lastS >= ds - 1e-9 || turn > 5 * PI / 180 || a - lastA > 0.75 * PI / 180) {
+          if (a > lastA + 1e-6) { angles.push(a); lastS = s; lastDir = dir; lastA = a; }
+        }
+      }
+      // keep every gap under 0.75 degrees (also covers the closing gap)
+      const out = [];
+      for (let i = 0; i < angles.length; i++) {
+        const a = angles[i], b = i + 1 < angles.length ? angles[i + 1] : angles[0] + TAU, m = Math.ceil((b - a) / (0.75 * PI / 180));
+        for (let k = 0; k < m; k++) out.push(a + (b - a) * k / m);
+      }
+      angles.length = 0; for (const a of out) angles.push(a >= TAU ? a - TAU : a);
+      angles.sort((a, b) => a - b);
+    }
+    const N = angles.length, A = Float64Array.from(angles), COS = A.map(Math.cos), SIN = A.map(Math.sin);
+    const rB = new Float64Array(N); for (let j = 0; j < N; j++) rB[j] = idx.ray(cx, cy, A[j]);
+    const cache = new Map();
+    const insetR = d => { const k = d.toFixed(4); if (!cache.has(k)) cache.set(k, offsetRadii(idx, cx, cy, A, rB, -d)); return cache.get(k); };
+    const ringR = (r, z) => { const x = new Float64Array(N), y = new Float64Array(N); for (let j = 0; j < N; j++) { x[j] = cx + r[j] * COS[j]; y[j] = cy + r[j] * SIN[j]; } return { z, x, y }; };
+    const ringInset = (d, z) => ringR(insetR(d), z);
+    const circleR = R => new Float64Array(N).fill(R);
+    // base contour: arc length + outward normals
+    const bx = new Float64Array(N), by = new Float64Array(N), sB = new Float64Array(N), nX = new Float64Array(N), nY = new Float64Array(N);
+    for (let j = 0; j < N; j++) { bx[j] = cx + rB[j] * COS[j]; by[j] = cy + rB[j] * SIN[j]; }
+    for (let j = 1; j < N; j++) sB[j] = sB[j - 1] + Math.hypot(bx[j] - bx[j - 1], by[j] - by[j - 1]);
+    const Ptot = sB[N - 1] + Math.hypot(bx[0] - bx[N - 1], by[0] - by[N - 1]);
+    for (let j = 0; j < N; j++) {
+      const a = (j + N - 1) % N, b = (j + 1) % N, tx = bx[b] - bx[a], ty = by[b] - by[a], l = Math.hypot(tx, ty) || 1;
+      nX[j] = ty / l; nY[j] = -tx / l;
+    }
+    // signed local radius of the wall (+ convex, - concave): relief may not exceed it, or the wall would fold over itself
+    const radAt = new Float64Array(N);
+    for (let j = 0; j < N; j++) {
+      const a = (j + N - 1) % N, b = (j + 1) % N;
+      let da = Math.atan2(nY[b], nX[b]) - Math.atan2(nY[a], nX[a]); da -= Math.round(da / TAU) * TAU;
+      let ds = sB[b] - sB[a]; if (ds <= 0) ds += Ptot;
+      radAt[j] = Math.abs(da) < 1e-9 ? 1e9 : ds / da;
+    }
+    // how far relief may push in (convex corners) or out (concave corners) at each column: limited by the corner
+    // radius, growing at half the distance along the wall away from it (a 1D distance transform, run twice for the wrap)
+    const limIn = new Float64Array(N), limOut = new Float64Array(N);
+    for (let j = 0; j < N; j++) { limIn[j] = radAt[j] > 0 ? 0.8 * radAt[j] : 1e9; limOut[j] = radAt[j] < 0 ? -0.8 * radAt[j] : 1e9; }
+    for (const L of [limIn, limOut]) for (let pass = 0; pass < 2; pass++) {
+      for (let j = 1; j <= N; j++) { const a = (j - 1) % N, b = j % N, ds = (sB[b] - sB[a] + Ptot) % Ptot; L[b] = Math.min(L[b], L[a] + 0.5 * ds); }
+      for (let j = N - 1; j >= 0; j--) { const a = (j + 1) % N, b = j, ds = (sB[a] - sB[b] + Ptot) % Ptot; L[b] = Math.min(L[b], L[a] + 0.5 * ds); }
+    }
+    let rMin = Infinity, rMax = 0; for (let j = 0; j < N; j++) { rMin = Math.min(rMin, rB[j]); rMax = Math.max(rMax, rB[j]); }
+
+    /* --- vertical layout --- */
+    // A chamfer between two contours leans at most 45 degrees when it rises at least as much as the
+    // largest radial step between them (rays are not always normal to the wall, e.g. near corners).
+    const maxGap = (a, b) => { let g = 0; for (let j = 0; j < N; j++) g = Math.max(g, Math.abs(a[j] - b[j])); return g; };
+    let H = q.H;
+    const F = t + q.sc, sf = 2, rr = 0.4, flush = q.stack && t >= rr + 0.4, dl = t * (SQ2 - 1);
+    const rT = insetR(t), rF = q.stack ? insetR(F) : null;
+    const hF = q.stack ? maxGap(rB, rF) : 0;                       // stacking-foot chamfer height
+    const bc = Math.min(0.4, t / 2), hB = q.stack ? 0 : maxGap(rB, insetR(bc));   // small first-layer chamfer
+    const zA = q.stack ? sf + hF : hB;   // bottom of the plain outer wall
+    const Lw = Math.max(1.2, t), nk = Lw + L.c;   // cap lid wall and neck inset
+    const hN = lt === 'cap' ? maxGap(rB, insetR(nk)) : 0, hNi = lt === 'cap' ? maxGap(rT, insetR(nk + t)) : 0;
+    let th = null, Rno = 0, Rni = 0, hs = 0, zSh = 0, zn0 = 0, Rl = 0;
+    if (lt === 'screw') {
+      th = threadSpec(L.pitch, Math.max(0.3, L.c + 0.1));
+      Rno = rMin - Lw - th.td - th.cr;
+      Rni = Rno - Math.max(1.2, t);
+      Rl = Rno + th.td + th.cr;
+      hs = Math.max(0, rMax - Rno);
+      const dMin = 1.6 + 2 * th.hb + 1.75 * th.pitch;   // at least 1.75 turns of thread (1.25 at full depth)
+      if (L.depth < dMin) { L.depth = Math.ceil(dMin * 10) / 10; warn.push(`neck raised to ${L.depth} mm for at least 1¾ turns of thread`); }
+    }
+    // inner stacking-foot chamfer (cavity side, any slope is fine)
+    const hFi = q.stack ? maxGap(rT, insetR(F + t)) : 0;
+    const footTop = q.stack ? sf + dl + hFi : 0;            // top of the inner foot chamfer
+    let minH = tb + 3;
+    if (q.stack) minH = Math.max(minH, footTop + 1 + (flush ? hF : 0));
+    if (lt === 'cap') minH = Math.max(minH, Math.max(tb, footTop) + t + hNi + L.depth + 2);
+    if (lt === 'plug') minH = Math.max(minH, Math.max(tb, footTop) + L.depth + 2);
+    if (lt === 'screw') minH = Math.max(minH, Math.max(tb, footTop) + t + 1 + hs + L.depth + 1);
+    if (H < minH) { warn.push(`height raised to ${r2(minH)} mm to fit the ${lt === 'screw' ? 'shoulder, neck and thread' : lt === 'none' ? 'bottom' : 'lid'}`); H = minH; }
+    q.H = H;
+    let zB = H;
+    if (lt === 'cap') zB = H - L.depth - hN;
+    if (lt === 'screw') { zn0 = H - L.depth; zSh = zn0 - hs; zB = zSh; }
+
+    /* --- outer wall rings with texture / text relief --- */
+    const outer = [];
+    if (q.stack) { outer.push(ringR(rF, 0), ringR(rF, sf)); }
+    else outer.push(ringInset(bc, 0));
+    // z samples in the plain wall zone
+    const zs = new Set([zA, zB]);
+    const fine = (a, b, d) => { a = Math.max(a, zA); b = Math.min(b, zB); if (b <= a) return; const m = Math.ceil((b - a) / d); for (let k = 0; k <= m; k++) zs.add(a + (b - a) * k / m); };
+    if (hasTex) fine(zA, zB, Math.min(q.res, T.size / 8));
+    const decos = q.decos.map(d => {
+      const zc = clamp(Number(d.z) || 0, zA + d.h / 2 + 0.5, Math.max(zA + d.h / 2 + 0.5, zB - d.h / 2 - 0.5));
+      const sc = (((Number(d.u) || 0) % 1) + 1) % 1 * Ptot;
+      const depth = d.engrave ? -Math.min(Math.abs(d.depth || 0.8), t - 0.6) : clamp(Math.abs(d.depth || 0.8), 0.2, 3);
+      return { sc, zc, w: d.w, h: d.h, sdf: d.sdf, depth };
+    });
+    for (const d of decos) fine(d.zc - d.h / 2 - 1, d.zc + d.h / 2 + 1, decoRes);
+    const zList = [...zs].filter(z => z >= zA - 1e-9 && z <= zB + 1e-9).sort((a, b) => a - b).filter((z, i, a) => i === 0 || z - a[i - 1] > 0.02);
+    const texF = hasTex ? textureFn(T, Ptot) : null;
+    const sampleSdf = (g, x, y) => {   // bilinear, x/y in grid units
+      if (x < 0 || y < 0 || x > g.nx - 1 || y > g.ny - 1) return -1;
+      const i = Math.min(g.nx - 2, Math.floor(x)), k = Math.min(g.ny - 2, Math.floor(y)), fx = x - i, fy = y - k, D = g.data;
+      return (D[k * g.nx + i] * (1 - fx) + D[k * g.nx + i + 1] * fx) * (1 - fy) + (D[(k + 1) * g.nx + i] * (1 - fx) + D[(k + 1) * g.nx + i + 1] * fx) * fy;
+    };
+    const wrapDs = (s, sc) => { let d = s - sc; d -= Math.round(d / Ptot) * Ptot; return d; };
+    const relief = (j, z) => {
+      const s = sB[j]; let tex = 0, sup = 1, deco = 0;
+      for (const d of decos) {
+        const ds = wrapDs(s, d.sc), dz = z - d.zc;
+        const ex = Math.max(0, Math.abs(ds) - d.w / 2), ez = Math.max(0, Math.abs(dz) - d.h / 2);
+        sup = Math.min(sup, clamp((Math.hypot(ex, ez) - 1) / 2, 0, 1));
+        if (ex === 0 && ez === 0) {
+          const g = d.sdf, v = sampleSdf(g, (ds + d.w / 2) / d.w * (g.nx - 1), (dz + d.h / 2) / d.h * (g.ny - 1));
+          deco += d.depth > 0 ? clamp(v, 0, d.depth) : -clamp(v, 0, -d.depth);
+        }
+      }
+      if (texF) tex = texF(s, z) * clamp((z - zA) / 1.5, 0, 1) * clamp((zB - z) / 1.5, 0, 1);
+      return tex * sup + deco;
+    };
+    // engraving must climb back to the surface (at 45 degrees) before the wall thins at the top (flush stacking rim)
+    const zEng = flush ? Math.min(zB, H - hF * (t - rr) / F - 0.3) : zB;
+    const zoneRings = [];
+    if (hasTex || decos.length) {
+      const prev = new Float64Array(N); let zPrev = null;
+      for (const z of zList) {
+        const r = { z, x: new Float64Array(N), y: new Float64Array(N) };
+        for (let j = 0; j < N; j++) {
+          let d = relief(j, z);
+          if (z === zA || z === zB) d = 0;
+          d = clamp(d, -limIn[j], limOut[j]);
+          d = Math.max(d, -(t - 0.6), -Math.max(0, zEng - z) * 0.999);                            // engraving climbs back out at 45 degrees by the top
+          if (zPrev !== null) d = Math.min(d, prev[j] + (z - zPrev) * 0.999);   // never lean out more than 45 degrees
+          prev[j] = d;
+          r.x[j] = bx[j] + nX[j] * d; r.y[j] = by[j] + nY[j] * d;
+        }
+        zPrev = z; zoneRings.push(r);
+      }
+    } else zoneRings.push(ringR(rB, zA), ringR(rB, zB));
+    outer.push(...zoneRings);
+
+    /* --- top of the outer wall + inner wall, by lid type --- */
+    const inner = [];   // top to bottom
+    if (lt === 'cap') {
+      outer.push(ringInset(nk, H - L.depth), ringInset(nk, H));
+      inner.push(ringInset(nk + t, H), ringInset(nk + t, zB - t + hNi), ringR(rT, zB - t));
+    } else if (lt === 'screw') {
+      // 45 degree shoulder from the shape to the round neck
+      const steps = Math.max(1, Math.ceil(hs / 0.8));
+      for (let k = 1; k <= steps; k++) {
+        const z = zSh + hs * k / steps, r = new Float64Array(N);
+        for (let j = 0; j < N; j++) r[j] = Math.max(Rno, rB[j] - (z - zSh));
+        outer.push(ringR(r, z));
+      }
+      // threaded neck
+      const zt0 = zn0 + 0.8, zt1 = H - 0.8, PHI = Math.max(0, TAU * (zt1 - zt0 - 2 * th.hb) / th.pitch), z0 = zt0 + th.hb;
+      th.neck = { z0, PHI };
+      const m = Math.max(2, Math.ceil((H - zn0) / 0.25));
+      for (let k = 1; k <= m; k++) {
+        const z = zn0 + (H - zn0) * k / m, r = new Float64Array(N);
+        for (let j = 0; j < N; j++) r[j] = Rno + (k < m ? th.td * helixAt(th, z, A[j], z0, PHI) : 0);
+        outer.push(ringR(r, z));
+      }
+      // inner: neck, 45 degree inner shoulder, then the wall
+      inner.push(ringR(circleR(Rni), H));
+      const rI = insetR(t), zi1 = zSh + hs, zi0 = zSh - t;
+      const si = Math.max(1, Math.ceil((zi1 - zi0) / 0.8));
+      for (let k = si; k >= 0; k--) {
+        const z = zi0 + (zi1 - zi0) * k / si, r = new Float64Array(N);
+        for (let j = 0; j < N; j++) r[j] = Math.max(Rni, Math.min(rI[j], rB[j] - t * SQ2 - (z - zSh)));
+        inner.push(ringR(r, z));
+      }
+    } else {
+      outer.push(...[]);
+      if (flush) inner.push(ringInset(rr, H), ringR(rT, H - hF * (t - rr) / F));
+      else inner.push(ringR(rT, H));
+    }
+    // inner bottom: plain, or following the stacking foot
+    const lastZ = inner[inner.length - 1].z;
+    if (q.stack) {
+      // cavity follows the foot: inset F+t up to sf+dl, then widens to the wall at footTop
+      const rFi = insetR(F + t), z2 = sf + dl;
+      if (footTop > tb + 1e-6 && footTop < lastZ - 1e-6) inner.push(ringR(rT, footTop));
+      if (z2 > tb + 1e-6 && z2 < lastZ - 1e-6) inner.push(ringR(rFi, z2));
+      if (tb >= z2) { const f = clamp((tb - z2) / hFi, 0, 1), r = new Float64Array(N); for (let j = 0; j < N; j++) r[j] = rFi[j] + (rT[j] - rFi[j]) * f; inner.push(ringR(r, tb)); }
+      else inner.push(ringR(rFi, tb));
+    } else inner.push(ringInset(t, tb));
+
+    const container = ringsToMesh(outer.concat(inner), cx, cy);
+    // capacity: the cavity closed at the rim
+    const cavRings = inner.slice();
+    const capacity = ringsToMesh(cavRings, cx, cy).volume;
+
+    /* --- stacking offset: lowest seat where the upper foot clears the lower rim on every ray --- */
+    let stackOffset = H;
+    if (q.stack) {
+      const h2 = flush ? hF * (t - rr) / F : 0, rR = flush ? insetR(rr) : rT, cl = 0.1;
+      const lerp = (a, b, f) => a + (b - a) * clamp(f, 0, 1);
+      let so = -Infinity;
+      for (let j = 0; j < N; j++) {
+        const up = z => z <= sf ? rF[j] : lerp(rF[j], rB[j], (z - sf) / hF);
+        const lo = z => z <= H - h2 ? rT[j] : lerp(rT[j], rR[j], h2 > 0 ? (z - (H - h2)) / h2 : 1);
+        const ok = off => { for (const z of [off, off + sf, off + sf + hF, H - h2, H]) if (z >= off - 1e-9 && z <= H + 1e-9 && up(z - off) > lo(z) - cl) return false; return true; };
+        let a = H - sf - hF - 2, b = H;
+        if (ok(a)) { so = Math.max(so, a); continue; }
+        for (let k = 0; k < 40; k++) { const m = (a + b) / 2; if (ok(m)) b = m; else a = m; }
+        so = Math.max(so, b);
+      }
+      stackOffset = so;
+    }
+
+    /* --- lid --- */
+    let lid = null, lidInfo = null;
+    const flipTo = (rings, zTop) => {   // build in assembled frame, then rotate 180 degrees about X for printing (top face on the bed)
+      const m = ringsToMesh(rings, cx, cy); const f = transformMesh(m, { flip: true, dz: zTop }); f.volume = m.volume; return f;
+    };
+    if (lt === 'plug') {
+      const lw = Math.max(1.2, t), ch = Math.min(0.6, lw / 2), o = t + L.c, top = H + L.top;
+      const rings = [ringInset(0, top), ringInset(0, H), ringInset(o, H), ringInset(o, H - L.depth + ch), ringInset(o + ch, H - L.depth), ringInset(o + lw, H - L.depth), ringInset(o + lw, H)];
+      lid = flipTo(rings, top);
+      lidInfo = { name: 'push-fit', place: { flip: true, z: top } };
+    } else if (lt === 'cap') {
+      const top = H + L.top, zb = H - L.depth + 0.2;
+      const rings = [ringInset(0, top), ringInset(0, zb), ringInset(Lw, zb), ringInset(Lw, H)];
+      lid = flipTo(rings, top);
+      lidInfo = { name: 'slip-over', place: { flip: true, z: top } };
+    } else if (lt === 'screw') {
+      const top = H + L.top, zb = zn0 + 0.6, Rlo = Rl + Lw, nr = Math.max(12, Math.round(TAU * Rlo / 4));
+      const outerR = new Float64Array(N); for (let j = 0; j < N; j++) outerR[j] = Rlo + 0.6 * 0.5 * (1 + Math.cos(nr * A[j]));
+      const ccx = cx, ccy = cy;
+      const rings = [ringR(outerR, top), ringR(outerR, zb)];
+      const zl0 = zb + 0.6, zl1 = H - 0.6, z0 = th.neck.z0 + th.pitch / 2;
+      // lid ridges sit half a pitch from the neck ridges, inside [zl0, zl1]
+      let k0 = Math.ceil((zl0 + th.hb - z0) / th.pitch); const zz0 = z0 + k0 * th.pitch;
+      const PHI = Math.max(0, TAU * (zl1 - th.hb - zz0) / th.pitch);
+      const m = Math.max(2, Math.ceil((H - zb) / 0.25));
+      for (let k = 0; k <= m; k++) {
+        const z = zb + (H - zb) * k / m, r = new Float64Array(N);
+        for (let j = 0; j < N; j++) r[j] = Rl - (k > 0 && k < m ? th.td * helixAt(th, z, A[j], zz0, PHI) : 0);
+        rings.push(ringR(r, z));
+      }
+      lid = flipTo(rings, top);
+      lidInfo = { name: 'screw-on', place: { flip: true, z: top }, neckD: 2 * Rno, pitch: th.pitch, threadDepth: th.td, turns: th.neck.PHI / TAU };
+      void ccx; void ccy;
+    } else if (lt === 'stack') {
+      const sub = build(Object.assign({}, params, { H: L.sh, lid: { type: 'none' }, stack: true, texture: { type: 'none' }, decos: [] }));
+      lid = sub.container;
+      lidInfo = { name: 'stacking', place: { flip: false, z: stackOffset }, H: sub.params.H, stackOffset: sub.stackOffset };
+    }
+
+    const zone = { zA, zB, P: Ptot };
+    return {
+      container, lid, lidInfo, params: q, warn, capacity, stackOffset, zone,
+      outline: { cx, cy, angles: A, x: bx, y: by, s: sB, nx: nX, ny: nY, P: Ptot, rMin, rMax, area: shp.area },
+      neck: lt === 'screw' ? { Rno, Rni, Rl, zn0, zSh, hs, thread: th } : null,
+      rings: { N, outer: outer.length, inner: inner.length }
+    };
+  }
+
+  /* angle (radians, 0..2pi) -> position u (0..1) around the outer wall */
+  function uAtAngle(res, ang) {
+    const o = res.outline, A = o.angles, N = A.length; ang = ((ang % TAU) + TAU) % TAU;
+    let j = 0; while (j + 1 < N && A[j + 1] <= ang) j++;
+    return o.s[j] / o.P;
+  }
+
+  /* ---------------- signed distance field from a binary mask (raster -> mm) ---------------- */
+  function edt1d(f, n, d, v, z) {
+    let k = 0; v[0] = 0; z[0] = -Infinity; z[1] = Infinity;
+    for (let q = 1; q < n; q++) {
+      let s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+      while (s <= z[k]) { k--; s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]); }
+      k++; v[k] = q; z[k] = s; z[k + 1] = Infinity;
+    }
+    k = 0;
+    for (let q = 0; q < n; q++) { while (z[k + 1] < q) k++; d[q] = (q - v[k]) * (q - v[k]) + f[v[k]]; }
+  }
+  function edt(mask, w, h, inside) {   // squared distance (px) to the nearest pixel with mask === inside
+    const INF = 1e20, g = new Float64Array(w * h), n = Math.max(w, h);
+    const f = new Float64Array(n), d = new Float64Array(n), v = new Int32Array(n), z = new Float64Array(n + 1);
+    for (let i = 0; i < w * h; i++) g[i] = (mask[i] ? 1 : 0) === (inside ? 1 : 0) ? 0 : INF;
+    for (let x = 0; x < w; x++) { for (let y = 0; y < h; y++) f[y] = g[y * w + x]; edt1d(f, h, d, v, z); for (let y = 0; y < h; y++) g[y * w + x] = d[y]; }
+    for (let y = 0; y < h; y++) { for (let x = 0; x < w; x++) f[x] = g[y * w + x]; edt1d(f, w, d, v, z); for (let x = 0; x < w; x++) g[y * w + x] = d[x]; }
+    return g;
+  }
+  // mask: Uint8Array w*h (1 = ink), row 0 = TOP of the artwork. Returns grid with row 0 = bottom (z up), values in mm (+ inside).
+  function maskToSdf(mask, w, h, pxPerMm) {
+    const dOut = edt(mask, w, h, true), dIn = edt(mask, w, h, false), data = new Float32Array(w * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = y * w + x, o = (h - 1 - y) * w + x;
+      data[o] = mask[i] ? (Math.sqrt(dIn[i]) - 0.5) / pxPerMm : -(Math.sqrt(dOut[i]) - 0.5) / pxPerMm;
+    }
+    return { nx: w, ny: h, data };
+  }
+
+  /* ---------------- binary STL ---------------- */
+  function toSTL(mesh, name) {
+    const P = mesh.positions, I = mesh.indices, n = I.length / 3;
+    let minx = Infinity, miny = Infinity, minz = Infinity;
+    for (let i = 0; i < P.length; i += 3) { minx = Math.min(minx, P[i]); miny = Math.min(miny, P[i + 1]); minz = Math.min(minz, P[i + 2]); }
+    const buf = new ArrayBuffer(84 + n * 50), dv = new DataView(buf), hdr = (name || 'container').slice(0, 79);
+    for (let i = 0; i < hdr.length; i++) dv.setUint8(i, hdr.charCodeAt(i) & 127);
+    dv.setUint32(80, n, true);
+    let o = 84;
+    for (let i = 0; i < n; i++) {
+      const a = I[3 * i] * 3, b = I[3 * i + 1] * 3, c = I[3 * i + 2] * 3;
+      const ux = P[b] - P[a], uy = P[b + 1] - P[a + 1], uz = P[b + 2] - P[a + 2], vx = P[c] - P[a], vy = P[c + 1] - P[a + 1], vz = P[c + 2] - P[a + 2];
+      const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx, l = Math.hypot(nx, ny, nz) || 1;
+      dv.setFloat32(o, nx / l, true); dv.setFloat32(o + 4, ny / l, true); dv.setFloat32(o + 8, nz / l, true); o += 12;
+      for (const v of [a, b, c]) { dv.setFloat32(o, P[v] - minx, true); dv.setFloat32(o + 4, P[v + 1] - miny, true); dv.setFloat32(o + 8, P[v + 2] - minz, true); o += 12; }
+      o += 2;
+    }
+    return buf;
+  }
+
+  /* ---------------- 3MF (zip, stored) ---------------- */
+  const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(u8) { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zipStore(files) {
+    const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+    for (const f of files) {
+      const nm = enc.encode(f.name), crc = crc32(f.data), h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0, true); h.setUint16(8, 0, true);
+      h.setUint16(10, 0, true); h.setUint16(12, 0x21, true); h.setUint32(14, crc, true);
+      h.setUint32(18, f.data.length, true); h.setUint32(22, f.data.length, true); h.setUint16(26, nm.length, true); h.setUint16(28, 0, true);
+      parts.push(new Uint8Array(h.buffer), nm, f.data);
+      const c = new DataView(new ArrayBuffer(46));
+      c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0, true); c.setUint16(10, 0, true);
+      c.setUint16(12, 0, true); c.setUint16(14, 0x21, true); c.setUint32(16, crc, true); c.setUint32(20, f.data.length, true); c.setUint32(24, f.data.length, true);
+      c.setUint16(28, nm.length, true); c.setUint32(42, off, true);
+      central.push(new Uint8Array(c.buffer), nm);
+      off += 30 + nm.length + f.data.length;
+    }
+    const cdSize = central.reduce((a, b) => a + b.length, 0), e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true);
+    e.setUint32(12, cdSize, true); e.setUint32(16, off, true);
+    const all = [...parts, ...central, new Uint8Array(e.buffer)], out = new Uint8Array(all.reduce((a, b) => a + b.length, 0));
+    let o = 0; for (const a of all) { out.set(a, o); o += a.length; }
+    return out;
+  }
+  function to3MF(objects, title) {
+    let mx = Infinity, my = Infinity, mz = Infinity;
+    for (const { mesh } of objects) { const P = mesh.positions; for (let i = 0; i < P.length; i += 3) { mx = Math.min(mx, P[i]); my = Math.min(my, P[i + 1]); mz = Math.min(mz, P[i + 2]); } }
+    const num = v => String(Math.round(v * 1e5) / 1e5);
+    const esc = s => String(s).replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+    const chunks = [`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n<metadata name="Title">${esc(title || 'Container')}</metadata>\n<metadata name="Application">Storage Container Generator v1</metadata>\n<resources>\n`];
+    objects.forEach(({ name, mesh }, k) => {
+      const P = mesh.positions, I = mesh.indices, v = [], t = [];
+      for (let i = 0; i < P.length; i += 3) v.push(`<vertex x="${num(P[i] - mx)}" y="${num(P[i + 1] - my)}" z="${num(P[i + 2] - mz)}"/>`);
+      for (let i = 0; i < I.length; i += 3) t.push(`<triangle v1="${I[i]}" v2="${I[i + 1]}" v3="${I[i + 2]}"/>`);
+      chunks.push(`<object id="${k + 1}" type="model" name="${esc(name)}"><mesh><vertices>\n${v.join('\n')}\n</vertices><triangles>\n${t.join('\n')}\n</triangles></mesh></object>\n`);
+    });
+    chunks.push('</resources>\n<build>\n' + objects.map((o, k) => `<item objectid="${k + 1}"/>`).join('\n') + '\n</build>\n</model>\n');
+    const enc = new TextEncoder();
+    return zipStore([
+      { name: '[Content_Types].xml', data: enc.encode('<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>') },
+      { name: '_rels/.rels', data: enc.encode('<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>') },
+      { name: '3D/3dmodel.model', data: enc.encode(chunks.join('')) }
+    ]);
+  }
+
+  const api = { SHAPES, SHAPE, LIDS, TEXTURES, DEFAULTS, naturalAspect, outline, resolve, build, uAtAngle, maskToSdf, toSTL, to3MF, crc32, transformMesh, mergeMeshes, bounds, maxOverhang, volumeOf, helixAt, threadSpec };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.ContainerGeom = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(() => {
+'use strict';
+const G = window.ContainerGeom;
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const fmt = v => String(Math.round(v * 100) / 100);
+const clone = o => JSON.parse(JSON.stringify(o));
+const TAU = Math.PI * 2;
+
+/* ---------------- clipart (original simple icons, drawn on a 24 x 24 canvas) ---------------- */
+const star = (cx, cy, R, r, n) => { const p = new Path2D(); for (let k = 0; k < 2 * n; k++) { const a = -Math.PI / 2 + Math.PI * k / n, rad = k % 2 ? r : R; k ? p.lineTo(cx + rad * Math.cos(a), cy + rad * Math.sin(a)) : p.moveTo(cx + rad * Math.cos(a), cy + rad * Math.sin(a)); } p.closePath(); return p; };
+const circ = (p, x, y, r) => { p.moveTo(x + r, y); p.arc(x, y, r, 0, TAU); };
+const ell = (p, x, y, rx, ry, rot) => { p.moveTo(x + rx * Math.cos(rot), y + rx * Math.sin(rot)); p.ellipse(x, y, rx, ry, rot, 0, TAU); };
+const CLIPART = {
+  heart: { name: 'Heart', draw: c => c.fill(new Path2D('M12 21.2S3.2 15.6 2.3 9.8C1.6 5.6 4.4 3 7.4 3c2 0 3.6 1.1 4.6 2.8C13 4.1 14.6 3 16.6 3c3 0 5.8 2.6 5.1 6.8C20.8 15.6 12 21.2 12 21.2z')) },
+  star: { name: 'Star', draw: c => c.fill(star(12, 12.8, 10.5, 4.6, 5)) },
+  flower: { name: 'Flower', draw: c => { const p = new Path2D(); for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; circ(p, 12 + 5.6 * Math.cos(a), 12 + 5.6 * Math.sin(a), 4.2); } c.fill(p); c.globalCompositeOperation = 'destination-out'; const q = new Path2D(); circ(q, 12, 12, 3); c.fill(q); c.globalCompositeOperation = 'source-over'; const r = new Path2D(); circ(r, 12, 12, 2); c.fill(r); } },
+  leaf: { name: 'Leaf', draw: c => { c.fill(new Path2D('M4 20C3.5 10 9.5 3.5 21 3.5 21 14 15 20.5 4 20z')); c.globalCompositeOperation = 'destination-out'; c.lineWidth = 1.3; c.lineCap = 'round'; c.stroke(new Path2D('M5.5 18.5 17 7.5')); c.globalCompositeOperation = 'source-over'; } },
+  moon: { name: 'Moon', draw: c => c.fill(new Path2D('M15.5 2.5a9.8 9.8 0 1 0 6.5 16.4A8.2 8.2 0 0 1 15.5 2.5z')) },
+  sun: { name: 'Sun', draw: c => { const p = new Path2D(); circ(p, 12, 12, 5); c.fill(p); c.lineWidth = 2; c.lineCap = 'round'; for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; c.beginPath(); c.moveTo(12 + 7.6 * Math.cos(a), 12 + 7.6 * Math.sin(a)); c.lineTo(12 + 10.6 * Math.cos(a), 12 + 10.6 * Math.sin(a)); c.stroke(); } } },
+  paw: { name: 'Paw', draw: c => { const p = new Path2D(); ell(p, 12, 16, 5.2, 4.4, 0); ell(p, 5.2, 10.4, 2.2, 2.8, -0.35); ell(p, 9.3, 6.2, 2.2, 2.9, -0.1); ell(p, 14.7, 6.2, 2.2, 2.9, 0.1); ell(p, 18.8, 10.4, 2.2, 2.8, 0.35); c.fill(p); } },
+  cat: { name: 'Cat', draw: c => { c.fill(new Path2D('M3.5 3 8.6 7.4a9.7 9.7 0 0 1 6.8 0L20.5 3l.4 9.4A9 8 0 0 1 12 21a9 8 0 0 1-8.9-8.6z')); c.globalCompositeOperation = 'destination-out'; const p = new Path2D(); ell(p, 8.6, 12.6, 1.3, 1.9, 0); ell(p, 15.4, 12.6, 1.3, 1.9, 0); c.fill(p); c.fill(new Path2D('M10.6 16h2.8L12 17.6z')); c.globalCompositeOperation = 'source-over'; } },
+  note: { name: 'Music', draw: c => { const p = new Path2D(); ell(p, 6.5, 18, 3.3, 2.6, -0.4); ell(p, 17, 16, 3.3, 2.6, -0.4); c.fill(p); c.fill(new Path2D('M8.6 18V5.5L20 3v13h-1.6V7.2L10.2 9V18z')); } },
+  bolt: { name: 'Bolt', draw: c => c.fill(new Path2D('M13.5 1.5 4 13.8h6.4L9.2 22.5 20 9.6h-6.6z')) },
+  crown: { name: 'Crown', draw: c => { c.fill(new Path2D('M2.5 7.5 7.4 12 12 4l4.6 8 4.9-4.5-2 11H4.5z')); c.fillRect(4.5, 19.6, 15, 2); } },
+  house: { name: 'House', draw: c => c.fill(new Path2D('M12 2.5 22 11h-2.8v10.5h-5v-6.3H9.8v6.3h-5V11H2z')) },
+  smile: { name: 'Smile', draw: c => { const p = new Path2D(); circ(p, 12, 12, 10); c.fill(p); c.globalCompositeOperation = 'destination-out'; const e = new Path2D(); circ(e, 8.5, 9.5, 1.5); circ(e, 15.5, 9.5, 1.5); c.fill(e); c.lineWidth = 1.8; c.lineCap = 'round'; c.beginPath(); c.arc(12, 12.5, 5, 0.35, Math.PI - 0.35); c.stroke(); c.globalCompositeOperation = 'source-over'; } },
+  cloud: { name: 'Cloud', draw: c => { const p = new Path2D(); circ(p, 8, 14, 5); circ(p, 13.5, 10.5, 6.2); circ(p, 18, 15, 4.2); c.fill(p); c.fillRect(8, 14, 10, 5.2); } },
+  tree: { name: 'Tree', draw: c => { c.fill(new Path2D('M12 1.5 18.5 9.5h-2.8L20.5 16H3.5l4.8-6.5H5.5z')); c.fillRect(10.4, 15.5, 3.2, 6.5); } },
+  snow: { name: 'Snowflake', draw: c => { c.lineWidth = 1.9; c.lineCap = 'round'; for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3, x = Math.cos(a), y = Math.sin(a); c.beginPath(); c.moveTo(12, 12); c.lineTo(12 + 10 * x, 12 + 10 * y); c.moveTo(12 + 6 * x, 12 + 6 * y); c.lineTo(12 + 6 * x + 3 * Math.cos(a + 0.8), 12 + 6 * y + 3 * Math.sin(a + 0.8)); c.moveTo(12 + 6 * x, 12 + 6 * y); c.lineTo(12 + 6 * x + 3 * Math.cos(a - 0.8), 12 + 6 * y + 3 * Math.sin(a - 0.8)); c.stroke(); } } },
+  butterfly: { name: 'Butterfly', draw: c => { const p = new Path2D(); ell(p, 7.2, 8, 5, 4, -0.6); ell(p, 16.8, 8, 5, 4, 0.6); ell(p, 8, 16, 3.6, 3, 0.5); ell(p, 16, 16, 3.6, 3, -0.5); c.fill(p); c.fillRect(11.2, 5, 1.6, 14); } },
+  spool: { name: 'Spool', draw: c => { const p = new Path2D(); circ(p, 12, 12, 10.5); c.fill(p); c.globalCompositeOperation = 'destination-out'; const q = new Path2D(); circ(q, 12, 12, 2.6); c.fill(q); c.lineWidth = 1.2; c.beginPath(); c.arc(12, 12, 6.5, 0, TAU); c.stroke(); c.globalCompositeOperation = 'source-over'; } }
+};
+const FONTS = {
+  sans: { name: 'Bold sans', css: px => `700 ${px}px Arial, Helvetica, "Liberation Sans", sans-serif` },
+  rounded: { name: 'Rounded', css: px => `700 ${px}px "Arial Rounded MT Bold", "Varela Round", Nunito, Verdana, "DejaVu Sans", sans-serif` },
+  serif: { name: 'Serif', css: px => `700 ${px}px Georgia, "Times New Roman", "Liberation Serif", serif` },
+  heavy: { name: 'Heavy', css: px => `900 ${px}px Impact, "Arial Black", "Helvetica Neue", sans-serif` },
+  script: { name: 'Script', css: px => `italic 700 ${px}px "Brush Script MT", "Segoe Script", "Apple Chancery", cursive` },
+  mono: { name: 'Typewriter', css: px => `700 ${px}px "Courier New", Courier, "Liberation Mono", monospace` }
+};
+
+/* ---------------- state + history ---------------- */
+const DEFAULT_STATE = {
+  shape: 'round', W: 80, D: 80, lock: true, H: 60, R: 6, t: 1.6, tb: 1.2, stack: false, sc: 0.2,
+  lid: { type: 'plug', c: 0.2, depth: 6, top: 1.6, pitch: 4, sh: 8 },
+  texture: { type: 'none', size: 6, depth: 0.8 },
+  decos: [], res: 0.5
+};
+const LID_DEPTH = { plug: 6, cap: 8, screw: 15, stack: 6, none: 6 };
+let state = clone(DEFAULT_STATE);
+try { const s = localStorage.getItem('container-gen-v1'); if (s) state = Object.assign(clone(DEFAULT_STATE), JSON.parse(s)); } catch (e) {}
+let lastCommitted = JSON.stringify(state), undoStack = [], redoStack = [];
+let selected = null;   // deco id
+let res = null;        // last build result
+const prefs = { fmt: 'stl' };
+try { Object.assign(prefs, JSON.parse(localStorage.getItem('container-gen-prefs') || '{}')); } catch (e) {}
+const savePrefs = () => { try { localStorage.setItem('container-gen-prefs', JSON.stringify(prefs)); } catch (e) {} };
+function commit() {
+  const j = JSON.stringify(state); if (j === lastCommitted) return;
+  undoStack.push(lastCommitted); if (undoStack.length > 80) undoStack.shift(); redoStack = []; lastCommitted = j;
+  try { localStorage.setItem('container-gen-v1', j); } catch (e) {}
+  updateHistoryButtons();
+}
+function restore(j) { state = JSON.parse(j); lastCommitted = j; try { localStorage.setItem('container-gen-v1', j); } catch (e) {} if (!state.decos.some(d => d.id === selected)) selected = null; syncUI(); rebuild(); updateHistoryButtons(); }
+function undo() { if (undoStack.length) { redoStack.push(lastCommitted); restore(undoStack.pop()); } }
+function redo() { if (redoStack.length) { undoStack.push(lastCommitted); restore(redoStack.pop()); } }
+function updateHistoryButtons() { $('#undo').disabled = !undoStack.length; $('#redo').disabled = !redoStack.length; }
+$('#undo').onclick = undo; $('#redo').onclick = redo;
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input,select,textarea')) return;
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+  else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); }
+  else if ((e.key === 'Delete' || e.key === 'Backspace') && selected) { e.preventDefault(); deleteDeco(selected); }
+  else if (e.key === 'Escape') { selected = null; syncDecoUI(); requestDraw(); }
+});
+
+/* ---------------- sliders ---------------- */
+const getPath = (o, p) => p.split('.').reduce((a, k) => a && a[k], o);
+const setPath = (o, p, v) => { const ks = p.split('.'); let a = o; for (let i = 0; i < ks.length - 1; i++) a = a[ks[i]]; a[ks[ks.length - 1]] = v; };
+const selDeco = () => state.decos.find(d => d.id === selected);
+const FIELDS = {
+  W: { label: 'Width', min: 20, max: 300, step: 1 },
+  D: { label: 'Depth', min: 20, max: 300, step: 1 },
+  H: { label: 'Height', min: 8, max: 300, step: 1, note: () => 'body, without lid' },
+  R: { label: 'Corner radius', min: 0, max: 40, step: 0.5 },
+  t: { label: 'Wall', min: 0.8, max: 4, step: 0.1, note: () => `${Math.round(state.t / 0.42)} lines @ 0.4 mm` },
+  tb: { label: 'Bottom', min: 0.6, max: 5, step: 0.1, note: () => `${Math.round(state.tb / 0.2)} layers @ 0.2 mm` },
+  'lid.depth': { label: 'Lip depth', min: 3, max: 30, step: 0.5 },
+  'lid.top': { label: 'Lid top thickness', min: 0.8, max: 4, step: 0.1 },
+  'lid.pitch': { label: 'Thread pitch', min: 2.5, max: 8, step: 0.5 },
+  'lid.sh': { label: 'Stacking lid height', min: 4, max: 40, step: 0.5 },
+  'lid.c': { label: 'Fit clearance', min: 0.05, max: 0.8, step: 0.05, note: () => 'more = looser' },
+  sc: { label: 'Stack clearance', min: 0.05, max: 0.8, step: 0.05 },
+  'texture.size': { label: 'Pattern size', min: 2, max: 30, step: 0.5 },
+  'texture.depth': { label: 'Pattern depth', min: 0.2, max: 2.5, step: 0.1 },
+  'deco.size': { label: 'Height', min: 3, max: 80, step: 0.5, get: () => selDeco() && selDeco().size, set: v => { selDeco().size = v; } },
+  'deco.depth': { label: 'Relief depth', min: 0.2, max: 2.5, step: 0.1, get: () => selDeco() && selDeco().depth, set: v => { selDeco().depth = v; }, note: () => { const d = selDeco(); return d && d.engrave ? `engraved: max ${fmt(Math.max(0.2, state.t - 0.6))} (wall minus 0.6)` : ''; } },
+  'deco.rot': { label: 'Rotate', min: -180, max: 180, step: 1, unit: '°', get: () => selDeco() && selDeco().rot, set: v => { selDeco().rot = v; } }
+};
+for (const el of $$('.field[data-f]')) {
+  const k = el.dataset.f, f = FIELDS[k];
+  el.innerHTML = `<label>${f.label}<small data-note></small></label><div class="slider"><input type="range" min="${f.min}" max="${f.max}" step="${f.step}" aria-label="${f.label}"><input type="number" min="${f.min}" max="${f.max}" step="${f.step}" aria-label="${f.label} value"></div>`;
+  const [rng, nb] = el.querySelectorAll('input');
+  const get = () => f.get ? f.get() : getPath(state, k), set = v => f.set ? f.set(v) : setPath(state, k, v);
+  const apply = (v, final) => {
+    v = Number(v); if (!isFinite(v)) return;
+    v = Math.max(f.min, Math.min(f.max * (k === 'W' || k === 'D' || k === 'H' ? 2 : 1), v));
+    set(v);
+    if (k === 'W' && state.lock) state.D = Math.round(v * G.naturalAspect(state.shape) * 10) / 10;
+    if (k === 'D' && state.lock) state.W = Math.round(v / G.naturalAspect(state.shape) * 10) / 10;
+    if (k.startsWith('deco.') && k !== 'deco.depth') rasterDirty(selDeco());
+    syncFields(el); rebuildSoon(); if (final) commit();
+  };
+  rng.addEventListener('input', () => apply(rng.value, false));
+  rng.addEventListener('change', () => apply(rng.value, true));
+  nb.addEventListener('change', () => apply(nb.value, true));
+  el._sync = () => { const v = get(); if (v === undefined) return; rng.value = v; if (document.activeElement !== nb) nb.value = fmt(v); const n = el.querySelector('[data-note]'); n.textContent = f.note ? f.note() : f.unit || ''; };
+}
+function syncFields(except) { for (const el of $$('.field[data-f]')) if (el._sync && el !== except) el._sync(); if (except && except._sync) except._sync(); }
+
+/* ---------------- shape, lid, texture tiles ---------------- */
+function shapeIcon(id) {
+  const asp = G.naturalAspect(id), W = 100, D = 100 * asp, o = G.outline(id, W, D, ['square', 'rect', 'triangle', 'pentagon', 'hexagon', 'octagon', 'heart', 'star'].includes(id) ? 8 : 0);
+  const s = 24 / Math.max(W, D), step = Math.max(1, Math.floor(o.pts.length / 160));
+  let d = ''; for (let i = 0; i < o.pts.length; i += step) d += (i ? 'L' : 'M') + (16 + o.pts[i][0] * s).toFixed(1) + ' ' + (16 - o.pts[i][1] * s).toFixed(1);
+  return `<svg viewBox="0 0 32 32"><path d="${d}Z"/></svg>`;
+}
+$('#shapeTiles').innerHTML = G.SHAPES.map(s => `<button data-shape="${s.id}" title="${s.name}">${shapeIcon(s.id)}${s.name}</button>`).join('');
+$$('[data-shape]').forEach(b => b.onclick = () => {
+  const id = b.dataset.shape; state.shape = id;
+  state.lock = id !== 'oval' && id !== 'rect' && id !== 'pill';
+  const a = G.naturalAspect(id);
+  if (state.lock || id === 'oval' || id === 'rect' || id === 'pill') state.D = Math.round(state.W * a * 10) / 10;
+  syncUI(); rebuild(); commit();
+});
+const LID_UI = {
+  none: { name: 'None', icon: 'M6 26V10h20v16z', hint: 'An open container.' },
+  plug: { name: 'Push-fit', icon: 'M4 8h24v3H4zM8 11h16v5H8zM6 26V16h20v10z', hint: 'Flat lid with a lip that pushes into the opening. Prints top-down, flat on the bed.' },
+  cap: { name: 'Slip-over', icon: 'M4 6h24v8H4zM6 14h20v12H6z', hint: 'Lid slips over a neck at the top, flush with the walls. Prints top-down.' },
+  screw: { name: 'Screw-on', icon: 'M7 5h18v7H7zM6 26V16h20v10zM9 13h14M9 15h14', hint: 'Threaded round neck and cap (45° thread, no supports). Other shapes get a 45° shoulder up to the neck.' },
+  stack: { name: 'Stacking', icon: 'M6 12V6h20v6zM6 26V13h20v13z', hint: 'A shallow tray that drops into the container, and the next container stacks on it.' }
+};
+$('#lidTiles').innerHTML = G.LIDS.map(l => `<button data-lid="${l}" title="${LID_UI[l].name}"><svg viewBox="0 0 32 32"><path d="${LID_UI[l].icon}"/></svg>${LID_UI[l].name}</button>`).join('');
+$$('[data-lid]').forEach(b => b.onclick = () => {
+  const l = b.dataset.lid, prev = state.lid.type;
+  state.lid.type = l;
+  if (l !== prev) state.lid.depth = LID_DEPTH[l];
+  if (l === 'stack') state.stack = true;
+  if (l === 'cap' || l === 'screw') state.stack = false;
+  syncUI(); rebuild(); commit();
+});
+const TEX_UI = {
+  none: 'M4 6h24v20H4z', ribs: 'M5 5v22M10 5v22M15 5v22M20 5v22M25 5v22', flutes: 'M5 5c3 0 3 22 0 22M12 5c3 0 3 22 0 22M19 5c3 0 3 22 0 22M26 5c3 0 3 22 0 22',
+  waves: 'M4 8q6 -4 12 0t12 0M4 16q6 -4 12 0t12 0M4 24q6 -4 12 0t12 0', twist: 'M4 26 14 6M11 26 21 6M18 26 28 6', knurl: 'M4 26 26 4M4 14 14 4M14 26 26 14M4 4 26 26M4 16 14 26M16 4 26 14',
+  bricks: 'M4 6h24v6H4zM4 12h24v7H4zM4 19h24v7H4zM14 6v6M8 12v7M20 12v7M14 19v7', honeycomb: 'M8 5l5 3v6l-5 3-5-3V8zM19 5l5 3v6l-5 3-5-3V8zM13.5 15l5 3v6l-5 3-5-3v-6z',
+  dots: 'M8 9m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0M16 9m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0M24 9m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0M12 17m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0M20 17m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0M8 25m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0M16 25m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0M24 25m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0'
+};
+const TEX_NAME = { none: 'Smooth', ribs: 'Ribs', flutes: 'Flutes', waves: 'Waves', twist: 'Twist', knurl: 'Knurl', bricks: 'Bricks', honeycomb: 'Honeycomb', dots: 'Dots' };
+$('#texTiles').innerHTML = G.TEXTURES.map(t => `<button data-tex="${t}"><svg viewBox="0 0 32 32"><path d="${TEX_UI[t]}"/></svg>${TEX_NAME[t]}</button>`).join('');
+$$('[data-tex]').forEach(b => b.onclick = () => { state.texture.type = b.dataset.tex; syncUI(); rebuild(); commit(); });
+$('#lock').onchange = e => { state.lock = e.target.checked; if (state.lock) state.D = Math.round(state.W * G.naturalAspect(state.shape) * 10) / 10; syncUI(); rebuild(); commit(); };
+$('#stack').onchange = e => { state.stack = e.target.checked; if (!state.stack && state.lid.type === 'stack') state.lid.type = 'plug'; syncUI(); rebuild(); commit(); };
+$$('#resSeg button').forEach(b => b.onclick = () => { state.res = Number(b.dataset.r); syncUI(); rebuild(); commit(); });
+
+function syncUI() {
+  $$('[data-shape]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.shape === state.shape)));
+  $$('[data-lid]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lid === state.lid.type)));
+  $$('[data-tex]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tex === state.texture.type)));
+  $$('#resSeg button').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.r) === state.res)));
+  const sh = G.SHAPE[state.shape], lt = state.lid.type;
+  $('[data-f="R"]').hidden = !sh.corner;
+  $('[data-f="D"]').hidden = state.shape === 'round' && state.lock;
+  $('#lock').checked = state.lock;
+  $('#lockL').hidden = state.shape === 'round';
+  $('#lidHint').textContent = LID_UI[lt].hint;
+  $('#lidFields').hidden = lt === 'none';
+  $('[data-f="lid.depth"] label').firstChild.textContent = lt === 'screw' ? 'Neck height' : lt === 'cap' ? 'Skirt depth' : 'Lip depth';
+  $('[data-f="lid.depth"]').hidden = lt === 'stack';
+  $('[data-f="lid.top"]').hidden = lt === 'stack';
+  $('[data-f="lid.pitch"]').hidden = lt !== 'screw';
+  $('[data-f="lid.sh"]').hidden = lt !== 'stack';
+  $('[data-f="lid.c"]').hidden = lt === 'stack';
+  const canStack = lt !== 'cap' && lt !== 'screw';
+  $('#stack').checked = state.stack; $('#stack').disabled = !canStack || lt === 'stack';
+  $('[data-f="sc"]').hidden = !state.stack;
+  $('#stackHint').textContent = !canStack ? 'Stacking works with no lid, a push-fit lid or a stacking lid.' : state.stack ? 'A 45° chamfered foot drops into the container below; the inside of the rim is chamfered to match so the walls line up.' : '';
+  $('#texFields').hidden = state.texture.type === 'none';
+  $('#optStackL').hidden = !state.stack;
+  $('#optLidL').hidden = lt === 'none';
+  syncFields(); syncDecoUI();
+}
+
+/* ---------------- text + clipart ---------------- */
+const rasterCache = new Map();   // id -> { key, w, h, sdf, preview }
+const PXMM = 8;
+function rasterKey(d) { return JSON.stringify([d.kind, d.text, d.font, d.icon, d.size, d.rot, d.invert, d.img ? d.img.length : 0]); }
+function rasterDirty() { /* recomputed lazily by key */ }
+const imgCache = new Map();
+function loadImg(src) {
+  if (imgCache.has(src)) return imgCache.get(src);
+  const im = new Image(); const e = { im, ok: false }; imgCache.set(src, e);
+  im.onload = () => { e.ok = true; for (const d of state.decos) if (d.img === src) rasterCache.delete(d.id); rebuildSoon(); syncDecoUI(); };
+  im.src = src; return e;
+}
+// returns { w, h (mm), sdf } for a deco, raster at PXMM px per mm, with a margin for the bevel
+function raster(d) {
+  const key = rasterKey(d), c0 = rasterCache.get(d.id);
+  if (c0 && c0.key === key) return c0;
+  const pad = Math.ceil(PXMM * 0.8), sizePx = d.size * PXMM;
+  // draw unrotated into a temp canvas
+  let w0, h0, drawFn;
+  if (d.kind === 'text') {
+    const t = document.createElement('canvas').getContext('2d');
+    const font = (FONTS[d.font] || FONTS.sans).css(Math.round(sizePx / 0.72));
+    t.font = font; const m = t.measureText(d.text || ' ');
+    const asc = m.actualBoundingBoxAscent || sizePx, desc = m.actualBoundingBoxDescent || 0;
+    const left = m.actualBoundingBoxLeft || 0, right = m.actualBoundingBoxRight || m.width;
+    w0 = Math.max(4, Math.ceil(left + right)); h0 = Math.max(4, Math.ceil(asc + desc));
+    drawFn = c => { c.font = font; c.textBaseline = 'alphabetic'; c.fillStyle = '#000'; c.fillText(d.text || ' ', left, asc); };
+  } else if (d.kind === 'clip') {
+    w0 = h0 = Math.ceil(sizePx);
+    drawFn = c => { c.save(); c.scale(sizePx / 24, sizePx / 24); c.fillStyle = '#000'; c.strokeStyle = '#000'; (CLIPART[d.icon] || CLIPART.heart).draw(c); c.restore(); };
+  } else {
+    const e = loadImg(d.img); const iw = e.ok ? e.im.naturalWidth || 100 : 100, ih = e.ok ? e.im.naturalHeight || 100 : 100;
+    h0 = Math.ceil(sizePx); w0 = Math.max(4, Math.ceil(sizePx * iw / ih));
+    drawFn = c => {
+      if (!e.ok) return;
+      const tmp = document.createElement('canvas'); tmp.width = w0; tmp.height = h0; const tc = tmp.getContext('2d');
+      tc.drawImage(e.im, 0, 0, w0, h0); const id = tc.getImageData(0, 0, w0, h0), p = id.data;
+      for (let i = 0; i < p.length; i += 4) { const lum = 0.3 * p[i] + 0.59 * p[i + 1] + 0.11 * p[i + 2], ink = p[i + 3] > 127 && (d.invert ? lum > 128 : lum < 128); p[i] = p[i + 1] = p[i + 2] = 0; p[i + 3] = ink ? 255 : 0; }
+      tc.putImageData(id, 0, 0); c.drawImage(tmp, 0, 0);
+    };
+  }
+  const a = (d.rot || 0) * Math.PI / 180, ca = Math.abs(Math.cos(a)), sa = Math.abs(Math.sin(a));
+  const W = Math.ceil(w0 * ca + h0 * sa) + 2 * pad, H = Math.ceil(w0 * sa + h0 * ca) + 2 * pad;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
+  c.translate(W / 2, H / 2); c.rotate(-a); c.translate(-w0 / 2, -h0 / 2); drawFn(c);
+  const px = c.getImageData(0, 0, W, H).data, mask = new Uint8Array(W * H);
+  for (let i = 0; i < W * H; i++) mask[i] = px[i * 4 + 3] > 127 ? 1 : 0;
+  const out = { key, w: W / PXMM, h: H / PXMM, sdf: G.maskToSdf(mask, W, H, PXMM), preview: cv };
+  rasterCache.set(d.id, out);
+  return out;
+}
+let nextId = 1;
+const newId = () => 'd' + Date.now().toString(36) + (nextId++);
+// the flattest stretch of wall on the front half (so text does not fold around a corner or the tip of a heart)
+function frontU(width) {
+  if (!res) return 0.75;
+  const ol = res.outline, N = ol.x.length, P = res.zone.P, w = Math.max(10, width || 30);
+  const ang = j => Math.atan2(ol.ny[j], ol.nx[j]);
+  let best = null;
+  for (let k = 0; k <= 56; k++) {
+    const a = -Math.PI * (0.12 + 0.76 * k / 56), u = G.uAtAngle(res, a), sc = u * P;
+    let turn = 0, prev = null;
+    for (let i = 0; i <= 40; i++) {
+      let s = sc - w / 2 + w * i / 40; s = ((s % P) + P) % P;
+      let lo = 0, hi = N - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (ol.s[m] <= s) lo = m; else hi = m - 1; }
+      const t = ang(lo); if (prev !== null) { let d = t - prev; d -= Math.round(d / (2 * Math.PI)) * 2 * Math.PI; turn += Math.abs(d); } prev = t;
+    }
+    const score = turn + 0.15 * Math.abs(a + Math.PI / 2);
+    if (!best || score < best.score - 1e-6) best = { score, u };
+  }
+  return best.u;
+}
+function zoneMid() { return res ? (res.zone.zA + res.zone.zB) / 2 : state.H / 2; }
+function addDeco(d) {
+  const z = res ? res.zone : { zA: 0, zB: state.H };
+  d = Object.assign({ id: newId(), depth: 0.8, rot: 0, engrave: false, u: 0.75, z: zoneMid() }, d);
+  d.size = Math.max(3, Math.min(d.size, (z.zB - z.zA) * 0.7));
+  d.u = frontU(raster(d).w);
+  // find a free spot near the front, next to or above / below the items already there
+  if (res && state.decos.length) {
+    const P = res.zone.P, r = raster(d), free = (u, zz) => state.decos.every(o => { const ro = raster(o); let ds = (u - o.u) * P; ds -= Math.round(ds / P) * P; return Math.abs(ds) > (r.w + ro.w) / 2 + 1 || Math.abs(zz - o.z) > (r.h + ro.h) / 2 + 1; });
+    search: for (const kz of [0, -1, 1, -2, 2]) for (const ku of [0, 1, -1, 2, -2, 3, -3, 4, -4]) {
+      const zz = d.z + kz * (r.h + 2), u = ((d.u + ku * (r.w + 3) / P) % 1 + 1) % 1;
+      if (zz - r.h / 2 < z.zA + 0.5 || zz + r.h / 2 > z.zB - 0.5) continue;
+      if (free(u, zz)) { d.u = u; d.z = zz; break search; }
+    }
+  }
+  state.decos.push(d); selected = d.id;
+  syncDecoUI(); rebuild(); commit();
+}
+$('#addText').onclick = () => addDeco({ kind: 'text', text: 'SPICES', font: 'sans', size: Math.round(Math.min(12, Math.max(5, state.H / 6))) });
+$('#addClip').onclick = () => { $('#clipGrid').hidden = !$('#clipGrid').hidden; $('#clipMore').hidden = $('#clipGrid').hidden; };
+$('#clipClose').onclick = () => { $('#clipGrid').hidden = $('#clipMore').hidden = true; };
+$('#clipGrid').innerHTML = Object.entries(CLIPART).map(([k, v]) => `<button data-clip="${k}" title="${v.name}"><canvas width="48" height="48"></canvas></button>`).join('');
+$$('[data-clip]').forEach(b => {
+  const c = b.querySelector('canvas').getContext('2d'); c.scale(2, 2); c.fillStyle = c.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#222'; CLIPART[b.dataset.clip].draw(c);
+  b.onclick = () => { addDeco({ kind: 'clip', icon: b.dataset.clip, size: Math.round(Math.min(20, Math.max(6, state.H / 3))) }); $('#clipGrid').hidden = $('#clipMore').hidden = true; };
+});
+$('#upload').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    // shrink big images before storing them
+    const im = new Image();
+    im.onload = () => { const s = Math.min(1, 400 / Math.max(im.width, im.height)), cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(im.width * s)); cv.height = Math.max(1, Math.round(im.height * s)); cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height); addDeco({ kind: 'img', img: cv.toDataURL('image/png'), name: f.name, size: Math.round(Math.min(25, Math.max(8, state.H / 2.5))), invert: false }); };
+    im.src = rd.result;
+  };
+  rd.readAsDataURL(f); e.target.value = ''; $('#clipGrid').hidden = $('#clipMore').hidden = true;
+};
+$('#decoFont').innerHTML = Object.entries(FONTS).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join('');
+$('#decoText').addEventListener('input', e => { const d = selDeco(); if (!d) return; d.text = e.target.value; syncDecoList(); rebuildSoon(); });
+$('#decoText').addEventListener('change', commit);
+$('#decoFont').onchange = e => { const d = selDeco(); if (!d) return; d.font = e.target.value; rebuild(); commit(); };
+$('#decoInvert').onchange = e => { const d = selDeco(); if (!d) return; d.invert = e.target.checked; rebuild(); commit(); };
+$$('#decoMode button').forEach(b => b.onclick = () => { const d = selDeco(); if (!d) return; d.engrave = b.dataset.m === 'engrave'; syncDecoUI(); syncFields(); rebuild(); commit(); });
+$('#decoFront').onclick = () => { const d = selDeco(); if (!d) return; d.u = frontU(raster(d).w); d.z = zoneMid(); rebuild(); commit(); };
+function deleteDeco(id) { state.decos = state.decos.filter(d => d.id !== id); rasterCache.delete(id); if (selected === id) selected = null; syncDecoUI(); rebuild(); commit(); }
+$('#decoDel').onclick = () => selected && deleteDeco(selected);
+const decoLabel = d => d.kind === 'text' ? `“${d.text || ''}”` : d.kind === 'clip' ? (CLIPART[d.icon] || {}).name || 'Clipart' : (d.name || 'Image');
+function syncDecoList() {
+  $('#decoList').innerHTML = state.decos.map(d => `<button data-deco="${d.id}" aria-pressed="${d.id === selected}"><span>${decoLabel(d).replace(/[<&]/g, c => c === '<' ? '&lt;' : '&amp;')}</span><small>${fmt(d.size)} mm${d.engrave ? ' · engraved' : ''}</small></button>`).join('');
+  $$('[data-deco]').forEach(b => b.onclick = () => { selected = selected === b.dataset.deco ? null : b.dataset.deco; syncDecoUI(); requestDraw(); });
+}
+function syncDecoUI() {
+  syncDecoList();
+  const d = selDeco();
+  $('#decoEditor').hidden = !d;
+  $('#wallWrap').hidden = !state.decos.length;
+  if (d) {
+    $('#txtField').hidden = d.kind !== 'text'; $('#fontField').hidden = d.kind !== 'text'; $('#invField').hidden = d.kind !== 'img';
+    if (document.activeElement !== $('#decoText')) $('#decoText').value = d.text || '';
+    $('#decoFont').value = d.font || 'sans'; $('#decoInvert').checked = !!d.invert;
+    $$('#decoMode button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.m === 'engrave') === !!d.engrave)));
+    $('[data-f="deco.size"] label').firstChild.textContent = d.kind === 'text' ? 'Letter height' : 'Height';
+    syncFields();
+  }
+  renderWallMap();
+}
+// unrolled wall: x = position around (0..P), y = height zone
+function renderWallMap() {
+  const svg = $('#wallSvg'); if (!res || !state.decos.length) { svg.innerHTML = ''; return; }
+  const z = res.zone, P = z.P, Hz = z.zB - z.zA, W = 280, Hh = Math.max(40, Math.min(110, W * Hz / P * 1.0));
+  svg.setAttribute('viewBox', `0 0 ${W} ${Hh}`); svg.style.height = Hh + 'px';
+  const sx = W / P, sz = Hh / Hz;
+  let h = `<rect class="bg" x="0" y="0" width="${W}" height="${Hh}"/>`;
+  for (const [name, ang] of [['front', -Math.PI / 2], ['right', 0], ['back', Math.PI / 2], ['left', Math.PI]]) {
+    const x = G.uAtAngle(res, ang) * W; h += `<line class="tick" x1="${x}" x2="${x}" y1="0" y2="${Hh}"/><text x="${Math.min(W - 26, x + 2)}" y="9">${name}</text>`;
+  }
+  for (const d of state.decos) {
+    const r = raster(d);
+    for (const off of [-1, 0, 1]) {
+      const cx = (d.u + off) * W, cz = Hh - (Math.max(z.zA, Math.min(z.zB, d.z)) - z.zA) * sz;
+      if (cx + r.w * sx / 2 < 0 || cx - r.w * sx / 2 > W) continue;
+      h += `<rect class="deco${d.id === selected ? ' sel' : ''}" data-id="${d.id}" x="${cx - r.w * sx / 2}" y="${cz - r.h * sz / 2}" width="${r.w * sx}" height="${r.h * sz}" rx="2"/>`;
+    }
+  }
+  svg.innerHTML = h;
+}
+{
+  const svg = $('#wallSvg'); let drag = null;
+  svg.addEventListener('pointerdown', e => {
+    const t = e.target.closest('.deco'); if (!t || !res) return;
+    selected = t.dataset.id; const d = selDeco(); syncDecoUI();
+    const r = svg.getBoundingClientRect();
+    drag = { id: d.id, x: e.clientX, y: e.clientY, u: d.u, z: d.z, W: r.width, H: r.height };
+    svg.setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  svg.addEventListener('pointermove', e => {
+    if (!drag) return; const d = state.decos.find(o => o.id === drag.id); if (!d) return;
+    const z = res.zone;
+    d.u = ((drag.u + (e.clientX - drag.x) / drag.W) % 1 + 1) % 1;
+    d.z = Math.max(z.zA, Math.min(z.zB, drag.z - (e.clientY - drag.y) / drag.H * (z.zB - z.zA)));
+    renderWallMap(); rebuildSoon();
+  });
+  const end = () => { if (drag) { drag = null; rebuild(); commit(); } };
+  svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+}
+
+/* ---------------- build ---------------- */
+function engineParams() {
+  const p = clone(Object.assign({}, state, { decos: [] }));
+  p.decos = state.decos.map(d => { const r = raster(d); return { u: d.u, z: d.z, w: r.w, h: r.h, sdf: r.sdf, depth: d.depth, engrave: d.engrave }; });
+  return p;
+}
+let mesh = null, lid = null, gpu = null, gpuLid = null, buildQueued = false, lastBuildMs = 0;
+function rebuild() {
+  const t0 = performance.now();
+  try { res = G.build(engineParams()); }
+  catch (err) { console.error(err); showWarns(['Could not build this combination: ' + err.message]); return; }
+  lastBuildMs = performance.now() - t0;
+  mesh = res.container; lid = res.lid;
+  // keep decorations where the engine actually put them
+  uploadAll(); updateStats(); showWarns(res.warn); renderWallMap();
+  if (state.H !== res.params.H || state.lid.depth !== res.params.lid.depth) { state.H = res.params.H; state.lid.depth = res.params.lid.depth; syncFields(); }
+  requestDraw();
+}
+function rebuildSoon() {
+  if (buildQueued) return; buildQueued = true;
+  const run = () => { buildQueued = false; rebuild(); };
+  if (lastBuildMs > 250) { $('#busy').hidden = false; setTimeout(() => { run(); $('#busy').hidden = true; }, 30); } else requestAnimationFrame(run);
+}
+function showWarns(list) { $('#warns').innerHTML = (list || []).map(w => `<div class="warn">${w.replace(/[<&]/g, c => c === '<' ? '&lt;' : '&amp;')}</div>`).join(''); }
+function updateStats() {
+  const q = res.params, g = v => v / 1000 * 1.24;
+  const gc = g(mesh.volume), gl = lid ? g(lid.volume) : 0;
+  $('#wTotal').innerHTML = `${Math.round(gc + gl)} g <small>${lid ? `container ${Math.round(gc)} g + lid ${Math.round(gl)} g` : 'container'}</small>`;
+  const b = G.bounds(mesh), lb = lid ? G.bounds(lid) : null;
+  const totalH = lid && res.lidInfo.place.flip ? res.lidInfo.place.z : b[5];
+  const rows = [
+    ['Capacity', `${res.capacity >= 1e6 ? fmt(res.capacity / 1e6) + ' L' : Math.round(res.capacity / 1000) + ' ml'}`],
+    ['Outside', `${fmt(b[1] - b[0])} × ${fmt(b[3] - b[2])} × ${fmt(totalH)} mm`],
+    ['Filament', `${fmt((mesh.volume + (lid ? lid.volume : 0)) / 2.405 / 1000)} m (1.75 mm)`]
+  ];
+  if (res.neck) rows.push(['Neck', `Ø ${fmt(2 * res.neck.Rno)} mm, ${fmt(res.lidInfo.turns)} turns`]);
+  if (q.stack) rows.push(['Stack pitch', `${fmt(res.stackOffset)} mm per container`]);
+  rows.push(['Triangles', (mesh.indices.length / 3 + (lid ? lid.indices.length / 3 : 0)).toLocaleString()]);
+  $('#stats').innerHTML = rows.map(([a, v]) => `<dt>${a}</dt><dd>${v}</dd>`).join('');
+  const oh = Math.max(G.maxOverhang(mesh).deg, lid ? G.maxOverhang(lid).deg : 0);
+  const ok = oh <= 45.05;
+  $('#okLine').className = 'okline' + (ok ? '' : ' bad');
+  $('#okLine').innerHTML = ok ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4 12 5 5L20 6"/></svg> No supports needed · steepest overhang ${Math.round(oh)}°` : `Steepest overhang ${Math.round(oh)}° – may need supports`;
+}
+
+/* ---------------- download ---------------- */
+function saveBlob(data, name, type) {
+  const blob = new Blob([data], { type });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function baseName() { const q = res.params; return `container_${q.shape}_${fmt(q.W)}x${fmt(q.D)}x${fmt(q.H)}${q.texture.type !== 'none' ? '_' + q.texture.type : ''}${q.stack ? '_stack' : ''}`; }
+function download(kind) {
+  $('#dlMenu').hidden = true;
+  if (!mesh) return;
+  if (!lid) kind = 'container';
+  const objs = [];
+  if (kind !== 'lid') objs.push({ name: 'Container', mesh });
+  if (kind !== 'container') {
+    const cb = G.bounds(mesh), lb = G.bounds(lid);
+    objs.push({ name: `Lid (${res.lidInfo.name})`, mesh: kind === 'both' ? G.transformMesh(lid, { dx: cb[1] + 10 - lb[0], dy: (cb[2] + cb[3]) / 2 - (lb[2] + lb[3]) / 2 }) : lid });
+  }
+  const lname = lid ? res.lidInfo.name : '';
+  const name = baseName() + (kind === 'lid' ? `_lid-${lname}` : kind === 'both' ? `_with-lid-${lname}` : '') + '.' + prefs.fmt;
+  if (prefs.fmt === '3mf') saveBlob(G.to3MF(objs, name), name, 'model/3mf');
+  else saveBlob(G.toSTL(objs.length > 1 ? G.mergeMeshes(objs.map(o => o.mesh)) : objs[0].mesh, name), name, 'model/stl');
+}
+function syncFmt() { $$('[data-fmt]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.fmt === prefs.fmt))); $$('#dlMenu .ext').forEach(x => x.textContent = '.' + prefs.fmt); }
+$$('[data-fmt]').forEach(b => b.onclick = e => { e.stopPropagation(); prefs.fmt = b.dataset.fmt; savePrefs(); syncFmt(); });
+$('#download').onclick = e => { e.stopPropagation(); $$('[data-dl="lid"],[data-dl="both"]').forEach(b => b.hidden = !lid); $('#dlMenu').hidden = !$('#dlMenu').hidden; };
+$('#dlMenu').addEventListener('click', e => e.stopPropagation());
+$$('[data-dl]').forEach(b => b.onclick = e => { e.stopPropagation(); download(b.dataset.dl); });
+document.addEventListener('click', () => { $('#dlMenu').hidden = true; });
+syncFmt();
+
+/* ---------------- WebGL viewer ---------------- */
+const canvas = $('#view');
+const gl = canvas.getContext('webgl', { antialias: true, preserveDrawingBuffer: true });
+if (!gl) document.body.insertAdjacentHTML('beforeend', '<div class="warn" style="position:fixed;top:80px;left:50%;transform:translateX(-50%)">WebGL is not available – the 3D preview is off, but Download still works.</div>');
+const ext32 = gl && gl.getExtension('OES_element_index_uint');
+const VS = `attribute vec3 aPos;attribute vec3 aNor;uniform mat4 uVP;uniform vec3 uOff;uniform vec3 uScl;varying vec3 vN;varying vec3 vW;
+void main(){vec3 w=aPos*uScl+uOff;vW=w;vN=aNor*uScl;gl_Position=uVP*vec4(w,1.0);}`;
+const FS = `precision highp float;varying vec3 vN;varying vec3 vW;uniform vec3 uColor;uniform vec3 uInner;uniform vec3 uEye;uniform float uClip;uniform float uClipOn;
+void main(){if(uClipOn>0.5&&vW.y<uClip)discard;vec3 n=normalize(vN);vec3 base=uColor;if(!gl_FrontFacing){n=-n;base=uInner;}
+vec3 V=normalize(uEye-vW);vec3 L1=normalize(vec3(-0.45,-0.75,0.85));vec3 L2=normalize(vec3(0.7,0.35,0.45));
+float d=max(dot(n,L1),0.0)*0.5+max(dot(n,L2),0.0)*0.22;float hemi=0.5+0.5*n.z;
+vec3 col=base*(0.42+0.2*hemi+d);float sp=pow(max(dot(reflect(-L1,n),V),0.0),48.0)*0.10;gl_FragColor=vec4(col+sp,1.0);}`;
+const LVS = `attribute vec3 aPos;uniform mat4 uVP;uniform vec3 uOff;uniform vec3 uScl;varying vec3 vW;void main(){vec3 w=aPos*uScl+uOff;vW=w;gl_Position=uVP*vec4(w,1.0);}`;
+const LFS = `precision highp float;varying vec3 vW;uniform vec4 uColor;uniform float uClip;uniform float uClipOn;void main(){if(uClipOn>0.5&&vW.y<uClip-0.001)discard;gl_FragColor=uColor;}`;
+function prog(vs, fs) {
+  const p = gl.createProgram();
+  for (const [type, src] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]]) {
+    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+    gl.attachShader(p, s);
+  }
+  gl.linkProgram(p);
+  const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+  for (let i = 0; i < n; i++) { const name = gl.getActiveUniform(p, i).name; u[name] = gl.getUniformLocation(p, name); }
+  return { p, u, aPos: gl.getAttribLocation(p, 'aPos'), aNor: gl.getAttribLocation(p, 'aNor') };
+}
+let P1, P2;
+if (gl) { P1 = prog(VS, FS); P2 = prog(LVS, LFS); }
+function buf(data) { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW); return b; }
+// smooth normals within 32 degrees, feature edges over 28 degrees (de-indexed for drawArrays)
+function prep(m) {
+  const P = m.positions, I = m.indices, nT = I.length / 3, V = P.length / 3, fn = new Float32Array(nT * 3), un = new Float32Array(nT * 3);
+  for (let f = 0; f < nT; f++) {
+    const a = I[3 * f] * 3, b = I[3 * f + 1] * 3, c = I[3 * f + 2] * 3;
+    const ux = P[b] - P[a], uy = P[b + 1] - P[a + 1], uz = P[b + 2] - P[a + 2], vx = P[c] - P[a], vy = P[c + 1] - P[a + 1], vz = P[c + 2] - P[a + 2];
+    fn[3 * f] = uy * vz - uz * vy; fn[3 * f + 1] = uz * vx - ux * vz; fn[3 * f + 2] = ux * vy - uy * vx;
+    const l = Math.hypot(fn[3 * f], fn[3 * f + 1], fn[3 * f + 2]) || 1; un[3 * f] = fn[3 * f] / l; un[3 * f + 1] = fn[3 * f + 1] / l; un[3 * f + 2] = fn[3 * f + 2] / l;
+  }
+  const start = new Uint32Array(V + 1); for (let i = 0; i < I.length; i++) start[I[i] + 1]++;
+  for (let i = 0; i < V; i++) start[i + 1] += start[i];
+  const fill = start.slice(0, V), adj = new Uint32Array(I.length);
+  for (let i = 0; i < I.length; i++) adj[fill[I[i]]++] = (i / 3) | 0;
+  const pos = new Float32Array(nT * 9), nor = new Float32Array(nT * 9), cosT = Math.cos(32 * Math.PI / 180);
+  for (let f = 0; f < nT; f++) for (let k = 0; k < 3; k++) {
+    const v = I[3 * f + k]; let sx = 0, sy = 0, sz = 0;
+    for (let j = start[v]; j < start[v + 1]; j++) {
+      const g = adj[j];
+      if (un[3 * g] * un[3 * f] + un[3 * g + 1] * un[3 * f + 1] + un[3 * g + 2] * un[3 * f + 2] > cosT) { sx += fn[3 * g]; sy += fn[3 * g + 1]; sz += fn[3 * g + 2]; }
+    }
+    const l = Math.hypot(sx, sy, sz) || 1, o = 9 * f + 3 * k;
+    pos[o] = P[3 * v]; pos[o + 1] = P[3 * v + 1]; pos[o + 2] = P[3 * v + 2]; nor[o] = sx / l; nor[o + 1] = sy / l; nor[o + 2] = sz / l;
+  }
+  const em = new Map(), lines = [], cosE = Math.cos(28 * Math.PI / 180);
+  for (let f = 0; f < nT; f++) for (let k = 0; k < 3; k++) {
+    const a = I[3 * f + k], b = I[3 * f + (k + 1) % 3], key = a < b ? a * 4294967 + b : b * 4294967 + a, prev = em.get(key);
+    if (prev === undefined) em.set(key, f);
+    else if (un[3 * prev] * un[3 * f] + un[3 * prev + 1] * un[3 * f + 1] + un[3 * prev + 2] * un[3 * f + 2] < cosE) lines.push(P[3 * a], P[3 * a + 1], P[3 * a + 2], P[3 * b], P[3 * b + 1], P[3 * b + 2]);
+  }
+  return { pos: buf(pos), nor: buf(nor), n: nT * 3, edges: buf(new Float32Array(lines)), ne: lines.length / 3 };
+}
+function free(g) { if (g) for (const b of [g.pos, g.nor, g.edges]) gl.deleteBuffer(b); }
+const view = { theta: -2.0, phi: 0.5, dist: 300, target: [0, 0, 30], fitted: false, fitKey: '' };
+function uploadAll() {
+  if (gl) { free(gpu); free(gpuLid); gpu = prep(mesh); gpuLid = lid ? prep(lid) : null; }
+  const q = res.params, key = `${q.W}|${q.D}|${q.H}`;
+  if (!view.fitted || view.fitKey !== key) fitView(!view.fitted);
+}
+let gridBuf = null, gridN = 0, gridMajorBuf = null, gridMajorN = 0;
+function makeGrid() {
+  if (!gl) return;
+  const q = res.params, ext = Math.max(q.W, q.D) * 1.6 + 120, x0 = Math.floor(-ext / 10) * 10, x1 = -x0, minor = [], major = [];
+  for (let x = x0; x <= x1; x += 10) (x % 50 === 0 ? major : minor).push(x, x0, -0.02, x, x1, -0.02, x0, x, -0.02, x1, x, -0.02);
+  if (gridBuf) { gl.deleteBuffer(gridBuf); gl.deleteBuffer(gridMajorBuf); }
+  gridBuf = buf(new Float32Array(minor)); gridN = minor.length / 3; gridMajorBuf = buf(new Float32Array(major)); gridMajorN = major.length / 3;
+}
+function fitView(resetAngles) {
+  const q = res.params, b = G.bounds(mesh), st = state.stack && $('#optStack').checked ? res.stackOffset : 0, top = st + (lid && res.lidInfo.place.flip ? res.lidInfo.place.z : lid ? res.lidInfo.place.z + G.bounds(lid)[5] - G.bounds(lid)[4] : b[5]);
+  const r = Math.hypot(b[1] - b[0], b[3] - b[2], top) / 2;
+  view.target = [(b[0] + b[1]) / 2, (b[2] + b[3]) / 2, top / 2];
+  const rc = canvas.getBoundingClientRect(), asp = rc.width > 0 && rc.height > 0 ? rc.width / rc.height : 1.6;
+  const halfV = 17.5 * Math.PI / 180, halfH = Math.atan(Math.tan(halfV) * asp);
+  view.dist = r / Math.sin(Math.min(halfV, halfH)) * 1.12;
+  if (resetAngles) { view.theta = -2.0; view.phi = 0.5; }
+  view.fitted = true; view.fitKey = `${q.W}|${q.D}|${q.H}`; makeGrid();
+}
+function eye() { const c = Math.cos(view.phi); return [view.target[0] + view.dist * c * Math.cos(view.theta), view.target[1] + view.dist * c * Math.sin(view.theta), view.target[2] + view.dist * Math.sin(view.phi)]; }
+function persp(fovy, asp, n, f) { const t = 1 / Math.tan(fovy / 2); return [t / asp, 0, 0, 0, 0, t, 0, 0, 0, 0, (f + n) / (n - f), -1, 0, 0, 2 * f * n / (n - f), 0]; }
+function lookAt(e, c, up) {
+  let zx = e[0] - c[0], zy = e[1] - c[1], zz = e[2] - c[2]; let l = Math.hypot(zx, zy, zz); zx /= l; zy /= l; zz /= l;
+  let xx = up[1] * zz - up[2] * zy, xy = up[2] * zx - up[0] * zz, xz = up[0] * zy - up[1] * zx; l = Math.hypot(xx, xy, xz); xx /= l; xy /= l; xz /= l;
+  const yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
+  return [xx, yx, zx, 0, xy, yy, zy, 0, xz, yz, zz, 0, -(xx * e[0] + xy * e[1] + xz * e[2]), -(yx * e[0] + yy * e[1] + yz * e[2]), -(zx * e[0] + zy * e[1] + zz * e[2]), 1];
+}
+function mul(a, b) { const o = new Array(16); for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + j] * b[i * 4 + k]; o[i * 4 + j] = s; } return o; }
+let VP = null, EYE = null;
+function project(p) {
+  const x = VP[0] * p[0] + VP[4] * p[1] + VP[8] * p[2] + VP[12], y = VP[1] * p[0] + VP[5] * p[1] + VP[9] * p[2] + VP[13], w = VP[3] * p[0] + VP[7] * p[1] + VP[11] * p[2] + VP[15];
+  if (w <= 0) return null;
+  const r = canvas.getBoundingClientRect(); return [(x / w * 0.5 + 0.5) * r.width, (1 - (y / w * 0.5 + 0.5)) * r.height];
+}
+// world ray through a screen point
+function screenRay(cx, cy) {
+  const r = canvas.getBoundingClientRect(), nx = (cx - r.left) / r.width * 2 - 1, ny = 1 - (cy - r.top) / r.height * 2;
+  const ct = Math.cos(view.theta), st = Math.sin(view.theta), cp = Math.cos(view.phi), sp = Math.sin(view.phi);
+  const fwd = [-cp * ct, -cp * st, -sp], right = [-st, ct, 0], up = [-sp * ct, -sp * st, cp];
+  const th = Math.tan(17.5 * Math.PI / 180), asp = r.width / r.height;
+  const d = [0, 1, 2].map(i => fwd[i] + right[i] * nx * th * asp + up[i] * ny * th), l = Math.hypot(...d);
+  return { o: EYE, d: d.map(v => v / l) };
+}
+// hit on the plain outer wall: { s (mm around), z } or null
+function pickWall(cx, cy) {
+  if (!res || !VP) return null;
+  const { o, d } = screenRay(cx, cy), ol = res.outline, N = ol.x.length, z = res.zone;
+  let best = null;
+  for (let j = 0; j < N; j++) {
+    const k = (j + 1) % N, ax = ol.x[j], ay = ol.y[j], ex = ol.x[k] - ax, ey = ol.y[k] - ay;
+    const nx = ey, ny = -ex; const den = d[0] * nx + d[1] * ny; if (den >= -1e-9) continue;   // facing the camera only
+    const t = ((ax - o[0]) * nx + (ay - o[1]) * ny) / den; if (t <= 0 || (best && t >= best.t)) continue;
+    const px = o[0] + d[0] * t, py = o[1] + d[1] * t, pz = o[2] + d[2] * t;
+    const L2 = ex * ex + ey * ey, f = ((px - ax) * ex + (py - ay) * ey) / L2;
+    if (f < -1e-6 || f > 1 + 1e-6 || pz < 0 || pz > res.params.H + 2) continue;
+    best = { t, s: ol.s[j] + f * Math.sqrt(L2), z: pz };
+  }
+  if (best) best.z = Math.max(z.zA, Math.min(z.zB, best.z));
+  return best;
+}
+function decoAt(hit) {
+  if (!hit) return null; const P = res.zone.P;
+  for (let i = state.decos.length - 1; i >= 0; i--) {
+    const d = state.decos[i], r = raster(d); let ds = hit.s - d.u * P; ds -= Math.round(ds / P) * P;
+    if (Math.abs(ds) <= r.w / 2 + 1 && Math.abs(hit.z - d.z) <= r.h / 2 + 1) return d;
+  }
+  return null;
+}
+
+/* interaction */
+const ptrs = new Map(); let mode = 'rot', pinch0 = 0, dist0 = 0, down = null, decoDrag = null;
+const showsLidOnTop = () => lid && $('#optLid').checked;
+canvas.addEventListener('pointerdown', e => {
+  canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+  down = { x: e.clientX, y: e.clientY, moved: false };
+  mode = (e.button === 2 || e.button === 1 || e.shiftKey) ? 'pan' : 'rot';
+  if (ptrs.size === 1 && mode === 'rot' && state.decos.length) {
+    const hit = pickWall(e.clientX, e.clientY), d = decoAt(hit);
+    if (d) { selected = d.id; decoDrag = { id: d.id, s0: hit.s, z0: hit.z, u: d.u, z: d.z }; mode = 'deco'; syncDecoUI(); requestDraw(); }
+  }
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); dist0 = view.dist; decoDrag = null; mode = 'rot'; }
+});
+canvas.addEventListener('pointermove', e => {
+  if (!ptrs.has(e.pointerId)) {
+    if (state.decos.length && res) canvas.classList.toggle('over-deco', !!decoAt(pickWall(e.clientX, e.clientY)));
+    return;
+  }
+  const prev = ptrs.get(e.pointerId), dx = e.clientX - prev[0], dy = e.clientY - prev[1];
+  ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+  if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 4) down.moved = true;
+  if (mode === 'deco' && decoDrag) {
+    const hit = pickWall(e.clientX, e.clientY), d = state.decos.find(o => o.id === decoDrag.id);
+    if (hit && d) { const P = res.zone.P; let ds = hit.s - decoDrag.s0; ds -= Math.round(ds / P) * P; d.u = ((decoDrag.u + ds / P) % 1 + 1) % 1; d.z = decoDrag.z + hit.z - decoDrag.z0; renderWallMap(); rebuildSoon(); }
+    return;
+  }
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; const d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pinch0 > 0) view.dist = Math.max(10, dist0 * pinch0 / d); }
+  else if (mode === 'rot') { view.theta -= dx * 0.008; view.phi = Math.max(-1.2, Math.min(1.53, view.phi + dy * 0.008)); }
+  else {
+    const s = view.dist * 0.0016, ct = Math.cos(view.theta), st = Math.sin(view.theta), sp = Math.sin(view.phi), cp = Math.cos(view.phi);
+    const right = [-st, ct, 0], up = [-sp * ct, -sp * st, cp];
+    for (let i = 0; i < 3; i++) view.target[i] += (-dx * right[i] + dy * up[i]) * s;
+  }
+  requestDraw();
+});
+const endPtr = e => {
+  if (mode === 'deco' && decoDrag) { decoDrag = null; mode = 'rot'; rebuild(); commit(); }
+  else if (e.type === 'pointerup' && down && !down.moved && ptrs.size === 1 && e.button === 0 && state.decos.length) {
+    const d = decoAt(pickWall(e.clientX, e.clientY)); if (!d && selected) { selected = null; syncDecoUI(); requestDraw(); }
+  }
+  ptrs.delete(e.pointerId); pinch0 = 0; if (!ptrs.size) down = null;
+};
+canvas.addEventListener('pointerup', endPtr); canvas.addEventListener('pointercancel', endPtr);
+canvas.addEventListener('wheel', e => { e.preventDefault(); view.dist = Math.max(10, view.dist * Math.exp(e.deltaY * 0.0012)); requestDraw(); }, { passive: false });
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+const resetView = () => { if (mesh) { fitView(true); requestDraw(); } };
+canvas.addEventListener('dblclick', resetView); $('#resetView').onclick = resetView;
+for (const id of ['#optLid', '#optCut', '#optEdges']) $(id).onchange = requestDraw;
+$('#optStack').onchange = () => { fitView(false); requestDraw(); };
+
+/* draw */
+let drawQueued = false;
+function requestDraw() { if (drawQueued) return; drawQueued = true; requestAnimationFrame(() => { drawQueued = false; draw(); }); }
+function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function rgb(hex) { const h = hex.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16) / 255); }
+function scene() {
+  const items = [{ g: gpu, scl: [1, 1, 1], off: [0, 0, 0], color: '--model' }];
+  const stacked = state.stack && $('#optStack').checked;
+  if (stacked) items.push({ g: gpu, scl: [1, 1, 1], off: [0, 0, res.stackOffset], color: '--model-2' });
+  if (lid) {
+    const top = stacked ? res.stackOffset : 0, pl = res.lidInfo.place;
+    if ($('#optLid').checked) items.push(pl.flip ? { g: gpuLid, scl: [1, -1, -1], off: [0, 0, pl.z + top], color: '--lid' } : { g: gpuLid, scl: [1, 1, 1], off: [0, 0, pl.z + top], color: '--lid' });
+    else { const cb = G.bounds(mesh), lb = G.bounds(lid); items.push({ g: gpuLid, scl: [1, 1, 1], off: [cb[1] + 12 - lb[0], 0, 0], color: '--lid' }); }
+  }
+  return items;
+}
+// outline of the selected decoration on the wall
+function decoOutline() {
+  const d = selDeco(); if (!d || !res) return null;
+  const r = raster(d), ol = res.outline, P = res.zone.P, N = ol.x.length, pts = [];
+  const zc = Math.max(res.zone.zA + r.h / 2 + 0.5, Math.min(res.zone.zB - r.h / 2 - 0.5, d.z));
+  const at = (s, z) => {
+    s = ((s % P) + P) % P; let j = 0, lo = 0, hi = N - 1; while (lo <= hi) { const m = (lo + hi) >> 1; if (ol.s[m] <= s) { j = m; lo = m + 1; } else hi = m - 1; }
+    const k = (j + 1) % N, seg = (k === 0 ? P : ol.s[k]) - ol.s[j], f = seg > 0 ? (s - ol.s[j]) / seg : 0, off = Math.abs(d.depth) + 0.6;
+    return [ol.x[j] + (ol.x[k] - ol.x[j]) * f + ol.nx[j] * off, ol.y[j] + (ol.y[k] - ol.y[j]) * f + ol.ny[j] * off, z];
+  };
+  const s0 = d.u * P - r.w / 2, s1 = d.u * P + r.w / 2, z0 = zc - r.h / 2, z1 = zc + r.h / 2, n = Math.max(2, Math.ceil(r.w / 1.5));
+  const line = (a, b) => pts.push(...a, ...b);
+  for (let i = 0; i < n; i++) { const a = s0 + (s1 - s0) * i / n, b = s0 + (s1 - s0) * (i + 1) / n; line(at(a, z0), at(b, z0)); line(at(a, z1), at(b, z1)); }
+  line(at(s0, z0), at(s0, z1)); line(at(s1, z0), at(s1, z1));
+  return new Float32Array(pts);
+}
+function draw() {
+  if (!mesh) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2), r = canvas.getBoundingClientRect();
+  const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  const cut = $('#optCut').checked, edges = $('#optEdges').checked;
+  EYE = eye();
+  VP = mul(persp(35 * Math.PI / 180, w / h, Math.max(0.5, view.dist * 0.01), view.dist * 20), lookAt(EYE, view.target, [0, 0, 1]));
+  if (!gl) return;
+  const items = scene(), bg = rgb(css('--bg-canvas'));
+  gl.viewport(0, 0, w, h); gl.clearColor(bg[0], bg[1], bg[2], 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.enable(gl.DEPTH_TEST);
+  const clipY = res.outline.cy + 0.013;
+  gl.useProgram(P2.p); gl.uniformMatrix4fv(P2.u.uVP, false, VP); gl.uniform3f(P2.u.uOff, 0, 0, 0); gl.uniform3f(P2.u.uScl, 1, 1, 1); gl.uniform1f(P2.u.uClipOn, 0);
+  gl.enableVertexAttribArray(P2.aPos);
+  const gc = rgb(css('--grid')), gm = rgb(css('--grid-major'));
+  gl.bindBuffer(gl.ARRAY_BUFFER, gridBuf); gl.vertexAttribPointer(P2.aPos, 3, gl.FLOAT, false, 0, 0); gl.uniform4f(P2.u.uColor, gc[0], gc[1], gc[2], 1); gl.drawArrays(gl.LINES, 0, gridN);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gridMajorBuf); gl.vertexAttribPointer(P2.aPos, 3, gl.FLOAT, false, 0, 0); gl.uniform4f(P2.u.uColor, gm[0], gm[1], gm[2], 1); gl.drawArrays(gl.LINES, 0, gridMajorN);
+  gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1, 1);
+  gl.useProgram(P1.p); gl.uniformMatrix4fv(P1.u.uVP, false, VP); gl.uniform3fv(P1.u.uEye, EYE);
+  gl.uniform1f(P1.u.uClip, clipY); gl.uniform1f(P1.u.uClipOn, cut ? 1 : 0); gl.uniform3fv(P1.u.uInner, rgb(css('--model-inner')));
+  for (const it of items) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, it.g.pos); gl.enableVertexAttribArray(P1.aPos); gl.vertexAttribPointer(P1.aPos, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, it.g.nor); gl.enableVertexAttribArray(P1.aNor); gl.vertexAttribPointer(P1.aNor, 3, gl.FLOAT, false, 0, 0);
+    gl.uniform3fv(P1.u.uOff, it.off); gl.uniform3fv(P1.u.uScl, it.scl); gl.uniform3fv(P1.u.uColor, rgb(css(it.color)));
+    gl.drawArrays(gl.TRIANGLES, 0, it.g.n);
+  }
+  gl.disableVertexAttribArray(P1.aNor); gl.disable(gl.POLYGON_OFFSET_FILL);
+  gl.useProgram(P2.p); gl.uniformMatrix4fv(P2.u.uVP, false, VP); gl.uniform1f(P2.u.uClip, clipY); gl.uniform1f(P2.u.uClipOn, cut ? 1 : 0);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  if (edges) {
+    const ec = rgb(css('--edge')); gl.uniform4f(P2.u.uColor, ec[0], ec[1], ec[2], 0.45);
+    for (const it of items) { if (!it.g.ne) continue; gl.bindBuffer(gl.ARRAY_BUFFER, it.g.edges); gl.vertexAttribPointer(P2.aPos, 3, gl.FLOAT, false, 0, 0); gl.uniform3fv(P2.u.uOff, it.off); gl.uniform3fv(P2.u.uScl, it.scl); gl.drawArrays(gl.LINES, 0, it.g.ne); }
+  }
+  const ol = decoOutline();
+  if (ol) {
+    const b = buf(ol), sc = rgb(css('--sel'));
+    gl.disable(gl.DEPTH_TEST);
+    gl.uniform3f(P2.u.uOff, 0, 0, 0); gl.uniform3f(P2.u.uScl, 1, 1, 1); gl.uniform4f(P2.u.uColor, sc[0], sc[1], sc[2], 0.95);
+    gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.vertexAttribPointer(P2.aPos, 3, gl.FLOAT, false, 0, 0); gl.drawArrays(gl.LINES, 0, ol.length / 3);
+    gl.deleteBuffer(b); gl.enable(gl.DEPTH_TEST);
+  }
+  gl.disable(gl.BLEND);
+  const chip = $('#chip');
+  if (state.decos.length && !selected) { chip.hidden = false; chip.textContent = 'Tip: drag text or clipart on the model to move it.'; }
+  else if (selected) { chip.hidden = false; chip.textContent = 'Drag the highlighted item around the wall. Delete key removes it.'; }
+  else chip.hidden = true;
+}
+new ResizeObserver(requestDraw).observe(canvas);
+if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', requestDraw);
+
+syncUI(); rebuild(); updateHistoryButtons();
+window.__app = {
+  get res() { return res; }, get state() { return state; }, get selected() { return selected; },
+  set: o => { Object.assign(state, o); syncUI(); rebuild(); commit(); }, draw, setView: v => { Object.assign(view, v); requestDraw(); },
+  screenOf: p => { const s = project(p), r = canvas.getBoundingClientRect(); return s && [s[0] + r.left, s[1] + r.top]; },
+  wallPoint: (u, z) => { const ol = res.outline, P = res.zone.P, s = u * P; let j = 0; while (j + 1 < ol.s.length && ol.s[j + 1] <= s) j++; return [ol.x[j], ol.y[j], z]; },
+  pickWall, rebuild
+};
+})();
+</script>
+</body>
+</html>
